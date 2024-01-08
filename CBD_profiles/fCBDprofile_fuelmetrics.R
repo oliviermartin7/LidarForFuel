@@ -18,7 +18,7 @@
 
 # Output :
 ## If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata
-## If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a datable with the PAD anbd CBD profile value (H, PAD and CBD) CBD profile is given in layer (one layer per strata), 
+## If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD anbd CBD profile value (H, PAD and CBD) CBD profile is given in layer (one layer per strata), 
 
 
 
@@ -79,8 +79,8 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   ## Partition of fuel surface (fine branch vs leaves) ----
   ### Wood density (kg/m3)
   WD=mean(WD)
-  ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l/pi.r².l = 2/r
-  SVR=2/0.002 
+  ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l*(1/2)/pi.r².l = 2/r
+  SVR=1/0.002 
   ### Wood mass area (WMA)
   WMA=WD/SVR
   
