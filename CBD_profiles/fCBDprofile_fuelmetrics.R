@@ -29,6 +29,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
     VVP_metrics_CBD=rep(-1,100)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
+    PAD_CBD_Profile=NULL
     names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
@@ -53,10 +54,11 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   Nz_U=abs((Zref-Elevation)/norm_U)
   
   ### Exception if the mean of norm_U < 1000 mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
-  if(mean(norm_U,na.rm=T)<1000){
+  if(mean(norm_U,na.rm=T)<500){
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
     VVP_metrics_CBD=rep(-1,100)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
+    PAD_CBD_Profile=NULL
     names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
@@ -79,7 +81,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   ## Partition of fuel surface (fine branch vs leaves) ----
   ### Wood density (kg/m3)
   WD=mean(WD)
-  ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l*(1/2)/pi.r².l = 2/r
+  ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l*(1/2)/pi.r².l = 1/r
   SVR=1/0.002 
   ### Wood mass area (WMA)
   WMA=WD/SVR
