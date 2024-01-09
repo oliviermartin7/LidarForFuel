@@ -24,7 +24,7 @@
 
 
 
-fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,threshold=0.012,WD,limit_N_points=400,limit_flyheight,datatype="Pixel",omega=1,d=0.5,G=0.5){
+fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flyheight,datatype="Pixel",omega=1,d=0.5,G=0.5){
   library(data.table)
   if(length(Z)<limit_N_points){
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
@@ -48,11 +48,12 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   ## Gap fraction estimation ----
   Gf=1-NRD
   
+  if(scanning_angle==TRUE){
   ## calculates component of  vector U (plane -> point). To take into account scanning angle in PAD estimation ----
   norm_U=sqrt((X-Easting)^2+(Y-Northing)^2+(Zref-Elevation)^2)
   Nx_U=abs((X-Easting)/norm_U)
   Ny_U=abs((Y-Northing)/norm_U)
-  Nz_U=abs((Zref-Elevation)/norm_U)
+  Nz_U=abs((Zref-Elevation)/norm_U)}else(Nz_U=1)
   
   ### Exception if the mean of norm_U < limit_flyheight. For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
   if(mean(norm_U,na.rm=T)<limit_flyheight){
