@@ -29,10 +29,10 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   library(data.table)
   if(length(Z)<limit_N_points){
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
-    VVP_metrics_CBD=rep(-1,100)
+    VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -59,10 +59,10 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   ### Exception if the mean of norm_U < limit_flyheight. For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
   if(mean(norm_U,na.rm=T)<limit_flyheight){
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
-    VVP_metrics_CBD=rep(-1,100)
+    VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -111,15 +111,15 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   ##  Define threshold when threshold is a proportion of CBD max----
   if(stringr::str_detect(threshold,"%")){
     threshold_prop=as.numeric( str_split(threshold,"%",simplify = T)[,1])/100
-    threshold=max(PAD_CBD_Profile[H>0.5]$CBD)*threshold_prop
+    threshold=max(PAD_CBD_Profile[H>1]$CBD)*threshold_prop
   }
   
   ### no data above 0.5m
   if(max(PAD_CBD_Profile$H)<0.5){  
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
-    VVP_metrics_CBD=rep(-1,100)
+    VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -130,19 +130,19 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   if(nrow(PAD_CBD_Profile)>3){
     PAD_CBD_Profile$CBD_rollM=data.table::frollmean(PAD_CBD_Profile$CBD,3,algo="exact")
     PAD_CBD_Profile$CBD_rollM[1:3]=PAD_CBD_Profile$CBD[1:3]
-    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>0.5&CBD_rollM>threshold]
+    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>1&CBD_rollM>threshold]
   }
   ### Organise roll mean CBD depending on number of 0.5m strata <= 3 
   if(nrow(PAD_CBD_Profile)<=3){
     PAD_CBD_Profile$CBD_rollM=PAD_CBD_Profile$CBD
-    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>0.5&CBD_rollM>threshold]
+    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>1&CBD_rollM>threshold]
   }
   ### No data 
   if(nrow(PAD_CBD_Profile_threshold)==0){
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_05_3=-1,FMA=-1)
-    VVP_metrics_CBD=rep(-1,100)
+    VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -151,7 +151,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   
   ## Get number of discontinuity (FSG) of 1m or more ----
   shift_H=data.table::shift(PAD_CBD_Profile_threshold$H)
-  shift_H[1]=0.75
+  shift_H[1]=1.25
   delta_layer=PAD_CBD_Profile_threshold$H-shift_H
   Discontinuity=delta_layer[which(delta_layer>1)]
   
@@ -213,14 +213,14 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   if(length(Discontinuity)>0){
     
     #### profil discontinue without understory strata
-    if(min(PAD_CBD_Profile_threshold$H)>0.75){
+    if(min(PAD_CBD_Profile_threshold$H)>1.25){
       CBH=PAD_CBD_Profile_threshold$H[delta_ID]
       FSG=Discontinuity
       H_Bush=0
       
     }
     #### profil discontinue with understory strata
-    if(min(PAD_CBD_Profile_threshold$H)==0.75){
+    if(min(PAD_CBD_Profile_threshold$H)==1.25){
       
       CBH=PAD_CBD_Profile_threshold$H[delta_ID]
       FSG=Discontinuity
@@ -243,11 +243,11 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   FL_05_3=sum(PAD_CBD_Profile[H>0.5&H<=3]$CBD_rollM)*d
   
   VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,CBH,FSG,Top_Fuel,H_Bush,continuity,VCI_PAD,VCI_lidr,entropy_lidr,PAI_tot,CBD_max,CFL,TFL,UFL,FL_05_3,FMA)
-  VVP_metrics_CBD=rep(-1,100)
+  VVP_metrics_CBD=rep(-1,150)
   VVP_metrics_CBD[1:length(PAD_CBD_Profile$CBD_rollM)]=PAD_CBD_Profile$CBD_rollM
   VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
   
-  names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:100)))
+  names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_05_3","FMA",paste0("CBD_",rep(1:150)))
   
   if(datatype=="Plot"){ 
     return(list(VVP_metrics,PAD_CBD_Profile))}
