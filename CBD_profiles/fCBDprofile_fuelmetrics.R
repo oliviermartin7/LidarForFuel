@@ -10,10 +10,11 @@
 ## LMA: Leaf mass area in g.cm² associated to each point or a generic value
 ## WD: wood density associated to each point or a generic value
 ## threshold=0.012: CBD critical threshold value used
-## limit_N_points= minimum number of point in the pixel/plot for computing profiles & metrics. Default is 400
-## limit_flyheight= minimum reasonable fly height. If lower than limit_flyheight trajectory computing is likely wrong and CBD is not computed.   of point in the pixel/plot for computing profiles & metrics. Default is 400
+## limit_N_points: minimum number of point in the pixel/plot for computing profiles & metrics. Default is 400
+## limit_flyheight: minimum reasonable fly height. If lower than limit_flyheight trajectory computing is likely wrong and CBD is not computed.   of point in the pixel/plot for computing profiles & metrics. Default is 400
+## scanning_angle: logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
 ## datatype: Either "Pixel" (if using pixel metric function) or "Plot" if only a plot is computed. Default is "Pixel"
-## omega: clumping factor. Default is 1
+## omega: clumping factor. Default is 1 (no clumping => homogeneous distribution)
 ## d: strata depth. Default is 0.5
 ## G: leaf projection ratio. Default is 0.5
 
@@ -110,7 +111,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   ##  Define threshold when threshold is a proportion of CBD max----
   if(stringr::str_detect(threshold,"%")){
     threshold_prop=as.numeric( str_split(threshold,"%",simplify = T)[,1])/100
-    threshold=max(PAD_CBD_Profile[H>1]$CBD)*threshold_prop
+    threshold=max(PAD_CBD_Profile[H>0.5]$CBD)*threshold_prop
   }
   
   ### no data above 0.5m
@@ -129,12 +130,12 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   if(nrow(PAD_CBD_Profile)>3){
     PAD_CBD_Profile$CBD_rollM=data.table::frollmean(PAD_CBD_Profile$CBD,3,algo="exact")
     PAD_CBD_Profile$CBD_rollM[1:3]=PAD_CBD_Profile$CBD[1:3]
-    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>1&CBD_rollM>threshold]
+    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>0.5&CBD_rollM>threshold]
   }
   ### Organise roll mean CBD depending on number of 0.5m strata <= 3 
   if(nrow(PAD_CBD_Profile)<=3){
     PAD_CBD_Profile$CBD_rollM=PAD_CBD_Profile$CBD
-    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>1&CBD_rollM>threshold]
+    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>0.5&CBD_rollM>threshold]
   }
   ### No data 
   if(nrow(PAD_CBD_Profile_threshold)==0){
@@ -150,9 +151,9 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   
   ## Get number of discontinuity (FSG) of 1m or more ----
   shift_H=data.table::shift(PAD_CBD_Profile_threshold$H)
-  shift_H[1]=1.25
+  shift_H[1]=0.75
   delta_layer=PAD_CBD_Profile_threshold$H-shift_H
-  Discontinuity=delta_layer[which(delta_layer>0.5)]
+  Discontinuity=delta_layer[which(delta_layer>1)]
   
   ## GEt the FPT ----
   
@@ -181,7 +182,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
       Profil_Type_L=3
     }
     
-    ##### If more than one conitnuities is above one keep the first = Complex : Multilayered = Profil_Type= 4
+    ##### If more than one disconitnuities is above one keep the first = Complex : Multilayered = Profil_Type= 4
     if(length(which(Discontinuity>1))>1){
       
       Discontinuity=Discontinuity[1]
@@ -212,14 +213,14 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   if(length(Discontinuity)>0){
     
     #### profil discontinue without understory strata
-    if(min(PAD_CBD_Profile_threshold$H)>1.25){
-      CBH=min(PAD_CBD_Profile_threshold$H)
-      FSG=CBH
+    if(min(PAD_CBD_Profile_threshold$H)>0.75){
+      CBH=PAD_CBD_Profile_threshold$H[delta_ID]
+      FSG=Discontinuity
       H_Bush=0
       
     }
     #### profil discontinue with understory strata
-    if(min(PAD_CBD_Profile_threshold$H)==1.25){
+    if(min(PAD_CBD_Profile_threshold$H)==0.75){
       
       CBH=PAD_CBD_Profile_threshold$H[delta_ID]
       FSG=Discontinuity
