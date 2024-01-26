@@ -144,10 +144,37 @@ data_placettes_IGN_2 = data_placettes_IGN[which(!is.na(data_placettes_IGN$diff_j
 # data_placettes_lidR = subset(data_placettes_lidR, data_placettes_lidR$Quality < 4)
 # data_placettes_IGN = subset(data_placettes_IGN, data_placettes_IGN$Quality < 4)
 
+# DATAS COMPLETES AVEC ESPAGNE ----
+
+data_placettes_IGN = read.csv("C:/users/ateurnier/OneDrive - INRAE SharePoint SE/CDD/clean_datas/archivedwl-959/FD_LIDAR_DFCI_04_05_8413_06_48_Esp_datas_vol.csv", sep = ",")
+data_placettes_IGN_2 = data_placettes_IGN[which(!is.na(data_placettes_IGN$diff_jours)),]
 
 # ETUDE DES EFFETS ----
 
 ## DEPARTEMENT ----
+
+### Stats ----
+
+x = data_placettes_IGN
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$dep)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$dep)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$dep)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$dep)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$dep)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$dep)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$dep)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
+
+### Plot ----
 
 x = data_placettes_IGN
 main = "Effet du département, n = 353"
@@ -155,31 +182,52 @@ main = "Effet du département, n = 353"
 x$dep = as.character(x$dep)
 
 p1 = ggplot(x) + aes(x= `0-0.5m`, y = Recouv005, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("0-0.5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.9) + ggtitle("0-0.5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 p2 = ggplot(x) + aes(x= `0.5-1m`, y = Recouv051, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("0.5-1m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.9) + ggtitle("0.5-1m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 p3 = ggplot(x) + aes(x= `1-2m`, y = Recouv12, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("1-2m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.9) + ggtitle("1-2m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 p4 = ggplot(x) + aes(x= `2-3m`, y = Recouv23, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("2-3m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.9) + ggtitle("2-3m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 p5 = ggplot(x) + aes(x= `3-4m`, y = Recouv34, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("3-4m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.9) + ggtitle("3-4m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 p6 = ggplot(x) + aes(x= `4-5m`, y = Recouv45, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("4-5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.9) + ggtitle("4-5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 p7 = ggplot(x) + aes(x= `>5m`, y = Recouv5, color = dep) + geom_point() + geom_smooth(method = "lm") +
-  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.1) + ggtitle(">5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6, 0.5), label.x = 0.1) + ggtitle(">5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
 
 
 grid.arrange(p1,p2,p3,p4, p5, p6, p7,  ncol=3, nrow = 3, top = main, left = "Fiedl cover (%)", bottom = "ALS NRD (%)")
 
 
 ## PROTOCOLE ----
+
+### Stats ----
+
+x = data_placettes_IGN
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$protocole)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$protocole)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$protocole)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$protocole)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$protocole)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$protocole)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$protocole)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
 
 results_protocole = data.frame(matrix(NA, ncol = 3, nrow = 7))
 colnames(results_protocole) = c( "Lozère", "pas Lozère", "Intéraction")
@@ -232,7 +280,7 @@ for (i in 1:length(results_protocole)){
   }
 }
 
-
+### Plot ----
 
 x = data_placettes_IGN
 main = "Effet du protocole, n = 353"
@@ -349,6 +397,29 @@ data_placettes_IGN_2 = subset(data_placettes_IGN_2, data_placettes_IGN_2$dep != 
 
 ## PRESTATAIRE ----
 
+### Stats ----
+
+x = data_placettes_IGN
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$prestataire)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$prestataire)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$prestataire)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$prestataire)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$prestataire)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$prestataire)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$prestataire)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
+
+### Plot ----
+
 x = subset(data_placettes_IGN, data_placettes_IGN$prestataire == "APEI_AVINEON" | data_placettes_IGN$prestataire == "SINTEGRA")
 main = "Effet du prestataire, n = 296"
 
@@ -434,6 +505,29 @@ for (i in 1:length(results_prestataire)){
 
 ## PHENOLOGIE ----
 
+### Stats ----
+
+x = data_placettes_IGN_2
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$dist_saison)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$dist_saison)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$dist_saison)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$dist_saison)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$dist_saison)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$dist_saison)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$dist_saison)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
+
+### Plot ----
+
 par(mfrow = c(2,4))
 
 for (i in 1:7){
@@ -453,6 +547,29 @@ for (i in 1:7){
 
 ## DISTANCE TEMPS ----
 
+### Stat ----
+
+x = data_placettes_IGN_2
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$diff_jours)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$diff_jours)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$diff_jours)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$diff_jours)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$diff_jours)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$diff_jours)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$diff_jours)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
+
+### Plot ----
+
 par(mfrow = c(2,4))
 
 for (i in 1:7){
@@ -471,6 +588,28 @@ for (i in 1:7){
 }
 
 ## SCORE QUALITY ----
+
+### Stats ----
+
+x = data_placettes_IGN
+x$Quality[x$Quality == 5] = 4
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$Quality)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$Quality)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$Quality)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$Quality)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$Quality)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$Quality)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$Quality)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
 
 results_quality = data.frame(matrix(NA, ncol = 5, nrow = 7))
 colnames(results_quality) = c( "1", "2", "3", "4", "interaction")
@@ -534,6 +673,8 @@ for (i in 1:length(results_quality)){
   }
 }
 
+### Plot ----
+
 x = data_placettes_IGN
 x$Quality[which(x$Quality == 5)] = 4
 x$Quality = as.character(x$Quality)
@@ -572,21 +713,42 @@ data_placettes_tree <- data_placettes_IGN %>%
 
 data_placettes_tree = subset(data_placettes_tree, !is.na(data_placettes_tree$Latin_Name_supra_Dominant))
 
+### Stats ----
+
+x = data_placettes_tree[!is.na(data_placettes_tree$Recouv5),]
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$Latin_Name_supra_Dominant)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$Latin_Name_supra_Dominant)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$Latin_Name_supra_Dominant)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$Latin_Name_supra_Dominant)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$Latin_Name_supra_Dominant)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$Latin_Name_supra_Dominant)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$Latin_Name_supra_Dominant)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
+
+### Plot ----
 
 plots <- data_placettes_tree %>%
   ggplot() +
-  geom_point(aes(x = `1-2m`, y = Recouv12, color = "1-2m")) +  # Ajouter des points
-  geom_smooth(aes(x = `1-2m`, y = Recouv12), method = "lm", color ="aquamarine4", linetype = "solid") +
-  stat_cor(aes( x = `1-2m`, y = Recouv12, label = ..rr.label..), color = "aquamarine4",
+  geom_point(aes(x = X1.2m, y = Recouv12, color = "X1.2m")) +  
+  geom_smooth(aes(x = X1.2m, y = Recouv12), method = "lm", color ="aquamarine4", linetype = "solid") +
+  stat_cor(aes( x = X1.2m, y = Recouv12, label = ..rr.label..), color = "aquamarine4",
            label.x = 60, label.y = 0) +
-  geom_point(aes(x = `>5m`, y = Recouv5, color = ">5m")) +
-  geom_smooth(aes(x = `>5m`, y = Recouv5), method = "lm", linetype = "solid", color ="darkorange3") +
-  stat_cor(aes( x = `>5m`, y = Recouv5, label = ..rr.label..), color = "darkorange3",
+  geom_point(aes(x = X.5m, y = Recouv5, color = "X.5m")) +
+  geom_smooth(aes(x = X.5m, y = Recouv5), method = "lm", linetype = "solid", color ="darkorange3") +
+  stat_cor(aes( x = X.5m, y = Recouv5, label = ..rr.label..), color = "darkorange3",
            label.x = 60, label.y = 15) +
-  facet_wrap(~Latin_Name_supra_Dominant) +  # Facetter par Esp1_code
+  facet_wrap(~Latin_Name_supra_Dominant) + 
   labs(x = "ALS NRD (%)", y = "Field cover (%)") +
   theme_classic()+
-  # Ajouter ceci
   scale_color_manual(name = "Strata",
                      values = c("1-2m" = "aquamarine4", ">5m" = "darkorange3")) +
   theme(legend.position = "right")
@@ -594,10 +756,34 @@ plots <- data_placettes_tree %>%
 
 print(plots)
 
-
 ## FEUILLAISON ----
 
 decidu = subset(data_placettes_IGN, data_placettes_IGN$decidu == "OUI" & !is.na(data_placettes_IGN$feuillaison))
+
+### Stats ----
+
+x = decidu
+x$Quality[x$Quality == 5] = 4
+
+lm005 = lm(x$X0.0.5m ~ x$Recouv005 * x$feuillaison)
+lm051 = lm(x$X0.5.1m ~  x$Recouv051 * x$feuillaison)
+lm12 = lm(x$X1.2m ~  x$Recouv12 * x$feuillaison)
+lm23 = lm( x$X2.3m ~  x$Recouv23 * x$feuillaison)
+lm34 = lm( x$X3.4m ~  x$Recouv34 * x$feuillaison)
+lm45 = lm( x$X4.5m ~  x$Recouv45 * x$feuillaison)
+lm5 = lm( x$X.5m ~  x$Recouv5 * x$feuillaison)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[2]
+effet[2] = anova(lm051)$`Pr(>F)`[2]
+effet[3] = anova(lm12)$`Pr(>F)`[2]
+effet[4] = anova(lm23)$`Pr(>F)`[2]
+effet[5] = anova(lm34)$`Pr(>F)`[2]
+effet[6] = anova(lm45)$`Pr(>F)`[2]
+effet[7] = anova(lm5)$`Pr(>F)`[2]
+
+### Plot ----
+
 main = "Effet de la différence de feuillaison entre le terrain et le vol LiDAR, n = 127"
 
 x = decidu
