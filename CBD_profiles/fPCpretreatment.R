@@ -79,7 +79,8 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
   # Normalyze height
   las=normalize_height(las = las,algorithm =  tin() )
   # Remove points too low (<-3) or too high (>35m)
-  las=filter_poi(las,Z>(-3),Z<45)
+  las=classify_noise(las, sor(5,10))
+  las=filter_poi(las,Classification<=5)
   
   # add names to laz
   las=add_lasattribute(las,name="LMA",desc="leaf mass area")
