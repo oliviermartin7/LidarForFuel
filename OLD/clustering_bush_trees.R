@@ -86,7 +86,7 @@ shp_Chemin_de_Rocquecourbe=getpolybushandtree(Chemin_de_Rocquecourbe)
 mapview::mapview(shp_Chemin_de_Rocquecourbe[which(as.numeric(shp_Chemin_de_Rocquecourbe$area)>2&shp_Chemin_de_Rocquecourbe$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
 mapview::mapview(shp_Chemin_de_Rocquecourbe[which(as.numeric(shp_Chemin_de_Rocquecourbe$area)>2&shp_Chemin_de_Rocquecourbe$type=="bush"),2],legend=T,layer.name="Cluster bush (surface m²)")
 
-st_write(Chemin_de_Rocquecourbe,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/Chemin_de_Rocquecourbe.shp")
+st_write(shp_Chemin_de_Rocquecourbe,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/Chemin_de_Rocquecourbe.shp")
 
 
 ## map ----
