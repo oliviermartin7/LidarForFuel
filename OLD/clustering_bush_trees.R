@@ -8,9 +8,9 @@ library(future)
 catalog_Uchaux=catalog("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Treated_4_CBD_new/")
 crs(catalog_Uchaux)="epsg:2154"
 
-getpolybushandtree=function(chunk){
+getpolybushandtree=function(las){
   # read chunk
-  las <- readLAS(chunk)
+  # las <- readLAS(chunk)
   if (is.empty(las)) return(NULL)
   
 clip_zone_bush=filter_poi(las,Z<=3)
@@ -51,8 +51,58 @@ return(poly)
 }
 
 
+# run on a zone  ----
 
-# set the number of workers
+Route_de_Mornas=clip_rectangle(catalog_Uchaux,xleft = 842627.4-50,ybottom = 6347872-50,xright =843227.7+50,ytop =6348472+50 )
+
+
+shp_Route_de_Mornas=getpolybushandtree(Route_de_Mornas)
+mapview::mapview(shp_Route_de_Mornas[which(as.numeric(shp_Route_de_Mornas$area)>2&shp_Route_de_Mornas$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
+mapview::mapview(shp_Route_de_Mornas[which(as.numeric(shp_Route_de_Mornas$area)>2&shp_Route_de_Mornas$type=="bush"),2],legend=T,layer.name="Bush arbre (surface m²)")
+
+  st_write(shp_Route_de_Mornas,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/shp_Route_de_Mornas.shp")
+
+Chemin_Saint_Michel=clip_rectangle(catalog_Uchaux,xleft = 843413-50,ybottom = 6347884.24-50,xright =843816+50,ytop =6348302.42+50 )
+
+
+shp_Chemin_Saint_Michel=getpolybushandtree(Chemin_Saint_Michel)
+mapview::mapview(shp_Chemin_Saint_Michel[which(as.numeric(shp_Chemin_Saint_Michel$area)>2&shp_Chemin_Saint_Michel$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
+mapview::mapview(shp_Chemin_Saint_Michel[which(as.numeric(shp_Chemin_Saint_Michel$area)>2&shp_Chemin_Saint_Michel$type=="bush"),2],legend=T,layer.name="Bush arbre (surface m²)")
+
+st_write(shp_Chemin_Saint_Michel,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/shp_Chemin_Saint_Michel.shp")
+
+Route_de_Serignan=clip_rectangle(catalog_Uchaux,xleft = 844024.83-50,ybottom = 6346037.80-50,xright =844435.63+50,ytop =6346521.93+50 )
+
+shp_Route_de_Serignan=getpolybushandtree(Route_de_Serignan)
+mapview::mapview(shp_Route_de_Serignan[which(as.numeric(shp_Route_de_Serignan$area)>2&shp_Route_de_Serignan$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
+mapview::mapview(shp_Route_de_Serignan[which(as.numeric(shp_Route_de_Serignan$area)>2&shp_Route_de_Serignan$type=="bush"),2],legend=T,layer.name="Bush arbre (surface m²)")
+
+st_write(shp_Route_de_Serignan,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/shp_Route_de_Serignan.shp")
+
+
+Chemin_de_Rocquecourbe=clip_rectangle(catalog_Uchaux,xleft = 843547.33-50,ybottom = 6346299.34-50,xright =843717.77, +50,ytop =6346521.93+50 )
+
+shp_Chemin_de_Rocquecourbe=getpolybushandtree(Chemin_de_Rocquecourbe)
+mapview::mapview(shp_Chemin_de_Rocquecourbe[which(as.numeric(shp_Chemin_de_Rocquecourbe$area)>2&shp_Chemin_de_Rocquecourbe$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
+mapview::mapview(shp_Chemin_de_Rocquecourbe[which(as.numeric(shp_Chemin_de_Rocquecourbe$area)>2&shp_Chemin_de_Rocquecourbe$type=="bush"),2],legend=T,layer.name="Cluster bush (surface m²)")
+
+st_write(Chemin_de_Rocquecourbe,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/Chemin_de_Rocquecourbe.shp")
+
+
+## map ----
+
+Zone_Test_Uchaux=getpolybushandtree(clip_zone)
+
+Zone_Test_Uchaux
+Zone_test_Uchaux_Trees_10m=mapview::mapview(Zone_Test_Uchaux[which(as.numeric(Zone_Test_Uchaux$area)>2&Zone_Test_Uchaux$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
+Zone_test_Uchaux_Bush_10m=mapview::mapview(Zone_Test_Uchaux[which(as.numeric(Zone_Test_Uchaux$area)>2&Zone_Test_Uchaux$type=="bush"),2],legend=T,layer.name="Cluster arbustif (surface m²)")
+Zone_test_Uchaux_Bush_Trees=mapview::mapview(Zone_Test_Uchaux[which(as.numeric(Zone_Test_Uchaux$area)>2),3],legend=T,layer.name="Type Cluster")
+
+
+
+
+# run on the whole commune ----
+# set the number of workers 
 plan(sequential)
 plan(multisession, workers = 5L)
 
@@ -73,13 +123,20 @@ opt_output_files(catalog_Uchaux) <- "D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/O
 
 test=catalog_apply(catalog_Uchaux,getpolybushandtree)
 
-library(ss)
+
+
+library(sf)
 library(tidyverse)
 file_list <- list.files("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Cluster_treesandbush_full/", pattern = "*shp", full.names = TRUE)
 shapefile_list <- lapply(file_list, read_sf)
-###
 
-clip_zone=clip_rectangle(catalog_Uchaux,xleft = 842927.67-300,ybottom = 6348172.04-300,xright =842927.67+300,ytop =6348172.04+300 )
+# map ----
+
+
+mapview::mapshot(Zone_test_Uchaux_Trees_10m, url = paste0("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Graphiques/Uchaux/4_François/Zone_test_Uchaux_Trees.html"))
+mapview::mapshot(Zone_test_Uchaux_Bush_10m, url = paste0("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Graphiques/Uchaux/4_François/Zone_test_Uchaux_Bush.html"))
+mapview::mapshot(Zone_test_Uchaux_Bush_Trees, url = paste0("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Graphiques/Uchaux/4_François/Zone_test_Uchaux_Bush_Trees.html"))
+
 # clip_zone_buch=filter_poi(clip_zone,Z<=3&Z>0.5)
 
 
@@ -89,8 +146,8 @@ poly_bush$type="bush"
 
 poly=rbind(poly_trees,poly_bush)
 
-mapview::mapview(Uchaux_Shp[which(as.numeric(Uchaux_Shp$area)>50&Uchaux_Shp$type=="trees"),2],legend=T,layer.name="Cluster arbre")
-mapview::mapview(Uchaux_Shp[which(as.numeric(poly_trees$area)>0.36),3],legend=T,layer.name="Cluster arbustif")
+mapview::mapview(Uchaux_Shp[which(as.numeric(Uchaux_Shp$area)>50&Uchaux_Shp$type=="trees"),2],legend=T,layer.name="Cluster arbre",)
+mapview::mapview(Uchaux_Shp[which(as.numeric(poly_trees$area)>0.36),3],legend=T,layer.name="Type de Cluster")
 
 
 tab=data.table(as.data.frame(chm_bush,xy=T))
