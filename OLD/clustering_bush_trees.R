@@ -8,22 +8,22 @@ library(future)
 catalog_Uchaux=catalog("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Treated_4_CBD_new/")
 crs(catalog_Uchaux)="epsg:2154"
 
-getpolybushandtree=function(las){
+fgetpolybushandtree=function(las){
   # read chunk
   # las <- readLAS(chunk)
   if (is.empty(las)) return(NULL)
   
-clip_zone_bush=filter_poi(las,Z<=3)
-chm_bush <- rasterize_canopy(clip_zone_bush, res = 0.3, p2r())
+clip_zone_bush=filter_poi(las,Z<=3) # selectionne les pts bush < 3m
+chm_bush <- rasterize_canopy(clip_zone_bush, res = 0.3, p2r()) # crée un model de surface à partir du ndp bush
 chm_bush <- app(chm_bush, fun=function(x){ 
 x[x <= 3&x>=0.2] <- 1
 x[x < 0.2] <- NA
 x[x > 3] <- NA
-; return(x)} )
+; return(x)} ) # Associe valeur 1 aux cellule de bush dans le raster
 
 
 poly_bush=st_as_stars(chm_bush)
-poly_bush=st_as_sf(poly_bush,as_point=F,merge=T)
+poly_bush=st_as_sf(poly_bush,as_point=F,merge=T) # créer un shape à partir du raster bush 
 poly_bush$area=st_area(poly_bush)
 poly_bush[which(as.numeric(poly_bush$area)<0.18),]
 
@@ -56,7 +56,8 @@ return(poly)
 Route_de_Mornas=clip_rectangle(catalog_Uchaux,xleft = 842627.4-50,ybottom = 6347872-50,xright =843227.7+50,ytop =6348472+50 )
 
 
-shp_Route_de_Mornas=getpolybushandtree(Route_de_Mornas)
+shp_Route_de_Mornas=fgetpolybushandtree(Route_de_Mornas)
+
 mapview::mapview(shp_Route_de_Mornas[which(as.numeric(shp_Route_de_Mornas$area)>2&shp_Route_de_Mornas$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
 mapview::mapview(shp_Route_de_Mornas[which(as.numeric(shp_Route_de_Mornas$area)>2&shp_Route_de_Mornas$type=="bush"),2],legend=T,layer.name="Bush arbre (surface m²)")
 
