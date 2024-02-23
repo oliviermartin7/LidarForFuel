@@ -8,24 +8,38 @@ library(future)
 catalog_Uchaux=catalog("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Treated_4_CBD_new/")
 crs(catalog_Uchaux)="epsg:2154"
 
+
+fratio=function(Z){
+  Nz_0_2=length(which(Z<=2))
+  Nz_2max=length(Z)
+  return(Nz_0_2/Nz_2max)
+}
+
+fN=function(Z){
+  Nz_0_2=length(which(Z<=2))
+  return(Nz_0_2)
+}
+  
 fgetpolybushandtree=function(las){
   # read chunk
   # las <- readLAS(chunk)
   if (is.empty(las)) return(NULL)
+  # ratio_bush=pixel_metrics(las,fun2(Z=Z),1)
+  # N_in_bush=pixel_metrics(las,fN(Z),1)
   
-clip_zone_bush=filter_poi(las,Z<=3) # selectionne les pts bush < 3m
-chm_bush <- rasterize_canopy(clip_zone_bush, res = 0.3, p2r()) # crée un model de surface à partir du ndp bush
+clip_zone_bush=filter_poi(las,Z<=2) # selectionne les pts bush < 3m
+chm_bush <- rasterize_canopy(clip_zone_bush, res = 0.5, p2r()) # crée un model de surface à partir du ndp bush
 chm_bush <- app(chm_bush, fun=function(x){ 
-x[x <= 3&x>=0.2] <- 1
+x[x <= 2&x>=0.2] <- 1
 x[x < 0.2] <- NA
-x[x > 3] <- NA
+x[x > 2] <- NA
 ; return(x)} ) # Associe valeur 1 aux cellule de bush dans le raster
 
 
 poly_bush=st_as_stars(chm_bush)
 poly_bush=st_as_sf(poly_bush,as_point=F,merge=T) # créer un shape à partir du raster bush 
 poly_bush$area=st_area(poly_bush)
-poly_bush[which(as.numeric(poly_bush$area)<0.18),]
+# poly_bush[which(as.numeric(poly_bush$area)<0.18),]
 
 
 
@@ -40,12 +54,12 @@ chm_trees <- app(chm_trees, fun=function(x){
 poly_trees=st_as_stars(chm_trees)
 poly_trees=st_as_sf(poly_trees,as_point=F,merge=T)
 poly_trees$area=st_area(poly_trees)
-
+poly_trees[which(as.numeric(poly_trees$area)<0.36),]
 poly_trees$type="trees"
 poly_bush$type="bush"
 
 poly=rbind(poly_trees,poly_bush)
-poly=poly[which(as.numeric(poly$area)>0.36),]
+# poly=poly[which(as.numeric(poly$area)>0.36),]
 
 return(poly)
 }
@@ -73,10 +87,28 @@ mapview::mapview(shp_Chemin_Saint_Michel[which(as.numeric(shp_Chemin_Saint_Miche
 st_write(shp_Chemin_Saint_Michel,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/shp_Chemin_Saint_Michel.shp")
 
 Route_de_Serignan=clip_rectangle(catalog_Uchaux,xleft = 844024.83-50,ybottom = 6346037.80-50,xright =844435.63+50,ytop =6346521.93+50 )
+writeLAS(Route_de_Serignan,file ="D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Serignan/ndp_serignan.laz" )
 
-shp_Route_de_Serignan=getpolybushandtree(Route_de_Serignan)
+Route_de_Serignan=readLAS("D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Serignan/ndp_serignan.laz" )
+
+shp_Route_de_Serignan=fgetpolybushandtree(Route_de_Serignan)
+
 mapview::mapview(shp_Route_de_Serignan[which(as.numeric(shp_Route_de_Serignan$area)>2&shp_Route_de_Serignan$type=="trees"),2],legend=T,layer.name="Cluster arbre (surface m²)")
-mapview::mapview(shp_Route_de_Serignan[which(as.numeric(shp_Route_de_Serignan$area)>2&shp_Route_de_Serignan$type=="bush"),2],legend=T,layer.name="Bush arbre (surface m²)")
+mapview::mapview(shp_Route_de_Serignan[shp_Route_de_Serignan$type=="bush",2],legend=T,layer.name="Cluster arbustif (surface m²)")
+mapview::mapview(shp_Route_de_Serignan[which(as.numeric(shp_Route_de_Serignan$area)>0.36&shp_Route_de_Serignan$type=="bush"),2],legend=T,layer.name="Cluster Arbustif (surface m²)")
+
+
+mapview::mapview(shp_Route_de_Serignan[,3],legend=T,layer.name="Cluster Arbustif (surface m²)")
+
+shp_Route_de_Serignan_abs=pixel_metrics(Route_de_Serignan,fN(Z=Z),res = 1)
+names(shp_Route_de_Serignan_abs)="Nb points"
+shp_Route_de_Serignan_ratio=pixel_metrics(Route_de_Serignan,fratio(Z=Z),res = 1)
+names(shp_Route_de_Serignan_ratio)="Ratio points"
+shp_Route_de_Serignan_ratio_abs=c(shp_Route_de_Serignan_abs,shp_Route_de_Serignan_ratio)
+
+plet(shp_Route_de_Serignan_ratio_abs,y=1:2,col=viridis::turbo(10),tiles="OpenTopoMap",alpha=0.6) %>%
+  addMouseCoordinates(epsg = "2153")
+
 
 st_write(shp_Route_de_Serignan,"D:/LiDARandField_Data_Fuel/Data_LiDAR_IGN/OLD/Uchaux/Shape_Zone_a_visiter/shp_Route_de_Serignan.shp")
 
