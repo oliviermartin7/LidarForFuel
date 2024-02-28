@@ -20,7 +20,7 @@ plan(multisession, workers = 15L) # pour des dalles de 500m 8 coeur est bien => 
 
 # Show progression  (8 hours for luberon => 400kmB2)
 opt_progress(subs_catalog)=T
-opt_stop_early(subs_catalog)=T
+opt_stop_early(subs_catalog)=F
 
 # select the zize of the tile
 opt_chunk_size(subs_catalog)=500
@@ -32,6 +32,8 @@ opt_laz_compression(subs_catalog) = T
 
 # Where to output the rasters
 opt_output_files(subs_catalog) <- "~/Documents/subsample_pretreated/{ID}" # chemin vers le dossier de sortie des nouveau quadras
+
+opt_restart(subs_catalog) = 172
 
 catalog_apply(subs_catalog,fPCpretreatment,LMA="~/Documents/CDD/carto/LMA_MAP_France_Sud.tif", norm_ground = FALSE)
 
