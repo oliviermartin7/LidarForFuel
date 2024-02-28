@@ -16,7 +16,7 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
   
   # read chunk
   las <- readLAS(chunk)
-  if (is.empty(las)) return(NULL)
+  if (lidR::is.empty(las)) return(NULL)
   # Keep only classes 1 to 5
   if (classify == F){las=filter_poi(las,Classification%in%(1:5))}
   las_4_traj=las
@@ -53,7 +53,7 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
     
   }
   
-  if (norm_ground == T){
+  if (norm_ground == TRUE){
     # Filter ground points
     las_ground=filter_ground(las)
     dtm = rasterize_terrain(las_ground, algorithm = tin(),res=3)
@@ -72,9 +72,8 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
     ## Load LMA map
     LMA_map=rast(LMA)
     ### Add LMA to point cloud
-    las=merge_spatial(las,LMA_map$LMA,attribute = "LMA")}
-  
- 
+    las=merge_spatial(las,LMA_map$LMA,attribute = "LMA")
+    }
   
   # Normalyze height
   las=normalize_height(las = las,algorithm =  tin() )
