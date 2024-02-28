@@ -11,8 +11,6 @@ rm(list=ls())
 
 source("~/Documents/lidarForFuel/CBD_profiles/fPCpretreatment.R")
 
-LMA = raster("~/Documents/CDD/carto/LMA_MAP_France_Sud.tif")
-
 liste = list.files("~/Documents/subsample")
 subs_catalog=readALSLAScatalog(folder = paste0("~/Documents/subsample/", liste))
 
