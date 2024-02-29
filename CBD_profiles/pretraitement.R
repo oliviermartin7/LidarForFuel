@@ -33,7 +33,7 @@ opt_laz_compression(subs_catalog) = T
 # Where to output the rasters
 opt_output_files(subs_catalog) <- "~/Documents/subsample_pretreated/{ID}" # chemin vers le dossier de sortie des nouveau quadras
 
-opt_restart(subs_catalog) = 172
+opt_restart(subs_catalog) = 11920
 
 catalog_apply(subs_catalog,fPCpretreatment,LMA="~/Documents/CDD/carto/LMA_MAP_France_Sud.tif", norm_ground = FALSE)
 
