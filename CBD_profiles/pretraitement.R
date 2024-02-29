@@ -16,7 +16,7 @@ subs_catalog=readALSLAScatalog(folder = paste0("~/Documents/subsample/", liste))
 
 # set the number of workers
 plan(sequential)
-plan(multisession, workers = 15L) # pour des dalles de 500m 8 coeur est bien => ~6Go par dalle
+# plan(multisession, workers = 15L) # pour des dalles de 500m 8 coeur est bien => ~6Go par dalle
 
 # Show progression  (8 hours for luberon => 400kmB2)
 opt_progress(subs_catalog)=T
