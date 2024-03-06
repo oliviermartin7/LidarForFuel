@@ -138,6 +138,8 @@ tab_IGN$NRD = tab_IGN$NRD  *100
 
 tab_IGN_2 = cbind(tab_IGN[, c("PlotID", "strata_ONF", "NRD")])
 tab_IGN_3 = tab_IGN_2 %>% pivot_wider(names_from = strata_ONF, values_from = NRD, values_fn = mean)
+top_strata = subset(tab_IGN, tab_IGN$strata_ONF == ">5m")
+tab_IGN_3 = merge(tab_IGN_3, top_strata, by = "PlotID")
 
 # tab_2 = cbind(tab[, c("Plot_ID", "Strata", "NRD")])
 # tab_2 = tab_2 %>% pivot_wider(names_from = Strata, values_from = NRD, values_fn = mean)
@@ -975,3 +977,59 @@ for (i in 1:length(results_feuillaison)){
   }
 }
 
+## TOP STRATAS ----
+
+### Stats ----
+
+x = data_placettes_IGN
+
+lm005 = lm(x$Recouv005 ~ x$`0-0.5m` * x$Top_Strata_Class)
+lm051 = lm(x$Recouv051 ~  x$`0.5-1m` * x$Top_Strata_Class)
+lm12 = lm(x$Recouv12 ~  x$`1-2m` * x$Top_Strata_Class)
+lm23 = lm( x$Recouv23 ~  x$`2-3m` * x$Top_Strata_Class)
+lm34 = lm( x$Recouv34 ~  x$`3-4m` * x$Top_Strata_Class)
+lm45 = lm( x$Recouv45 ~  x$`4-5m` * x$Top_Strata_Class)
+lm5 = lm( x$Recouv5 ~  x$`>5m` * x$Top_Strata_Class)
+
+effet = rep(NA, 7)
+effet[1] = anova(lm005)$`Pr(>F)`[3]
+effet[2] = anova(lm051)$`Pr(>F)`[3]
+effet[3] = anova(lm12)$`Pr(>F)`[3]
+effet[4] = anova(lm23)$`Pr(>F)`[3]
+effet[5] = anova(lm34)$`Pr(>F)`[3]
+effet[6] = anova(lm45)$`Pr(>F)`[3]
+effet[7] = anova(lm5)$`Pr(>F)`[3]
+
+### Plot ----
+
+intervals = c(-1, 10,20,30,41)
+class_labels = c(">10m", "10-20m", "20-30m", "30-41m")
+data_placettes_IGN$Top_Strata_Class = cut(data_placettes_IGN$Top_Strata, breaks = intervals, labels = class_labels)
+
+main = "Effet de la différence de la hauteur max de la placette, n = 592"
+
+x = data_placettes_IGN
+
+p1 = ggplot(x) + aes(x= x$`0-0.5m`, y = x$Recouv005, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("0-0.5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+p2 = ggplot(x) + aes(x= `0.5-1m`, y = Recouv051, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("0.5-1m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+p3 = ggplot(x) + aes(x= `1-2m`, y = Recouv12, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("1-2m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+p4 = ggplot(x) + aes(x= `2-3m`, y = Recouv23, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("2-3m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+p5 = ggplot(x) + aes(x= `3-4m`, y = Recouv34, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("3-4m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+p6 = ggplot(x) + aes(x= `4-5m`, y = Recouv45, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.9) + ggtitle("4-5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+p7 = ggplot(x) + aes(x= `>5m`, y = Recouv5, color = Top_Strata_Class) + geom_point() + geom_smooth(method = "lm") +
+  stat_poly_eq(use_label("R2"),  label.y = c(0.9, 0.8, 0.7, 0.6), label.x = 0.1) + ggtitle(">5m") + xlab(NULL) + ylab(NULL) + xlim(c(0,100)) + ylim(c(0,100))
+
+
+grid.arrange(p1,p2,p3,p4, p5, p6, p7,  ncol=3, nrow = 3, top = main, left = "Fiedl cover (%)", bottom = "ALS NRD (%)")
