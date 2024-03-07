@@ -2,6 +2,7 @@ library(lidR)
 library(data.table)
 library(ggplot2)
 library(ggthemes)
+library(future)
 
 rm(list=ls())
 
