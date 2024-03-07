@@ -135,12 +135,12 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   if(nrow(PAD_CBD_Profile)>3){
     PAD_CBD_Profile$CBD_rollM=data.table::frollmean(PAD_CBD_Profile$CBD,3,algo="exact")
     PAD_CBD_Profile$CBD_rollM[1:3]=PAD_CBD_Profile$CBD[1:3]
-    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>1&CBD_rollM>threshold]
+    PAD_CBD_Profile_threshold=PAD_CBD_Profile[CBD_rollM>threshold]
   }
   ### Organise roll mean CBD depending on number of 0.5m strata <= 3 
   if(nrow(PAD_CBD_Profile)<=3){
     PAD_CBD_Profile$CBD_rollM=PAD_CBD_Profile$CBD
-    PAD_CBD_Profile_threshold=PAD_CBD_Profile[H>1&CBD_rollM>threshold]
+    PAD_CBD_Profile_threshold=PAD_CBD_Profile[CBD_rollM>threshold]
   }
   ### No data 
   if(nrow(PAD_CBD_Profile_threshold)==0){
@@ -156,7 +156,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   
   ## Get number of discontinuity (FSG) of 1m or more ----
   shift_H=data.table::shift(PAD_CBD_Profile_threshold$H)
-  shift_H[1]=1.25
+  shift_H[1]=d/2
   delta_layer=PAD_CBD_Profile_threshold$H-shift_H
   Discontinuity=delta_layer[which(delta_layer>1)]
   
@@ -225,7 +225,7 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
       
     }
     #### profil discontinue with understory strata
-    if(min(PAD_CBD_Profile_threshold$H)==1.25){
+    if(min(PAD_CBD_Profile_threshold$H)<=1.25){
       
       CBH=PAD_CBD_Profile_threshold$H[delta_ID]
       FSG=Discontinuity
@@ -242,10 +242,10 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,thres
   VCI_lidr=VCI(Z[Z>0.5],zmax = max(Z))
   entropy_lidr=entropy(Z[Z>0.5],zmax = max(Z))
   Height=max(PAD_CBD_Profile$H)
-  CBD_max=max(PAD_CBD_Profile[H>1]$CBD_rollM)
-  CFL=sum(PAD_CBD_Profile[H>0.5&H>=CBH&H<=Height]$CBD_rollM)*d
-  TFL=sum(PAD_CBD_Profile[H>0.5&H<=Height]$CBD_rollM)*d
-  if(CBH==0){UFL=TFL}else(UFL=sum(PAD_CBD_Profile[H>0.5&H<=H_Bush]$CBD_rollM)*d)
+  CBD_max=max(PAD_CBD_Profile[H>0.5]$CBD_rollM)
+  CFL=sum(PAD_CBD_Profile[H>0&H>=CBH&H<=Height]$CBD_rollM)*d
+  TFL=sum(PAD_CBD_Profile[H>0&H<=Height]$CBD_rollM)*d
+  if(CBH==0){UFL=TFL}else(UFL=sum(PAD_CBD_Profile[H>0&H<=H_Bush]$CBD_rollM)*d)
   FL_05_3=sum(PAD_CBD_Profile[H>0.5&H<=3]$CBD_rollM)*d
   
   VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,Height,CBH,FSG,Top_Fuel,H_Bush,continuity,VCI_PAD,VCI_lidr,entropy_lidr,PAI_tot,CBD_max,CFL,TFL,UFL,FL_05_3,FMA)
