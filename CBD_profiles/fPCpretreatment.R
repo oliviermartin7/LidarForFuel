@@ -1,7 +1,7 @@
 #' Point cloud pre-treatment for fuel metrics estimation 
 #'
 #' @description Function to do the pretreatment on las (laz) files for using in fCBDprofile_fuelmetrics (get CBD profiles & fuel metrics). This can be used in catalog_apply lidR function. The pre-treatment consist in adding to noramlyze the pointcloud and adding several attribute: plane position for each point (easting, northin, elevation) and LMA by crossing the pointcloud with a LMA map
-#' @param chunk path a las (laz) file. Can be apply to a catalog see lidr catalog apply)
+#' @param chunk path a las (laz) file. Can be apply to a catalog see lidr catalog_apply)
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
 #' @param norm_ground logical (default is FALSE). Calculate ground normals. 
 #' @param LMA Path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)

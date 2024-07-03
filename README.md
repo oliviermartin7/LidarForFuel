@@ -9,6 +9,9 @@ lidarforfuel aims to compute fuel metrics from airborne LiDAR data and map them 
 ![Illustration summarising the global approach!](img/readme_1_general.png)
 
 ## fPCpretreatment
+to do
+
 
 ## fCBDprofile_fuelmetrics
 
+to do
