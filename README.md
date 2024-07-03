@@ -6,7 +6,7 @@ This readme aim at describing how to use a set of tool (R functions and soon a p
 
 lidarforfuel aims to compute fuel metrics from airborne LiDAR data and map them at large scale. In the present  form two R functions have been developed 1) pretreatment of a point cloud and 2) computing fuel metrics. The function can be used either at the plot scale for specific analysis on small areas or at large scale using catalog of LiDAR tile of the lidR package.
 
-![Illustration summarising the global approach!](img/readme_1_general.png)
+![Illustration summarising the global approach](img/readme_1_general.png)
 
 ## fPCpretreatment
 to do
