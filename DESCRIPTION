@@ -1,0 +1,34 @@
+Package: lidarforfuel
+Type: Package
+Title: Compute fuel metrics from ALS
+Version: 1.0.0
+Author: Olivier Martin-Ducup, François PImont
+Maintainer: Olivier Martin <oli.martin@ntymail.com>
+Description: Provides a set of tools to compute fuel metrics 
+License: CeCILL
+Encoding: UTF-8
+URL: 
+RoxygenNote: 7.2.3
+Imports: 
+    data.table,
+    dplyr,
+    plyr,
+    rgl,
+    methods,
+    lidR,
+    FNN,
+    DiceKriging, 
+    stringr,
+    utils,
+    stats,
+    progress,
+    gtools,
+    Rfast,
+    VoxR,
+    fastcluster,
+    pracma,
+    pkgcond,
+    R.matlab,
+    svMisc,
+    circular
+Collate: 

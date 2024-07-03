@@ -1,4 +1,4 @@
-#' Point cloud pre-treatment for fuel metrics estimation 
+#' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
 #' @description Function to do the pretreatment on las (laz) files for using in fCBDprofile_fuelmetrics (get CBD profiles & fuel metrics). This can be used in catalog_apply lidR function. The pre-treatment consist in adding to noramlyze the pointcloud and adding several attribute: plane position for each point (easting, northin, elevation) and LMA by crossing the pointcloud with a LMA map
 #' @param chunk path a las (laz) file. Can be apply to a catalog see lidr catalog apply)
