@@ -15,3 +15,18 @@ to do
 ## fCBDprofile_fuelmetrics
 
 to do
+
+
+## Install LidarForFuel
+
+
+The latest version from Github (in development):
+```{r}
+install.packages("remotes")
+remotes::install_github('oliviermartin7/LidarForFuel')
+```
+
+To use it :
+```{r}
+library("LidarForFuel")
+```
