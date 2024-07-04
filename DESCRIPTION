@@ -4,7 +4,7 @@ Title: Compute fuel metrics from ALS
 Version: 1.0.0
 Author: Olivier Martin-Ducup, François PImont
 Maintainer: Olivier Martin <oli.martin@ntymail.com>
-Description: Provides a set of tools to compute fuel metrics 
+Description: This package provides a set of tools to compute fuel metrics. The method is fully described in  the paper Martin-Ducup et al 2024.
 License: CeCILL
 Encoding: UTF-8
 URL: 
@@ -30,7 +30,9 @@ Imports:
     pkgcond,
     R.matlab,
     svMisc,
-    circular
+    circular,
+    lidR,
+    terra
 Collate: 
-  fCBDprofile_fuelmetrics.R,
+  fCBDprofile_fuelmetrics.R
   fPCpretreatment.R

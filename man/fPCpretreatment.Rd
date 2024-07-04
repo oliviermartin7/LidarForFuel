@@ -25,5 +25,11 @@ Function to do the pretreatment on las (laz) files for using in fCBDprofile_fuel
 The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
 }
 \examples{
-to come
+\donttest{
+path2laz=system.file("extdata","M30_FontBlanche.laz", package="lidarforfuel")
+ #LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
+M30_FontBlanche_pretreated<-fPCpretreatment(path2laz,LMA=120.6)
+# displaying the new attributes in the las
+names(M30_FontBlanche_pretreated)
+}
 }

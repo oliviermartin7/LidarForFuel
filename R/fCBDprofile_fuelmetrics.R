@@ -1,31 +1,7 @@
-
-###########################
-### Fuel metrics LiDAR ####
-###########################
-
-# description: Function to compute PAD and CBD profiles from ALS point cloud and obtain fuel metrics from it (Cf Martin-Ducup et al. 2024). This function can be used with pixel_metrics lidR function to generate maps (raster). This explains why several elements of a las object have to be given as separated argument (impossible to use a las in pixel_metrics)
-# Input:
-## X,Y,Z,Zref : coordinates of a point cloud (Z being the normalyzed Z corddinate and Zref the original one)
-## Easting,Northing,Elevation: coordinates of the plane associated to each point
-## LMA: Leaf mass area in g.cm² associated to each point or a generic value
-## WD: wood density associated to each point or a generic value
-## threshold=0.012: CBD critical threshold value used
-## limit_N_points: minimum number of point in the pixel/plot for computing profiles & metrics. Default is 400
-## limit_flyheight: minimum reasonable fly height. If lower than limit_flyheight trajectory computing is likely wrong and CBD is not computed.   of point in the pixel/plot for computing profiles & metrics. Default is 400
-## scanning_angle: logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
-## datatype: Either "Pixel" (if using pixel metric function) or "Plot" if only a plot is computed. Default is "Pixel"
-## omega: clumping factor. Default is 1 (no clumping => homogeneous distribution)
-## d: strata depth. Default is 0.5
-## G: leaf projection ratio. Default is 0.5
-
-# Output :
-## If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata
-## If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (H, PAD and CBD) CBD profile is given in layer (one layer per strata), 
-
-
 #' Fuel metrics LiDAR
 #'
 #' @description Function to compute PAD and CBD profiles from ALS point cloud and obtain fuel metrics from it. T
+#' @param datatype character or las. Default is "Pixel". Either "Pixel" if using with pixel_metric function to map fuel metrics. or a .las file if a plot point cloud only has to be computed. In the latter case no need to  Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.
 #' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
 #' @param norm_ground logical (default is FALSE). Calculate ground normals. 
@@ -33,29 +9,43 @@
 #' @param WD numeric. wood density associated to each point or a generic value
 #' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate strata, get CBH.etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value (e.g "5%")
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics. 
-#' @param limit_flightheight numeric. Default is 400 minimum flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
+#' @param limit_flightheight numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param scanning_angle logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
-#' @param datatype character. Default is "Pixel". Either "Pixel" (if using pixel metric function) or "Plot" if only a plot is computed. Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.
 #' @param omega numeric. clumping factor. Default is 1. 1 mean no clumping assuming a homogeneous distribution of vegetation element
 #' @param d numeric. default = 1. depth of the strata in meter to compute the profile
 #' @param G numeric. Default = 0.5. Leaf projection ratio. x
-#' @return 
-#'  If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata
-#'  If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
+#' @return If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
 #' @details
-#' his function can be used with pixel_metrics lidR function to generate maps (raster). This explains why several elements of a las object have to be given as separated argument (impossible to use a las in pixel_metrics). In a following version it will be possible to use a .las file as input instead of each attribute separately
+#' This function can be used with pixel_metrics lidR function to generate maps (raster). Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
 #' @examples
-#' to come
+#' \donttest{
+#' path2laz=system.file("extdata","M30_FontBlanche_pretreated.laz", package="lidarforfuel)
+#' # read the pretreated las 
+#' M30_FontBlanche_pretreated<-readLAS(path2laz)
+#' Fuel_metrics<-fCBDprofile_fuelmetrics(datatype="M30_FontBlanche_pretreated,WD=500)
+#' }
 
-fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpstime,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flyheight,datatype="Pixel",omega=1,d=0.5,G=0.5){
+
+fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpstime,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flightheight=800,omega=1,d=0.5,G=0.5){
+  if(class(datatype)[1]=="LAS"){
+    X=datatype$X
+    Y=datatype$Y
+    Z=datatype$Z
+    Zref=datatype$Zref
+    Easting=datatype$Easting
+    Northing=datatype$Northing
+    Elevation=datatype$Elevation
+    LMA=datatype$LMA
+    gpstime=datatype$gpstime
+  }
   date=mean(gpstime)
   library(data.table)
   if(length(Z)<limit_N_points){
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_1_3=-1,FMA=-1,date=date)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_1_3","FMA","date",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -86,11 +76,11 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpsti
   }
   ### Exception if the mean of norm_U < limit_flightheight For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
   if(mean(norm_U,na.rm=T)<limit_flightheight){
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_1_3=-1,FMA=-1,date=date)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_1_3","FMA","date",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -144,10 +134,10 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpsti
   
   ### no data above 0.5m
   if(max(PAD_CBD_Profile$H)<0.5){  
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_1_3=-1,FMA=-1,date=date)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_1_3","FMA","date",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -167,10 +157,10 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpsti
   }
   ### No data 
   if(nrow(PAD_CBD_Profile_threshold)==0){
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_1_3=-1,FMA=-1,date=date)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_1_3","FMA","date",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
     if(datatype=="Plot"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -268,20 +258,21 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpsti
   CBD_max=max(PAD_CBD_Profile[H>1]$CBD_rollM)
   CFL=sum(PAD_CBD_Profile[H>1&H>=CBH&H<=Height]$CBD_rollM)*d
   TFL=sum(PAD_CBD_Profile[H>1&H<=Height]$CBD_rollM)*d
-  if(CBH==0){UFL=TFL}else(UFL=sum(PAD_CBD_Profile[H>1&H<=H_Bush]$CBD_rollM)*d)
+  if(CBH==0){MFL=TFL}else(MFL=sum(PAD_CBD_Profile[H>1&H<=H_Bush]$CBD_rollM)*d)
+  FL_0_1=sum(PAD_CBD_Profile[H<=1]$CBD_rollM)*d
   FL_1_3=sum(PAD_CBD_Profile[H>1&H<=3]$CBD_rollM)*d
+    if(FSG==0){GSFL=0}else{GSFL=sum(PAD_CBD_Profile[H>H_Bush&H<=CBH]$CBD_rollM)*d}
   
-
   
-  VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,Height,CBH,FSG,Top_Fuel,H_Bush,continuity,VCI_PAD,VCI_lidr,entropy_lidr,PAI_tot,CBD_max,CFL,TFL,UFL,FL_1_3,FMA,date)
+  VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,Height,CBH,FSG,Top_Fuel,H_Bush,continuity,VCI_PAD,VCI_lidr,entropy_lidr,PAI_tot,CBD_max,CFL,TFL,MFL,FL_1_3,GSFL,FL_0_1,FMA,date)
   
   VVP_metrics_CBD=rep(-1,150)
   VVP_metrics_CBD[1:length(PAD_CBD_Profile$CBD_rollM)]=PAD_CBD_Profile$CBD_rollM
   VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
   
-  names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","UFL","FL_1_3","FMA","date",paste0("CBD_",rep(1:150)))
+  names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
   
-  if(datatype=="Plot"){ 
+  if(class(datatype)[1]=="LAS"){ 
     return(list(VVP_metrics,PAD_CBD_Profile))}
   if(datatype=="Pixel"){
     return(as.list(VVP_metrics))}

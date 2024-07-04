@@ -5,6 +5,7 @@
 \title{Fuel metrics LiDAR}
 \usage{
 fCBDprofile_fuelmetrics(
+  datatype = "Pixel",
   X,
   Y,
   Z,
@@ -18,14 +19,15 @@ fCBDprofile_fuelmetrics(
   scanning_angle = TRUE,
   WD,
   limit_N_points = 400,
-  limit_flyheight,
-  datatype = "Pixel",
+  limit_flightheight = 800,
   omega = 1,
   d = 0.5,
   G = 0.5
 )
 }
 \arguments{
+\item{datatype}{character or las. Default is "Pixel". Either "Pixel" if using with pixel_metric function to map fuel metrics. or a .las file if a plot point cloud only has to be computed. In the latter case no need to  Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.}
+
 \item{X, Y, Z, Zref}{numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)}
 
 \item{Easting, Northing, Elevation}{numeric, coordinates of the plane associated to each point}
@@ -40,7 +42,7 @@ fCBDprofile_fuelmetrics(
 
 \item{limit_N_points}{numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.}
 
-\item{datatype}{character. Default is "Pixel". Either "Pixel" (if using pixel metric function) or "Plot" if only a plot is computed. Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.}
+\item{limit_flightheight}{numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.}
 
 \item{omega}{numeric. clumping factor. Default is 1. 1 mean no clumping assuming a homogeneous distribution of vegetation element}
 
@@ -49,19 +51,21 @@ fCBDprofile_fuelmetrics(
 \item{G}{numeric. Default = 0.5. Leaf projection ratio. x}
 
 \item{norm_ground}{logical (default is FALSE). Calculate ground normals.}
-
-\item{limit_flightheight}{numeric. Default is 400 minimum flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.}
 }
 \value{
-If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata
- If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
+If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
 }
 \description{
 Function to compute PAD and CBD profiles from ALS point cloud and obtain fuel metrics from it. T
 }
 \details{
-his function can be used with pixel_metrics lidR function to generate maps (raster). This explains why several elements of a las object have to be given as separated argument (impossible to use a las in pixel_metrics). In a following version it will be possible to use a .las file as input instead of each attribute separately
+This function can be used with pixel_metrics lidR function to generate maps (raster). Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
 }
 \examples{
-to come
+\donttest{
+path2laz=system.file("extdata","M30_FontBlanche_pretreated.laz", package="lidarforfuel)
+# read the pretreated las 
+M30_FontBlanche_pretreated<-readLAS(path2laz)
+Fuel_metrics<-fCBDprofile_fuelmetrics(datatype="M30_FontBlanche_pretreated,WD=500)
+}
 }

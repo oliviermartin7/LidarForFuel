@@ -8,30 +8,35 @@
 #' @return a Normalyzed point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
-
 #' @examples
-#' to come
+#' \donttest{
+#' path2laz=system.file("extdata","M30_FontBlanche.laz", package="lidarforfuel")
+#'  #LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
+#' M30_FontBlanche_pretreated<-fPCpretreatment(path2laz,LMA=120.6)
+#' # displaying the new attributes in the las
+#' names(M30_FontBlanche_pretreated)
+#' }
 
 fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){ 
   
   # read chunk
-  las <- readLAS(chunk)
+  las <- lidR::readLAS(chunk)
   if (lidR::is.empty(las)) return(NULL)
   # Keep only classes 1 to 5
-  if (classify == F){las=filter_poi(las,Classification%in%(1:5))}
+  if (classify == F){las=lidR::filter_poi(las,Classification%in%(1:5))}
   las_4_traj=las
-  traj=try(track_sensor(las_4_traj,algorithm = Roussel2020()),silent=T)
+  traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)
   if(class(traj)[1]=="try-error"){
-    first_last=filter_firstlast(las_4_traj)
+    first_last=lidR::filter_firstlast(las_4_traj)
     tab_count=first_last@data[, .(count = .N), by = gpstime]
     
     las_4_traj@data=las_4_traj@data[gpstime!=tab_count[count>2]$gpstime]
     las_4_traj@data=las_4_traj@data[!gpstime%in%tab_count[count>2]$gpstime]
     
-    traj=try(track_sensor(las_4_traj,algorithm = Roussel2020()),silent=T)}
+    traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)}
   # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory 
   if(class(traj)[1]=="try-error"){
-    traj= data.table(filter_ground(las)@data[,1:4])
+    traj= data.table(lidR::filter_ground(las)@data[,1:4])
     traj= traj[,.(Easting=mean(X),Northing=mean(Y),Elevation=mean(Z)+1400,Time=mean(gpstime)),]
     
   }
@@ -45,18 +50,18 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
   }
   names(traj)=c("Easting","Northing","Elevation","Time")
   # Find closest gpstime between traj and las
-  nn2_gpstimes=nn2(traj$Time,las@data$gpstime,k=1)
+  nn2_gpstimes=RANN::nn2(traj$Time,las@data$gpstime,k=1)
   las@data=cbind(las@data,traj[nn2_gpstimes$nn.idx,])
   
   if(classify==T){
-    classify_ground(las,algorithm = csf())
+    lidR::classify_ground(las,algorithm = csf())
     
   }
   
   if (norm_ground == TRUE){
     # Filter ground points
-    las_ground=filter_ground(las)
-    dtm = rasterize_terrain(las_ground, algorithm = tin(),res=3)
+    las_ground=lidR::filter_ground(las)
+    dtm = lidR::rasterize_terrain(las_ground, algorithm = tin(),res=3)
     dtm_las=LAS(data.table(as.data.frame(dtm,xy=T)))
     # calculate normals on dtm and get vector components
     dtm_las=geom_features(las=dtm_las,search_radius = 6,features_list = c("Nx","Ny","Nz"))
@@ -70,29 +75,29 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
   if(is.numeric(LMA)){las@data$LMA=LMA}
   if(is.numeric(LMA)==F){
     ## Load LMA map
-    LMA_map=rast(LMA)
+    LMA_map=terra::rast(LMA)
     ### Add LMA to point cloud
-    las=merge_spatial(las,LMA_map$LMA,attribute = "LMA")
+    las=lidR::merge_spatial(las,LMA_map$LMA,attribute = "LMA")
     }
   
   # Normalyze height
-  las=normalize_height(las = las,algorithm =  tin() )
+  las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
   # Remove points too low (<-3) or too high (>35m)
-  las=classify_noise(las, sor(5,10))
-  las=filter_poi(las,Classification<=5)
+  las=lidR::classify_noise(las, lidR::sor(5,10))
+  las=lidR::filter_poi(las,Classification<=5)
   
   # add names to laz
-  las=add_lasattribute(las,name="LMA",desc="leaf mass area")
-  las=add_lasattribute(las,name="Zref",desc="original Z")
-  las=add_lasattribute(las,name="Easting",desc="traj")
-  las=add_lasattribute(las,name="Northing",desc="traj")
-  las=add_lasattribute(las,name="Elevation",desc="traj")
+  las=lidR::add_lasattribute(las,name="LMA",desc="leaf mass area")
+  las=lidR::add_lasattribute(las,name="Zref",desc="original Z")
+  las=lidR::add_lasattribute(las,name="Easting",desc="traj")
+  las=lidR::add_lasattribute(las,name="Northing",desc="traj")
+  las=lidR::add_lasattribute(las,name="Elevation",desc="traj")
   if (norm_ground == T){
-    las=add_lasattribute(las,name="Nx",desc="normal")
-    las=add_lasattribute(las,name="Ny",desc="normal")
-    las=add_lasattribute(las,name="Nz",desc="normal")
+    las=lidR::add_lasattribute(las,name="Nx",desc="normal")
+    las=lidR::add_lasattribute(las,name="Ny",desc="normal")
+    las=lidR::add_lasattribute(las,name="Nz",desc="normal")
   }
-  las=add_lasattribute(las,name="Time",desc="plane time")
+  las=lidR::add_lasattribute(las,name="Time",desc="plane time")
   # las=remove_lasattribute(las, name="Reflectance")
   # las=remove_lasattribute(las, name="Deviation")
   # las@data=las@data[,c("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")]
