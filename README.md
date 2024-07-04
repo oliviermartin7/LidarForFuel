@@ -1,10 +1,10 @@
 # lidarForFuel
 
-This readme aim at describing how to use a set of tool (R functions and soon a package) to run the method described in the paper [Unlocking the Potential of Als Data for Direct Assessment of Fuel Load and Vertical Structure](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4779351)
+This README aims to describe how to use a set of tools (R functions and an upcoming package) to implement the method outlined in the paper [Unlocking the Potential of Als Data for Direct Assessment of Fuel Load and Vertical Structure](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4779351)
 
 ## Global description of the approach
 
-lidarforfuel aims to compute fuel metrics from airborne LiDAR data and map them at large scale. In the present  form two R functions have been developed 1) pretreatment of a point cloud and 2) computing fuel metrics. The function can be used either at the plot scale for specific analysis on small areas or at large scale using catalog of LiDAR tile of the lidR package.
+lidarforfuel aims to compute fuel metrics from airborne LiDAR data and map them at a large scale. Currently, two R functions have been developed: 1) pretreatment of a point cloud and 2) computing fuel metrics. These functions can be used either at the plot scale for specific analyses on small areas or at a large scale using a catalog of LiDAR tiles from the lidR package.
 
 ![Illustration summarising the global approach!](img/readme_1_general.png)
 
