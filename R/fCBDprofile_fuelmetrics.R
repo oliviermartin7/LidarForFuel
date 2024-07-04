@@ -20,12 +20,34 @@
 
 # Output :
 ## If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata
-## If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD anbd CBD profile value (H, PAD and CBD) CBD profile is given in layer (one layer per strata), 
+## If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (H, PAD and CBD) CBD profile is given in layer (one layer per strata), 
 
 
+#' Fuel metrics LiDAR
+#'
+#' @description Function to compute PAD and CBD profiles from ALS point cloud and obtain fuel metrics from it. T
+#' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
+#' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
+#' @param norm_ground logical (default is FALSE). Calculate ground normals. 
+#' @param LMA numeric. Leaf mass area in g.cm² associated to each point or a generic value
+#' @param WD numeric. wood density associated to each point or a generic value
+#' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate strata, get CBH.etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value (e.g "5%")
+#' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics. 
+#' @param limit_flightheight numeric. Default is 400 minimum flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
+#' @param scanning_angle logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
+#' @param datatype character. Default is "Pixel". Either "Pixel" (if using pixel metric function) or "Plot" if only a plot is computed. Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.
+#' @param omega numeric. clumping factor. Default is 1. 1 mean no clumping assuming a homogeneous distribution of vegetation element
+#' @param d numeric. default = 1. depth of the strata in meter to compute the profile
+#' @param G numeric. Default = 0.5. Leaf projection ratio. x
+#' @return 
+#'  If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata
+#'  If datatype="Plot" a list of 2 elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
+#' @details
+#' his function can be used with pixel_metrics lidR function to generate maps (raster). This explains why several elements of a las object have to be given as separated argument (impossible to use a las in pixel_metrics). In a following version it will be possible to use a .las file as input instead of each attribute separately
+#' @examples
+#' to come
 
-
-fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpstime,start_date="2011-09-14",threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flyheight,datatype="Pixel",omega=1,d=0.5,G=0.5){
+fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpstime,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flyheight,datatype="Pixel",omega=1,d=0.5,G=0.5){
   date=mean(gpstime)
   library(data.table)
   if(length(Z)<limit_N_points){
@@ -62,8 +84,8 @@ fCBDprofile_fuelmetrics=function(X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpsti
   Nz_U=1
   norm_U=999999
   }
-  ### Exception if the mean of norm_U < limit_flyheight. For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
-  if(mean(norm_U,na.rm=T)<limit_flyheight){
+  ### Exception if the mean of norm_U < limit_flightheight For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
+  if(mean(norm_U,na.rm=T)<limit_flightheight){
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,UFL=-1,FL_1_3=-1,FMA=-1,date=date)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
