@@ -32,3 +32,5 @@ Imports:
     svMisc,
     circular
 Collate: 
+  fCBDprofile_fuelmetrics.R,
+  fPCpretreatment.R
