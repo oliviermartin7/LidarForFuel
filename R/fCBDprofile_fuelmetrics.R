@@ -4,25 +4,38 @@
 #' @param datatype character or las. Default is "Pixel". Either "Pixel" if using with pixel_metric function to map fuel metrics. or a .las file if a plot point cloud only has to be computed. In the latter case no need to  Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.
 #' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
-#' @param norm_ground logical (default is FALSE). Calculate ground normals. 
 #' @param LMA numeric. Leaf mass area in g.cm² associated to each point or a generic value
 #' @param WD numeric. wood density associated to each point or a generic value
-#' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate strata, get CBH.etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value (e.g "5%")
+#' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate strata, get CBH.etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics. 
 #' @param limit_flightheight numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param scanning_angle logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
 #' @param omega numeric. clumping factor. Default is 1. 1 mean no clumping assuming a homogeneous distribution of vegetation element
 #' @param d numeric. default = 1. depth of the strata in meter to compute the profile
-#' @param G numeric. Default = 0.5. Leaf projection ratio. x
+#' @param G numeric. Default = 0.5. Leaf projection ratio. 
+#' @param gpstime gpstime of the point cloud. Only used to retrieve date of scanning
 #' @return If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
 #' @details
 #' This function can be used with pixel_metrics lidR function to generate maps (raster). Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
 #' @examples
 #' \donttest{
-#' path2laz=system.file("extdata","M30_FontBlanche_pretreated.laz", package="lidarforfuel)
-#' # read the pretreated las 
-#' M30_FontBlanche_pretreated<-readLAS(path2laz)
-#' Fuel_metrics<-fCBDprofile_fuelmetrics(datatype="M30_FontBlanche_pretreated,WD=500)
+#' path2laz <- system.file("extdata","M30_FontBlanche_pretreated.laz", package="lidarforfuel")
+#' 
+#' # read a pretreated las 
+#' M30_FontBlanche_pretreated <- lidR::readLAS(path2laz)
+#' 
+#' # Run the function on a las file and get a vector of the metrics and PAD and CDB profile 
+#' Fuel_metrics <- fCBDprofile_fuelmetrics(datatype=M30_FontBlanche_pretreated,WD=500)
+#' 
+#' # Run with pixel_metrics and get a raster
+#' M30_FontBlanche_Raster <- lidR::pixel_metrics(M30_FontBlanche_pretreated,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,gpstime =gpstime, Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA,threshold = 0.016,WD = 500 ,limit_N_points = 400,datatype = "Pixel",omega = 0.77,d=0.5,G = 0.5),res=10)
+#' 
+#' # Replace -1 in cells not computed  by NA
+#' M30_FontBlanche_Raster <- terra::subst(M30_FontBlanche_Raster,-1,NA)
+#' 
+#' # Plot a few metrics
+#' plot(M30_FontBlanche_Raster[[5:20]])
+#' 
 #' }
 
 
@@ -252,8 +265,8 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
   # get metrics (above 0.5m)
   PAI_tot=sum(PAD_CBD_Profile[H>1]$PAD)*d
   VCI_PAD =-sum(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
-  VCI_lidr=VCI(Z[Z>1],zmax = max(Z))
-  entropy_lidr=entropy(Z[Z>1],zmax = max(Z))
+  VCI_lidr=lidR::VCI(Z[Z>1],zmax = max(Z))
+  entropy_lidr=lidR::entropy(Z[Z>1],zmax = max(Z))
   Height=max(PAD_CBD_Profile$H)
   CBD_max=max(PAD_CBD_Profile[H>1]$CBD_rollM)
   CFL=sum(PAD_CBD_Profile[H>1&H>=CBH&H<=Height]$CBD_rollM)*d
