@@ -1,6 +1,6 @@
 #' Fuel metrics LiDAR
 #'
-#' @description Function to compute PAD and CBD profiles from ALS point cloud and obtain fuel metrics from it. T
+#' @description Function to compute PAD and CBD profiles from a pretreated ALS point cloud (cf fPCpretreatment) and obtain fuel metrics from it.
 #' @param datatype character or las. Default is "Pixel". Either "Pixel" if using with pixel_metric function to map fuel metrics. or a .las file if a plot point cloud only has to be computed. In the latter case no need to  Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.
 #' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
@@ -16,7 +16,7 @@
 #' @param gpstime gpstime of the point cloud. Only used to retrieve date of scanning
 #' @return If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
 #' @details
-#' This function can be used with pixel_metrics lidR function to generate maps (raster). Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
+#' This function can be used with pixel_metrics lidR function to generate maps (raster). Most of the argument of the function (i.e X,Y,Z,Zref,Easting, Northing,Elevation,LMA,WD,gpstime) comes from a pretreated poincloud obtained with the function fPCpretreatment. Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
 #' @examples
 #' \donttest{
 #' path2laz <- system.file("extdata","M30_FontBlanche_pretreated.laz", package="lidarforfuel")
