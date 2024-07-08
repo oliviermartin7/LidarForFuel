@@ -4,8 +4,11 @@
 #' @param chunk path a las (laz) file. Can be apply to a catalog see lidr catalog apply)
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
 #' @param norm_ground logical (default is FALSE). Calculate ground normals. 
-#' @param LMA Path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)
-#' @return a Normalyzed point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
+#' @param LMA character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)
+#' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
+#' @param LMA_bush  Default = 140. similar to LMA but for the understorey strata 0 to 2m
+#' @param WD_bush Default = 591. similar to WD but for the understorey strata 0 to 2m
+#' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
 #' @examples
@@ -17,7 +20,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){ 
+fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140){ 
   
   # read chunk
   las <- lidR::readLAS(chunk)
@@ -73,21 +76,30 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA){
   
   # LMA
   if(is.numeric(LMA)){las@data$LMA=LMA}
+  if(is.numeric(WD)){las@data$LMA=WD}
   if(is.numeric(LMA)==F){
     ## Load LMA map
     LMA_map=terra::rast(LMA)
     ### Add LMA to point cloud
     las=lidR::merge_spatial(las,LMA_map$LMA,attribute = "LMA")
-    }
+  }
+  if(is.numeric(WD)==F){
+    ## Load LMA map
+    WD_map=terra::rast(WD)
+    ### Add WD to point cloud
+    las=lidR::merge_spatial(las,WD_map$WD,attribute = "WD")
+  }
   
   # Normalyze height
   las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
   # Remove points too low (<-3) or too high (>35m)
   las=lidR::classify_noise(las, lidR::sor(5,10))
   las=lidR::filter_poi(las,Classification<=5)
-  
+  las@data[Z<=2]$LMA=LMA_bush
+  las@data[Z<=2]$WD=WD_bush
   # add names to laz
   las=lidR::add_lasattribute(las,name="LMA",desc="leaf mass area")
+  las=lidR::add_lasattribute(las,name="WD",desc="Wood density")
   las=lidR::add_lasattribute(las,name="Zref",desc="original Z")
   las=lidR::add_lasattribute(las,name="Easting",desc="traj")
   las=lidR::add_lasattribute(las,name="Northing",desc="traj")
