@@ -6,12 +6,14 @@ This README aims to describe how to use a set of tools to implement the method o
 
 The latest version from Github (in development):
 
-```{r} install.packages("remotes") remotes::install_github('oliviermartin7/LidarForFuel')}
+```{r}
+install.packages("remotes") remotes::install_github('oliviermartin7/LidarForFuel')
 ```
 
 To use it :
 
-```{r} library("LidarForFuel")}
+```{r}
+library("LidarForFuel")
 ```
 
 ## Global description of the approach
