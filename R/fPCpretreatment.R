@@ -76,7 +76,7 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bus
   
   # LMA
   if(is.numeric(LMA)){las@data$LMA=LMA}
-  if(is.numeric(WD)){las@data$LMA=WD}
+  if(is.numeric(WD)){las@data$WD=WD}
   if(is.numeric(LMA)==F){
     ## Load LMA map
     LMA_map=terra::rast(LMA)

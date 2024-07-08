@@ -4,7 +4,15 @@
 \alias{fPCpretreatment}
 \title{Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels}
 \usage{
-fPCpretreatment(chunk, classify = F, norm_ground = F, LMA)
+fPCpretreatment(
+  chunk,
+  classify = F,
+  norm_ground = F,
+  LMA = 140,
+  WD = 591,
+  WD_bush = 591,
+  LMA_bush = 140
+)
 }
 \arguments{
 \item{chunk}{path a las (laz) file. Can be apply to a catalog see lidr catalog apply)}
@@ -13,10 +21,16 @@ fPCpretreatment(chunk, classify = F, norm_ground = F, LMA)
 
 \item{norm_ground}{logical (default is FALSE). Calculate ground normals.}
 
-\item{LMA}{Path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)}
+\item{LMA}{character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)}
+
+\item{WD}{character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).}
+
+\item{WD_bush}{Default = 591. similar to WD but for the understorey strata 0 to 2m}
+
+\item{LMA_bush}{Default = 140. similar to LMA but for the understorey strata 0 to 2m}
 }
 \value{
-a Normalyzed point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
+a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 }
 \description{
 Function to do the pretreatment on las (laz) files for using in fCBDprofile_fuelmetrics (get CBD profiles & fuel metrics). This can be used in catalog_apply lidR function. The pre-treatment consist in adding to noramlyze the pointcloud and adding several attribute: plane position for each point (easting, northin, elevation) and LMA by crossing the pointcloud with a LMA map
