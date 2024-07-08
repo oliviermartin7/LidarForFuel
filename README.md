@@ -7,7 +7,8 @@ This README aims to describe how to use a set of tools to implement the method o
 The latest version from Github (in development):
 
 ```{r}
-install.packages("remotes") remotes::install_github('oliviermartin7/LidarForFuel')
+install.packages("remotes") 
+remotes::install_github('oliviermartin7/LidarForFuel')
 ```
 
 To use it :
@@ -26,9 +27,9 @@ It is important to note that the function fCBDprofile_fuelmetrics for computing 
 
 ## fPCpretreatment
 
-Function to do the pretreatment on las (laz) files for using in fCBDprofile_fuelmetrics. This can be used in catalog_apply lidR function. The pre-treatment consist in normalizing the point cloud and adding several attribute: plane position for each point (easting, northin, elevation), LMA (leaf mass area) and wood density (WD) by crossing the point-cloud with a LMA and WD map or by providing values of LMA and WD.
+Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
 
-It has to be noted that LMA and WD can vary a lot horizontally inside a specific plot/pixel if several dominant species are present in the plot (e.g mixed stands) and an average value can be used. Also, LMA and WD vary a lot vertically (dominant species vs understory species) and one could specify LMA and WD value in the argument LMA_bush and WD_bush that attribute a LMA and a WD value for vegetation below 2m. In a following version, it would be possible to adapt these values to the strata specified by the user.
+It should be noted that LMA and WD can vary widely horizontally within a given plot/pixel if several dominant species are present in the plot (e.g. mixed stands), so an average value can be used. Also, LMA and WD vary strongly in the vertical direction (dominant species versus species in the understory), and one could specify the LMA and WD values in the argument LMA_bush and WD_bush, which assigns an LMA and a WD value for vegetation below 2 m. In a later version, it would be possible to adapt these values to the layers specified by the user.
 
 ![Screenshot of pre-treated point cloud and the new attributes of the las inside the red rectangle!](img/fpcpretreatment.png)
 
