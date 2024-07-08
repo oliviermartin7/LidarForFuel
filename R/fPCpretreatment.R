@@ -1,13 +1,12 @@
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
-#' @description Function to do the pretreatment on las (laz) files for using in fCBDprofile_fuelmetrics (get CBD profiles & fuel metrics). This can be used in catalog_apply lidR function. The pre-treatment consist in adding to noramlyze the pointcloud and adding several attribute: plane position for each point (easting, northin, elevation) and LMA by crossing the pointcloud with a LMA map
-#' @param chunk path a las (laz) file. Can be apply to a catalog see lidr catalog apply)
+#' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
+#' @param chunk character. path to a las (laz) file. Can be apply to a catalog see lidr catalog apply)
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
-#' @param norm_ground logical (default is FALSE). Calculate ground normals. 
 #' @param LMA character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)
 #' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
-#' @param LMA_bush  Default = 140. similar to LMA but for the understorey strata 0 to 2m
-#' @param WD_bush Default = 591. similar to WD but for the understorey strata 0 to 2m
+#' @param LMA_bush  character or numeric.Default = 140. similar to LMA but for the understorey strata 0 to 2m
+#' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
@@ -61,18 +60,18 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bus
     
   }
   
-  if (norm_ground == TRUE){
-    # Filter ground points
-    las_ground=lidR::filter_ground(las)
-    dtm = lidR::rasterize_terrain(las_ground, algorithm = tin(),res=3)
-    dtm_las=LAS(data.table(as.data.frame(dtm,xy=T)))
-    # calculate normals on dtm and get vector components
-    dtm_las=geom_features(las=dtm_las,search_radius = 6,features_list = c("Nx","Ny","Nz"))
-    
-    # Find closest neighboor between normal DTM and las and attribute normal DTM to each point of the las
-    nn2_las_DTM=nn2(dtm_las@data[,1:3],las@data[,1:3],k=1)
-    las@data=cbind(las@data,dtm_las@data[nn2_las_DTM$nn.idx,4:6])
-  }
+  # if (norm_ground == TRUE){
+  #   # Filter ground points
+  #   las_ground=lidR::filter_ground(las)
+  #   dtm = lidR::rasterize_terrain(las_ground, algorithm = tin(),res=3)
+  #   dtm_las=LAS(data.table(as.data.frame(dtm,xy=T)))
+  #   # calculate normals on dtm and get vector components
+  #   dtm_las=geom_features(las=dtm_las,search_radius = 6,features_list = c("Nx","Ny","Nz"))
+  #   
+  #   # Find closest neighboor between normal DTM and las and attribute normal DTM to each point of the las
+  #   nn2_las_DTM=nn2(dtm_las@data[,1:3],las@data[,1:3],k=1)
+  #   las@data=cbind(las@data,dtm_las@data[nn2_las_DTM$nn.idx,4:6])
+  # }
   
   # LMA
   if(is.numeric(LMA)){las@data$LMA=LMA}
