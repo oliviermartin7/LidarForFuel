@@ -7,6 +7,7 @@
 #' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
 #' @param LMA_bush  character or numeric.Default = 140. similar to LMA but for the understorey strata 0 to 2m
 #' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m
+#' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
@@ -19,7 +20,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140){ 
+fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,Height_filter=80){ 
   
   # read chunk
   las <- lidR::readLAS(chunk)
@@ -93,7 +94,7 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bus
   las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
   # Remove points too low (<-3) or too high (>35m)
   las=lidR::classify_noise(las, lidR::sor(5,10))
-  las=lidR::filter_poi(las,Classification<=5)
+  las=lidR::filter_poi(las,Classification<=5&Z<Height_filter)
   las@data[Z<=2]$LMA=LMA_bush
   las@data[Z<=2]$WD=WD_bush
   # add names to laz
