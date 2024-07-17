@@ -25,8 +25,7 @@ fPCpretreatment <- function(chunk,classify=F,norm_ground=F,LMA=140,WD=591,WD_bus
   # read chunk
   las <- lidR::readLAS(chunk)
   if (lidR::is.empty(las)) return(NULL)
-  # Keep only classes 1 to 5
-  if (classify == F){las=lidR::filter_poi(las,Classification%in%(1:5))}
+
   las_4_traj=las
   traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)
   if(class(traj)[1]=="try-error"){

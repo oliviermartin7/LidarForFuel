@@ -59,7 +59,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
     names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
-    if(datatype=="Plot"){ 
+    if(class(datatype)[1]=="LAS"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
       return(as.list(VVP_metrics))}
@@ -94,7 +94,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
     names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
-    if(datatype=="Plot"){ 
+    if(class(datatype)[1]=="LAS"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
       return(as.list(VVP_metrics))}
@@ -151,7 +151,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
-    if(datatype=="Plot"){ 
+    if(class(datatype)[1]=="LAS"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
       return(as.list(VVP_metrics))}
@@ -174,7 +174,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date",paste0("CBD_",rep(1:150)))
-    if(datatype=="Plot"){ 
+    if(class(datatype)[1]=="LAS"){ 
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
       return(as.list(VVP_metrics))}
