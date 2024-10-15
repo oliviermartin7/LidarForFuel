@@ -1,6 +1,6 @@
 # lidarForFuel
 
-This README aims to describe how to use a set of tools to implement the method outlined in the paper [Unlocking the Potential of Als Data for Direct Assessment of Fuel Load and Vertical Structure](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4779351). We provide here some detailed information about the approach but note that the two functions are made in a R package with help files properly done with examples that should help the other to use them.
+This README aims to describe how to use a set of tools to implement the method outlined in the paper [Unlocking the Potential of Als Data for Direct Assessment of Fuel Load and Vertical Structure](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4779351). We provide here some detailed information about the approach but note that the two functions are made in a R package with help files properly done with examples that should help users.
 
 ## Install LidarForFuel
 
@@ -35,6 +35,64 @@ It should be noted that LMA and WD can vary widely horizontally within a given p
 
 ## fCBDprofile_fuelmetrics
 
-to do
+Function for i) inverting the point cloud into a bulk density vertical profile and ii) derive from the vertical bulk density profile fuel metrics useful to assess fire risk through (e.g canopy fuel load, midstorey and surface fuel load, canopy base height, fuel strata gap...). For large scale analysis it is particularly relevant to use this function with lidR::pixel_metrics function. However it is also possible to use it directly with a laz point cloud of a specific forest plot or area. More details :
 
-## 
+```{r}
+?fCBDprofile_fuelmetrics
+```
+
+Below a figure illustrating a theoretical vertical bulk density profile from which height boundaries that define surface, midstorey and canopy strata can be identified. These height are identified using a bulk density threshold that can be set by the used (argument "threshold") and several fuel metrics can therefore be extracted. Two types of metrics are derived. 1) Quantitative metrics on the upper part of the figure and 2) a qualitative metric describing the shape of the vertical profile (A, B, C and D corresponding to the 1, 2, 3 and 4 value of the variable "Profil_Type_L" or Band 2 from the output).
+
+![Figure of the quantitative (upper part) and qualitative metrics extracted from the vertical profile of bulk density.](img/Figure_metric_description.png)
+
+Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strat Gap (FSG) = 0; Canopy Fuel Load (CFL) =0 and Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
+
+![Table describing the vertical strata from the profile](img/Table_profile_description.PNG)
+
+If used with lidR:pixel_metrics, the output of the function is a raster with 172 Bands. The first 22 Band are fuel metrics and vertical structural metrics and properties or agument used to compute them :
+
+1:"Profil_Type" : Detailed Fuel profile type (to described avoid using this one for now)
+
+2:"Profil_Type_L": Fuel Profile Type (to use). 1 to 4 correponding to "A" to "D" on the figure
+
+3:"threshold" : Bulk density threshold used to identify the limits
+
+4:"Height" : Canopy height
+
+5:"CBH": canopy base heighy
+
+6:"FSG" : fuel strata gap
+
+7:"Top_Fuel" : Canopy top according to bulk density threshold
+
+8:"H_Bush" : Midstorey top on the figure
+
+9:"continuity" : Is it fuel profile type "D" or not (1 or 0)
+
+10:"VCI_PAD" : vertical complexity index based on PAD profile
+
+11:"VCI_lidr": vertical complexity index based on the point cloud (from lidR package)
+
+12:"entropy_lidr" : entropy based on the point cloud (from lidR package)
+
+13:"PAI_tot": Plant area density
+
+14:"CBD_max" : Maximum bulk density value
+
+15:"CFL" : Canopy fuel load
+
+16:"TFL" : Total fuel load
+
+17:"MFL" : Midstorey fuel load
+
+18:"FL_1_3" : Fuel load in the strata 1 to 3 m
+
+19:"GSFL": Gap strata fuel load
+
+20:"FL_0_1": Elevated surface fuel load (strat 0-1m)
+
+21:"FMA" : Fuel mass area. Needed to compute bulk density from PAD
+
+22:"date" : Date of the point cloud based on the laz file
+
+The 150 following band correspond to bulk density in each layer of depth corresponding the depth set by the user with the argument "d".
