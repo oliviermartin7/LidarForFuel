@@ -1,20 +1,20 @@
 #' Fuel metrics LiDAR
 #'
 #' @description Function to compute PAD and CBD profiles from a pretreated ALS point cloud (cf fPCpretreatment) and obtain fuel metrics from it.
-#' @param datatype character or las. Default is "Pixel". Either "Pixel" if using with pixel_metric function to map fuel metrics. or a .las file if a plot point cloud only has to be computed. In the latter case no need to  Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.
+#' @param datatype either "Pixel" or directly a laz/las file. Default is "Pixel". "Pixel" if the function is used with pixel_metric function to map fuel metrics. Or a .laz/.las file if a plot point cloud only needs to be computed. In the latter case, all arguments corresponding to a .laz file attributes are automatically retrieved, therefore, no need to fulfill argument X,Y,Z,Zref, Easting, Northing, Elevation, LMA, gpstime.
 #' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
 #' @param LMA numeric. Leaf mass area in g.cm² associated to each point or a generic value
 #' @param WD numeric. wood density associated to each point or a generic value
-#' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate strata, get CBH.etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.
+#' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics. 
 #' @param limit_flightheight numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param scanning_angle logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
-#' @param omega numeric. clumping factor. Default is 1. 1 mean no clumping assuming a homogeneous distribution of vegetation element
+#' @param omega numeric. clumping factor. Default is 1. One means "no clumping" and therefore assumes a homogeneous distribution of vegetation element in the strata.
 #' @param d numeric. default = 1. depth of the strata in meter to compute the profile
 #' @param G numeric. Default = 0.5. Leaf projection ratio. 
 #' @param gpstime gpstime of the point cloud. Only used to retrieve date of scanning
-#' @return If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
+#' @return If datatype = "Pixel" raster is returned with 173 Bands corresponding to metrics and bulk density profile value per strata of depth d. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD), 
 #' @details
 #' This function can be used with pixel_metrics lidR function to generate maps (raster). Most of the argument of the function (i.e X,Y,Z,Zref,Easting, Northing,Elevation,LMA,WD,gpstime) comes from a pretreated poincloud obtained with the function fPCpretreatment. Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
 #' @examples
@@ -39,7 +39,7 @@
 #' }
 
 
-fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpstime,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flightheight=800,omega=1,d=0.5,G=0.5){
+fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,Elevation,LMA,gpstime,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flightheight=800,omega=1,d=1,G=0.5){
   if(class(datatype)[1]=="LAS"){
     X=datatype$X
     Y=datatype$Y

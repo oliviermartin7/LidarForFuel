@@ -21,12 +21,12 @@ fCBDprofile_fuelmetrics(
   limit_N_points = 400,
   limit_flightheight = 800,
   omega = 1,
-  d = 0.5,
+  d = 1,
   G = 0.5
 )
 }
 \arguments{
-\item{datatype}{character or las. Default is "Pixel". Either "Pixel" if using with pixel_metric function to map fuel metrics. or a .las file if a plot point cloud only has to be computed. In the latter case no need to  Only the output change (see return). The function will be modified so it can take directly a las file when a plot only is used.}
+\item{datatype}{either "Pixel" or directly a laz/las file. Default is "Pixel". "Pixel" if the function is used with pixel_metric function to map fuel metrics. Or a .laz/.las file if a plot point cloud only needs to be computed. In the latter case, all arguments corresponding to a .laz file attributes are automatically retrieved, therefore, no need to fulfill argument X,Y,Z,Zref, Easting, Northing, Elevation, LMA, gpstime.}
 
 \item{X, Y, Z, Zref}{numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)}
 
@@ -36,7 +36,7 @@ fCBDprofile_fuelmetrics(
 
 \item{gpstime}{gpstime of the point cloud. Only used to retrieve date of scanning}
 
-\item{threshold}{numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate strata, get CBH.etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.}
+\item{threshold}{numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.}
 
 \item{scanning_angle}{logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1}
 
@@ -46,14 +46,14 @@ fCBDprofile_fuelmetrics(
 
 \item{limit_flightheight}{numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.}
 
-\item{omega}{numeric. clumping factor. Default is 1. 1 mean no clumping assuming a homogeneous distribution of vegetation element}
+\item{omega}{numeric. clumping factor. Default is 1. One means "no clumping" and therefore assumes a homogeneous distribution of vegetation element in the strata.}
 
 \item{d}{numeric. default = 1. depth of the strata in meter to compute the profile}
 
 \item{G}{numeric. Default = 0.5. Leaf projection ratio.}
 }
 \value{
-If datatype = "Pixel" a vector containing all the fuel metrics and the CBD value for each strata. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
+If datatype = "Pixel" raster is returned with 173 Bands corresponding to metrics and bulk density profile value per strata of depth d. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
 }
 \description{
 Function to compute PAD and CBD profiles from a pretreated ALS point cloud (cf fPCpretreatment) and obtain fuel metrics from it.
