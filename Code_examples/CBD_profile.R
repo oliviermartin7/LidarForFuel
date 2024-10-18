@@ -5,11 +5,11 @@ library(ggthemes)
 library(future)
 
 
-catalog_pleiade = catalog("/VOlumes/LaCie/subample_pretreated/")
+catalog_pleiade = catalog("~/path_to_the_lazfile")
 
 # set the number of workers
 plan(sequential)
-plan(multisession, workers = 8L)
+plan(multisession, workers = 16L)
 
 # Show progression  (8 hours for luberon => 400km²)
 opt_progress(catalog_pleiade)=T
@@ -24,10 +24,19 @@ opt_chunk_buffer(catalog_pleiade) <- 0
 opt_laz_compression(catalog_pleiade) = T
 
 # Where to output the rasters
-opt_output_files(catalog_pleiade) <- "/Volumes/LaCie/CDB_Subsample/{ID}" # chemin vers le dossier de sortie des nouveau quadras
+opt_output_files(catalog_pleiade) <- "~/path_to_the_output_folder/{ID}" # chemin vers le dossier de sortie des nouveau quadras
 
-# catalog_apply(catalog_pleiade,Fuel_metrics_4_Map_FireEURisk)
+# Run BD profile on the catalog to get the rasters => example of parameters
+pixel_metrics(catalog_pleiade,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA,
+                                                       threshold = 0.02,
+                                                       WD = 591 ,
+                                                       scanning_angle = T,
+                                                       limit_flyheight = 800,
+                                                       limit_N_points = 400,
+                                                       datatype = "Pixel",
+                                                       omega = 0.77,
+                                                       d=0.5,
+                                                       G = 0.5),
+              res=20)
 
-pixel_metrics(catalog_pleiade,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA,threshold = 0.02,WD = 591 ,scanning_angle = T,limit_flyheight = 800,limit_N_points = 400,datatype = "Pixel",omega = 0.77,d=0.5,G = 0.5),res=20)
 
-opt_select(catalog_pleiade)

@@ -96,3 +96,13 @@ If used with lidR:pixel_metrics, the output of the function is a raster with 173
 22:"date" : Date of the point cloud based on the laz file.
 
 The 150 following band correspond to bulk density in each layer of depth corresponding the depth set by the user with the argument "d".
+
+## Code examples
+
+Please check the Code_examples folder to find examples on how to download french ALS data and to run the two functions with lidR package. Specifically find
+
+1.  Script *dl_tiles* : how to download files from a list of URL. Basically if a list of URL has been downloaded from the IGN (french national geographic institute) [platform](https://geoservices.ign.fr/lidarhd#telechargementclassifiees).
+
+2.  Script *pretraitement*: how to run the fPCpretreatment function on a las catalog with lidR package to obtain the pretreated laz tiles
+
+3.  Script *CBD_profile:* how to run fCBDprofile_fuelmetrics function on a las catalog with lidR package to obtain the raster files
