@@ -4,7 +4,7 @@ This README aims to describe how to use a set of tools to implement the method o
 
 ## Install LidarForFuel
 
-The latest version from Github (in development):
+The latest version from Github (in development). For now the deposit is not public so collaborators should download locally the package in order to mount it. Therefore, the remotes::install_github function (below) won't work. The package will be public soon, we are currently reviewing the paper that require minor revisions.
 
 ```{r}
 install.packages("remotes") 
