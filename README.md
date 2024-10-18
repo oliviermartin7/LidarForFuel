@@ -41,15 +41,15 @@ Function for i) inverting the point cloud into a bulk density vertical profile a
 ?fCBDprofile_fuelmetrics
 ```
 
-Below a figure illustrating a theoretical vertical bulk density profile from which height boundaries that define surface, midstorey and canopy strata can be identified. These height are identified using a bulk density threshold that can be set by the used (argument "threshold") and several fuel metrics can therefore be extracted. Two types of metrics are derived. 1) Quantitative metrics on the upper part of the figure and 2) a qualitative metric describing the shape of the vertical profile (A, B, C and D corresponding to the 1, 2, 3 and 4 value of the variable "Profil_Type_L" or Band 2 from the output).
+Below a figure illustrating a theoretical vertical bulk density profile from which height boundaries that define surface, midstorey and canopy strata can be identified. These height are identified using a bulk density threshold that can be set by the user (argument "threshold") and several fuel metrics can therefore be extracted. Two types of metrics are derived. 1) Quantitative metrics on the upper part of the figure and 2) a qualitative metric describing the shape of the vertical profile (A, B, C and D corresponding to the 1, 2, 3 and 4 value of the variable "Profil_Type_L" or Band 2 from the output).
 
 ![Figure of the quantitative (upper part) and qualitative metrics extracted from the vertical profile of bulk density.](img/Figure_metric_description.png)
 
-Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strat Gap (FSG) = 0; Canopy Fuel Load (CFL) =0 and Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
+Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strata Gap (FSG) = 0; Canopy Fuel Load (CFL) =0 and Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
 
 ![Table describing the vertical strata from the profile](img/Table_profile_description.PNG)
 
-If used with lidR:pixel_metrics, the output of the function is a raster with 173 Bands. The first 22 Band are fuel metrics, vertical structural metrics and properties or parameters used to compute them :
+If used with lidR:pixel_metrics, the output of the function is a raster with 172 Bands. The first 22 Band are fuel metrics, vertical structural metrics and properties or parameters used to compute them :
 
 1:"Profil_Type" : Detailed Fuel profile type (to described avoid using this one for now)
 
