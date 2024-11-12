@@ -27,9 +27,8 @@ opt_laz_compression(catalog_pretreated) = T
 opt_output_files(catalog_pretreated) <- "~/path_to_the_output_folder/{ID}" # chemin vers le dossier de sortie des nouveau quadras
 
 # Run BD profile on the catalog to get the rasters => example of parameters
-pixel_metrics(catalog_pretreated,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA,
+pixel_metrics(catalog_pretreated,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA, WD=WD,
                                                        threshold = 0.02,
-                                                       WD = 591 ,
                                                        scanning_angle = T,
                                                        limit_flyheight = 800,
                                                        limit_N_points = 400,
