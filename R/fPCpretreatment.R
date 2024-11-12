@@ -103,11 +103,11 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   las=lidR::add_lasattribute(las,name="Easting",desc="traj")
   las=lidR::add_lasattribute(las,name="Northing",desc="traj")
   las=lidR::add_lasattribute(las,name="Elevation",desc="traj")
-  if (norm_ground == T){
-    las=lidR::add_lasattribute(las,name="Nx",desc="normal")
-    las=lidR::add_lasattribute(las,name="Ny",desc="normal")
-    las=lidR::add_lasattribute(las,name="Nz",desc="normal")
-  }
+  # if (norm_ground == T){
+  #   las=lidR::add_lasattribute(las,name="Nx",desc="normal")
+  #   las=lidR::add_lasattribute(las,name="Ny",desc="normal")
+  #   las=lidR::add_lasattribute(las,name="Nz",desc="normal")
+  # }
   las=lidR::add_lasattribute(las,name="Time",desc="plane time")
   # las=remove_lasattribute(las, name="Reflectance")
   # las=remove_lasattribute(las, name="Deviation")
