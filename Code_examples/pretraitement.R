@@ -34,4 +34,9 @@ opt_output_files(subs_catalog) <- "~/output_for_the_pretreated_tiles/{ID}" # che
 #opt_restart(subs_catalog) = 11989 => restart to a specific tile number
 
 # Run the function in parallel on the catalog. In the example below we provide a LMA map (same coordinate systems as the LiDAR data) but not that you can specify a generic LMA and WD value for the whole pixel or for canopy and understory 
-catalog_apply(subs_catalog,fPCpretreatment,LMA="~/path_to_the_LMA_map.tif", norm_ground = FALSE) 
+catalog_apply(subs_catalog,fPCpretreatment,
+              LMA = 140,
+              WD = 591,
+              WD_bush = 591,
+              LMA_bush = 140,
+              Height_filter = 80) 

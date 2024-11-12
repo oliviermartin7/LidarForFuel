@@ -7,7 +7,6 @@
 fPCpretreatment(
   chunk,
   classify = F,
-  norm_ground = F,
   LMA = 140,
   WD = 591,
   WD_bush = 591,
