@@ -45,7 +45,7 @@ Below a figure illustrating a theoretical vertical bulk density profile from whi
 
 ![Figure of the quantitative (upper part) and qualitative metrics extracted from the vertical profile of bulk density.](img/Figure_metric_description.png)
 
-Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strata Gap (FSG) = 0; Canopy Fuel Load (CFL) =0 and Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
+Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strata Gap (FSG) = 0; Canopy Fuel Load (CFL) = Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
 
 ![Table describing the vertical strata from the profile](img/Table_profile_description.PNG)
 
