@@ -27,10 +27,10 @@ opt_laz_compression(catalog_pretreated) = T
 opt_output_files(catalog_pretreated) <- "~/path_to_the_output_folder/{ID}" # chemin vers le dossier de sortie des nouveau quadras
 
 # Run BD profile on the catalog to get the rasters => example of parameters
-pixel_metrics(catalog_pretreated,~lidarforfuel::lidarfCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA, WD=WD,gpstime=gpstime,
+pixel_metrics(catalog_pretreated,~lidarforfuel::fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA, WD=WD,gpstime=gpstime,
                                                        threshold = 0.02,
                                                        scanning_angle = T,
-                                                       limit_flyheight = 800,
+                                                       limit_flightheight =  800,
                                                        limit_N_points = 400,
                                                        datatype = "Pixel",
                                                        omega = 0.77,
