@@ -1,7 +1,7 @@
 #' Fuel metrics LiDAR
 #'
 #' @description Function to compute PAD and CBD profiles from a pretreated ALS point cloud (cf fPCpretreatment) and obtain fuel metrics from it.
-#' @param datatype either "Pixel" or directly a laz/las file. Default is "Pixel". "Pixel" if the function is used with pixel_metric function to map fuel metrics. Or a .laz/.las file if a plot point cloud only needs to be computed. In the latter case, all arguments corresponding to a .laz file attributes are automatically retrieved, therefore, no need to fulfill argument X,Y,Z,Zref, Easting, Northing, Elevation, LMA, gpstime.
+#' @param datatype either "Pixel" or directly a laz/las file. Default is "Pixel". "Pixel" if the function is used with pixel_metric function to map fuel metrics. Or a .laz/.las file if a plot point cloud only needs to be computed. In the latter case, all arguments corresponding to a .laz file attributes are automatically retrieved, therefore, no need to fulfill argument X,Y,Z,Zref, Easting, Northing, Elevation, LMA, WD, gpstime.
 #' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
 #' @param LMA numeric. Leaf mass area in g.cm² associated to each point or a generic value
@@ -49,6 +49,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
     Northing=datatype$Northing
     Elevation=datatype$Elevation
     LMA=datatype$LMA
+    WD=datatype$WD
     gpstime=datatype$gpstime
   }
   date=mean(gpstime)
