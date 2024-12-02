@@ -4,7 +4,7 @@ This README aims to describe how to use a set of tools to implement the method o
 
 ## Install LidarForFuel
 
-The latest version from Github (in development). For now the deposit is not public so collaborators should download locally the package in order to mount it. Therefore, the remotes::install_github function (below) won't work. The package will be public soon, we are currently reviewing the paper that require minor revisions.
+The latest version from Github (in development).
 
 ```{r}
 install.packages("remotes") 
@@ -45,7 +45,7 @@ Below a figure illustrating a theoretical vertical bulk density profile from whi
 
 ![Figure of the quantitative (upper part) and qualitative metrics extracted from the vertical profile of bulk density.](img/Figure_metric_description.png)
 
-Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strata Gap (FSG) = 0; Canopy Fuel Load (CFL) = Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
+Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (CBH) =0; Fuel Strata Gap (FSG) = 0; Canopy Fuel Load (CFL) = 0; Midstorey Fuel Load (MFL) = Total fuel load from 1m to the top of the canopy. The Table below describes more precisely the different strata and their rationale.
 
 ![Table describing the vertical strata from the profile](img/Table_profile_description.PNG)
 
@@ -101,8 +101,8 @@ The 150 following band correspond to bulk density in each layer of depth corresp
 
 Please check the Code_examples folder to find examples on how to download french ALS data and to run the two functions with lidR package. Specifically find
 
-1.  Script *dl_tiles* : how to download files from a list of URL. Basically if a list of URL has been downloaded from the IGN (french national geographic institute) [platform](https://geoservices.ign.fr/lidarhd#telechargementclassifiees).
+1.  Script 1\_*dl_tiles* : how to download files from a list of URL. Basically if a list of URL has been downloaded from the IGN (french national geographic institute) [platform](https://geoservices.ign.fr/lidarhd#telechargementclassifiees).
 
-2.  Script *pretraitement*: how to run the fPCpretreatment function on a las catalog with lidR package to obtain the pretreated laz tiles
+2.  Script 2_fPC*pretraitment*: how to run the fPCpretreatment function on a las catalog with lidR package to obtain the pretreated laz tiles
 
-3.  Script *CBD_profile:* how to run fCBDprofile_fuelmetrics function on a las catalog with lidR package to obtain the raster files
+3.  Script 3_f*CBD_profiles_fuelmetrics_ex:* how to run fCBDprofile_fuelmetrics function on a las catalog with lidR package to obtain the raster files
