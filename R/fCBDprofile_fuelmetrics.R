@@ -136,7 +136,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
   seq_layer=seq_layer[-c(1,length(seq_layer))]+(d/2)
 
   ## Table with strata height PAD and CBD ----
-  PAD_CBD_Profile=data.table::data.table(cbind(H=seq_layer),PAD=PAD[-1],CBD=CBD[-1])
+  PAD_CBD_Profile=data.table::data.table(cbind(H=seq_layer),PAD=PAD[-1],CBD=CBD[-1],NRD=NRD[-1],Ni=hist_z[-1],N=cumsum(hist_z)[-1])
   
   # 2. Work on profile to get FPT and fuel metrics ----
   
