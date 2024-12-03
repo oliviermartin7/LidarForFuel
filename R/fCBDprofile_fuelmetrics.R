@@ -272,7 +272,10 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
   CBD_max=max(PAD_CBD_Profile[H>1]$CBD_rollM)
   CFL=sum(PAD_CBD_Profile[H>1&H>=CBH&H<=Height]$CBD_rollM)*d
   TFL=sum(PAD_CBD_Profile[H>1&H<=Height]$CBD_rollM)*d
-  if(CBH==0){MFL=TFL}else(MFL=sum(PAD_CBD_Profile[H>1&H<=H_Bush]$CBD_rollM)*d)
+  if(CBH==0){
+    MFL=TFL
+    CFL=0
+    }else(MFL=sum(PAD_CBD_Profile[H>1&H<=H_Bush]$CBD_rollM)*d)
   FL_0_1=sum(PAD_CBD_Profile[H<=1]$CBD_rollM)*d
   FL_1_3=sum(PAD_CBD_Profile[H>1&H<=3]$CBD_rollM)*d
     if(FSG==0){GSFL=0}else{GSFL=sum(PAD_CBD_Profile[H>H_Bush&H<=CBH]$CBD_rollM)*d}
