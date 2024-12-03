@@ -115,7 +115,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
   
   ## Partition of fuel surface (fine branch vs leaves) ----
   ### Wood density (kg/m3)
-  WD=mean(WD)
+  WD=mean(WD,na.rm=T)
   ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l*(1/2)/pi.r².l = 1/r
   SVR=1/0.002 
   ### Wood mass area (WMA)
