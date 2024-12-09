@@ -76,6 +76,11 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
   ## Gap fraction estimation ----
   Gf=1-NRD
   
+  if(length(seq_layer)>150){
+      stop(paste0("Error: number of layer cannot exceed 150. The stand height is ",max(Z), " and the strata depth is ",d,". Either increase strata depth or check why the stand is so high."))
+    }
+  
+  
   if(scanning_angle==TRUE){
   ## calculates component of  vector U (plane -> point). To take into account scanning angle in PAD estimation ----
   norm_U=sqrt((X-Easting)^2+(Y-Northing)^2+(Zref-Elevation)^2)
