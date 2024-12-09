@@ -20,7 +20,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,Height_filter=80){ 
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,Height_filter=60){ 
   
   # read chunk
   las <- lidR::readLAS(chunk)
