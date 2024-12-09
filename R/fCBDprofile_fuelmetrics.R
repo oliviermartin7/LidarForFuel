@@ -77,7 +77,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,Easting,Northing,El
   Gf=1-NRD
   
   if(length(seq_layer)>150){
-      stop(paste0("Error: number of layer cannot exceed 150. The stand height is ",max(Z), " and the strata depth is ",d,". Either increase strata depth or check why the stand is so high."))
+      stop(paste0("Error: number of layer cannot exceed 150. The stand height is ",max(Z), "m and the strata depth is ",d,"m. Either increase strata depth or check why the stand is so high."))
     }
   
   
