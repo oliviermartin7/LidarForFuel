@@ -1,6 +1,6 @@
 # lidarForFuel
 
-This README aims to describe how to use a set of tools to implement the method outlined in the paper [Unlocking the Potential of Als Data for Direct Assessment of Fuel Load and Vertical Structure](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4779351). We provide here some detailed information about the approach but note that the two functions are made in a R package with help files properly done with examples that should help users.
+This README aims to describe how to use a set of tools to implement the method outlined in the paper [Unlocking the Potential of Als Data for Direct Assessment of Fuel Load and Vertical Structure]([https://www.sciencedirect.com/science/article/pii/S0168192324004544]). We provide here some detailed information about the approach but note that the two functions are made in a R package with help files properly done with examples that should help users.
 
 ## Install LidarForFuel
 
