@@ -14,7 +14,7 @@ remotes::install_github('oliviermartin7/LidarForFuel')
 To use it :
 
 ```{r}
-library("LidarForFuel")
+library("lidarforfuel")
 ```
 
 ## Global description of the approach
