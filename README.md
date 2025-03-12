@@ -49,11 +49,11 @@ Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (C
 
 ![Table describing the vertical strata from the profile](img/Table_profile_description.PNG)
 
-If used with lidR:pixel_metrics, the output of the function is a raster with 173 Bands. The first 22 Band are fuel metrics, vertical structural metrics and properties or parameters used to compute them :
+If used with lidR:pixel_metrics, the output of the function is a raster with 173 Bands. The first 23 Band are fuel metrics, vertical structural metrics and properties or parameters used to compute them :
 
 1:"Profil_Type" : Detailed Fuel profile type (to described avoid using this one for now)
 
-2:"Profil_Type_L": Fuel Profile Type (to use). 1 to 4 correponding to "A" to "D" on the figure
+2:"Profil_Type_L": Fuel Profile Type (to use). 1 to 4 corresponding to "A" to "D" on the figure
 
 3:"threshold" : Bulk density threshold used to identify the limits
 
@@ -94,5 +94,7 @@ If used with lidR:pixel_metrics, the output of the function is a raster with 173
 21:"FMA" : Fuel Mass Area. Needed to compute bulk density from PAD
 
 22:"date" : Date of the point cloud based on the laz file.
+
+23:"Cover" : Estimated based on the Number of Canopy 1rt return/Total number of First retur ratio 
 
 The 150 following band correspond to bulk density in each layer of depth corresponding the depth set by the user with the argument "d".

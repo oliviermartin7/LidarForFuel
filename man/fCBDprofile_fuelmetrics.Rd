@@ -10,11 +10,13 @@ fCBDprofile_fuelmetrics(
   Y,
   Z,
   Zref,
+  ReturnNumber,
   Easting,
   Northing,
   Elevation,
   LMA,
   gpstime,
+  Height_Cover = 2,
   threshold = 0.012,
   scanning_angle = TRUE,
   WD,
@@ -29,6 +31,8 @@ fCBDprofile_fuelmetrics(
 \item{datatype}{either "Pixel" or directly a laz/las file. Default is "Pixel". "Pixel" if the function is used with pixel_metric function to map fuel metrics. Or a .laz/.las file if a plot point cloud only needs to be computed. In the latter case, all arguments corresponding to a .laz file attributes are automatically retrieved, therefore, no need to fulfill argument X,Y,Z,Zref, Easting, Northing, Elevation, LMA, gpstime.}
 
 \item{X, Y, Z, Zref}{numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)}
+
+\item{ReturnNumber}{numeric, the return number of a pulse. Used to for calculating cover.}
 
 \item{Easting, Northing, Elevation}{numeric, coordinates of the plane associated to each point}
 
@@ -48,9 +52,11 @@ fCBDprofile_fuelmetrics(
 
 \item{omega}{numeric. clumping factor. Default is 1. One means "no clumping" and therefore assumes a homogeneous distribution of vegetation element in the strata.}
 
-\item{d}{numeric. default = 1. depth of the strata in meter to compute the profile}
+\item{d}{numeric. Default = 1. depth of the strata in meter to compute the profile}
 
 \item{G}{numeric. Default = 0.5. Leaf projection ratio.}
+
+\item{Height_cover}{numeric, Default = 2. The height from which the canopy cover should be estimated.}
 }
 \value{
 If datatype = "Pixel" raster is returned with 173 Bands corresponding to metrics and bulk density profile value per strata of depth d. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
@@ -65,10 +71,10 @@ This function can be used with pixel_metrics lidR function to generate maps (ras
 \donttest{
 path2laz <- system.file("extdata","M30_FontBlanche_pretreated.laz", package="lidarforfuel")
 
-# read a pretreated las 
+# read a pretreated las
 M30_FontBlanche_pretreated <- lidR::readLAS(path2laz)
 
-# Run the function on a las file and get a vector of the metrics and PAD and CDB profile 
+# Run the function on a las file and get a vector of the metrics and PAD and CDB profile
 Fuel_metrics <- fCBDprofile_fuelmetrics(datatype=M30_FontBlanche_pretreated,WD=500)
 
 # Run with pixel_metrics and get a raster
