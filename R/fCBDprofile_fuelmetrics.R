@@ -36,7 +36,7 @@
 #' M30_FontBlanche_Raster <- terra::subst(M30_FontBlanche_Raster,-1,NA)
 #'
 #' # Plot a few metrics
-#' plot(M30_FontBlanche_Raster[[5:20]])
+#' terra::plot(M30_FontBlanche_Raster[[8:23]])
 #'
 #' }
 
