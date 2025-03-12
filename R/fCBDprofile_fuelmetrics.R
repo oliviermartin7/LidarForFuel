@@ -30,7 +30,7 @@
 #' Fuel_metrics <- fCBDprofile_fuelmetrics(datatype=M30_FontBlanche_pretreated,WD=500)
 #'
 #' # Run with pixel_metrics and get a raster
-#' M30_FontBlanche_Raster <- lidR::pixel_metrics(M30_FontBlanche_pretreated,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,gpstime =gpstime, Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA,threshold = 0.016,WD = 500 ,limit_N_points = 400,datatype = "Pixel",omega = 0.77,d=0.5,G = 0.5),res=10)
+#' M30_FontBlanche_Raster <- lidR::pixel_metrics(M30_FontBlanche_pretreated,~fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,gpstime =gpstime, ReturnNumber=ReturnNumber,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA,threshold = 0.016,WD = 500 ,limit_N_points = 400,datatype = "Pixel",omega = 0.77,d=0.5,G = 0.5),res=10)
 #'
 #' # Replace -1 in cells not computed  by NA
 #' M30_FontBlanche_Raster <- terra::subst(M30_FontBlanche_Raster,-1,NA)

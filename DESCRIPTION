@@ -8,7 +8,7 @@ Description: This package provides a set of tools to compute fuel metrics. The m
 License: CeCILL
 Encoding: UTF-8
 URL: 
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Imports: 
     data.table,
     dplyr,

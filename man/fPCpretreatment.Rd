@@ -11,7 +11,7 @@ fPCpretreatment(
   WD = 591,
   WD_bush = 591,
   LMA_bush = 140,
-  Height_filter = 80
+  Height_filter = 60
 )
 }
 \arguments{
