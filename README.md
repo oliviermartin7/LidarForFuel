@@ -8,7 +8,7 @@ The latest version from Github (in development).
 
 ```{r}
 install.packages("remotes") 
-remotes::install_github('oliviermartin7/LidarForFuel')
+remotes::install_github('oliviermartin7/lidarforfuel')
 ```
 
 To use it :
@@ -49,7 +49,7 @@ Note that in case of continuity (Profile type "D" or "4"): Canopy Base Height (C
 
 ![Table describing the vertical strata from the profile](img/Table_profile_description.PNG)
 
-If used with lidR:pixel_metrics, the output of the function is a raster with 172 Bands. The first 22 Band are fuel metrics, vertical structural metrics and properties or parameters used to compute them :
+If used with lidR:pixel_metrics, the output of the function is a raster with 173 Bands. The first 23 Band are fuel metrics, vertical structural metrics and properties or parameters used to compute them :
 
 1:"Profil_Type" : Detailed Fuel profile type (to described avoid using this one for now)
 
@@ -94,6 +94,8 @@ If used with lidR:pixel_metrics, the output of the function is a raster with 172
 21:"FMA" : Fuel Mass Area. Needed to compute bulk density from PAD
 
 22:"date" : Date of the point cloud based on the laz file.
+
+23:"Cover" : Cover based on the ratio between first return above canopy (2 m by default) and total number first return. 
 
 The 150 following band correspond to bulk density in each layer of depth corresponding the depth set by the user with the argument "d".
 
