@@ -26,9 +26,15 @@ opt_laz_compression(catalog_pretreated) = T
 # Where to output the rasters
 opt_output_files(catalog_pretreated) <- "~/path_to_the_output_folder/{ID}" # chemin vers le dossier de sortie des nouveau quadras
 
+# If a custom grid is needed
+
+mygrid=rast("~/path_to_the_raster_ofthecustomgrid.tif")
+mygrid=st_as_stars(mygrid)
+
 # Run BD profile on the catalog to get the rasters => example of parameters
-pixel_metrics(catalog_pretreated,~lidarforfuel::fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,Elevation = Elevation ,LMA = LMA, WD=WD,gpstime=gpstime,
+pixel_metrics(catalog_pretreated,~lidarforfuel::fCBDprofile_fuelmetrics(X=X,Y=Y,Z=Z,Zref = Zref,Easting = Easting ,Northing = Northing,ReturnNumber = ReturnNumber,Elevation = Elevation ,LMA = LMA, WD=WD,gpstime=gpstime,
                                                        threshold = 0.02,
+                                                       Height_Cover = 2,
                                                        scanning_angle = T,
                                                        limit_flightheight =  800,
                                                        limit_N_points = 400,
@@ -36,6 +42,6 @@ pixel_metrics(catalog_pretreated,~lidarforfuel::fCBDprofile_fuelmetrics(X=X,Y=Y,
                                                        omega = 0.77,
                                                        d=0.5,
                                                        G = 0.5),
-              res=20)
+              res=mygrid)
 
 
