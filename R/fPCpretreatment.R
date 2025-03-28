@@ -20,8 +20,8 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,Height_filter=60){ 
-  
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,Height_filter=60){
+
   # read chunk
   las <- lidR::readLAS(chunk)
   if (lidR::is.empty(las)) return(NULL)
@@ -31,21 +31,21 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   if(class(traj)[1]=="try-error"){
     first_last=lidR::filter_firstlast(las_4_traj)
     tab_count=first_last@data[, .(count = .N), by = gpstime]
-    
+
     las_4_traj@data=las_4_traj@data[gpstime!=tab_count[count>2]$gpstime]
     las_4_traj@data=las_4_traj@data[!gpstime%in%tab_count[count>2]$gpstime]
-    
+
     traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)}
-  # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory 
+  # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
   if(class(traj)[1]=="try-error"){
     traj= data.table(lidR::filter_ground(las)@data[,1:4])
     traj= traj[,.(Easting=mean(X),Northing=mean(Y),Elevation=mean(Z)+1400,Time=mean(gpstime)),]
-    
+
   }
   if(class(traj)[1]!="data.table"){
     traj=data.table(cbind(st_coordinates(traj),Time=traj$gpstime))}
-  # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory 
-  
+  # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
+
   if(nrow(traj)==0){
     traj= data.table(filter_ground(las)@data[,1:4])
     traj= traj[,.(Easting=mean(X),Northing=mean(Y),Elevation=mean(Z)+1400,Time=mean(gpstime)),]
@@ -54,12 +54,12 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # Find closest gpstime between traj and las
   nn2_gpstimes=RANN::nn2(traj$Time,las@data$gpstime,k=1)
   las@data=cbind(las@data,traj[nn2_gpstimes$nn.idx,])
-  
+
   if(classify==T){
     lidR::classify_ground(las,algorithm = csf())
-    
+
   }
-  
+
   # if (norm_ground == TRUE){
   #   # Filter ground points
   #   las_ground=lidR::filter_ground(las)
@@ -67,12 +67,12 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   #   dtm_las=LAS(data.table(as.data.frame(dtm,xy=T)))
   #   # calculate normals on dtm and get vector components
   #   dtm_las=geom_features(las=dtm_las,search_radius = 6,features_list = c("Nx","Ny","Nz"))
-  #   
+  #
   #   # Find closest neighboor between normal DTM and las and attribute normal DTM to each point of the las
   #   nn2_las_DTM=nn2(dtm_las@data[,1:3],las@data[,1:3],k=1)
   #   las@data=cbind(las@data,dtm_las@data[nn2_las_DTM$nn.idx,4:6])
   # }
-  
+
   # LMA
   if(is.numeric(LMA)){las@data$LMA=LMA}
   if(is.numeric(WD)){las@data$WD=WD}
@@ -88,12 +88,13 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
     ### Add WD to point cloud
     las=lidR::merge_spatial(las,WD_map$WD,attribute = "WD")
   }
-  
+
   # Normalyze height
   las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
   # Remove points too low (<-3) or too high (>35m)
-  las=lidR::classify_noise(las, lidR::sor(5,10))
   las=lidR::filter_poi(las,Classification<=5&Z<Height_filter)
+  las=lidR::classify_noise(las, lidR::sor(5,10))
+
   las@data[Z<=2]$LMA=LMA_bush
   las@data[Z<=2]$WD=WD_bush
   # add names to laz
@@ -113,6 +114,6 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # las=remove_lasattribute(las, name="Deviation")
   # las@data=las@data[,c("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")]
   # las@header@VLR = list("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")
-  
+
   return(las)
 }
