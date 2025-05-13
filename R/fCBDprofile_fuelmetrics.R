@@ -52,6 +52,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
     Northing=datatype$Northing
     Elevation=datatype$Elevation
     LMA=datatype$LMA
+    WD=datatype$WD
     gpstime=datatype$gpstime
   }
   date=mean(gpstime)
