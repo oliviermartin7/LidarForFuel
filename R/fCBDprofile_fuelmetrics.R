@@ -58,6 +58,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   date=mean(gpstime)
   library(data.table)
   if(length(Z)<limit_N_points){
+    warning("NULL return: The number of point < limit_N_points: check your tile or you pointcloud")
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
@@ -99,6 +100,8 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   }
   ### Exception if the mean of norm_U < limit_flightheight For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
   if(mean(norm_U,na.rm=T)<limit_flightheight){
+    warning("NULL return: limit_flightheight below the threshold. Check your trajectory and avoid using scanning_angle mode if the trajectory is uncertain")
+
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
@@ -158,6 +161,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
 
   ### no data above 0.5m
   if(max(PAD_CBD_Profile$H)<0.5){
+    warning("NULL return: no data above 0.5m height")
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
