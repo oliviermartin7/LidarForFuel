@@ -80,6 +80,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   ## hist to get number of return in strata  ----
   Ni=hist(Z,breaks=seq_layer,plot=F)$count4
   N=cumsum(Ni)
+  NRD=Ni/N
   ## NRD estimation  ----
   # Ni +1 et N +2 pour les cas où Ni=0 ou NRD=1 => NRDc de l'equations 23 et 24 de Pimont et al 2018
   NRD[NRD==0]=(Ni[NRD==0]+1)/(N[NRD==0]+2)
