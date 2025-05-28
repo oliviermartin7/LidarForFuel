@@ -81,8 +81,10 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   Ni=hist(Z,breaks=seq_layer,plot=F)$count
   N=cumsum(Ni)
   ## NRD estimation  ----
-  # Ni +1 et N +2 pour les cas où Ni=0 ou Ni=1 => NRDc de l'equations 23 et 24 de Pimont et al 2018
-  NRD=(Ni+1)/(N+2)
+  # Ni +1 et N +2 pour les cas où Ni=0 ou NRD=1 => NRDc de l'equations 23 et 24 de Pimont et al 2018
+  NRD=Ni/N
+  if(Ni==0|NRD==1){
+  NRD=(Ni+1)/(N+2)}
   ## Gap fraction estimation ----
   Gf=1-NRD
 
@@ -121,8 +123,8 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   omega=omega # Clumping factor. 1= Random distribution = < 1 = clumped
   ## Plant area density calculation (actually FAD --> fuel area density: leaves + twigs) ----
   PAD=-(log(Gf)*cos_theta/(G*omega)/d)
-  Var_PAD=(PAD^2/(NRD))/(N+2)
-  SD_PAD  = 2/(N+2) * sqrt (NRD/(1-NRD))
+  # Var_PAD=(PAD^2/(NRD))/(N+2)
+  SD_PAD  = (2/d) * sqrt (NRD/((N+2)*(1-NRD)))
   ### LMA from g/cm² to kg.m2
   LMA=mean(LMA,na.rm=T)/1000
 
