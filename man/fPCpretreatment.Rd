@@ -11,6 +11,7 @@ fPCpretreatment(
   WD = 591,
   WD_bush = 591,
   LMA_bush = 140,
+  H_strata_bush = 2,
   Height_filter = 60
 )
 }
@@ -26,6 +27,8 @@ fPCpretreatment(
 \item{WD_bush}{character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m}
 
 \item{LMA_bush}{character or numeric.Default = 140. similar to LMA but for the understorey strata 0 to 2m}
+
+\item{H_strata_bush}{numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.}
 
 \item{Height_filter}{numeric. Default = 80. Height limit to remove noise point}
 }

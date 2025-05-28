@@ -7,6 +7,7 @@
 #' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
 #' @param LMA_bush  character or numeric.Default = 140. similar to LMA but for the understorey strata 0 to 2m
 #' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m
+#' @param H_strata_bush numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
@@ -20,7 +21,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,Height_filter=60){
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60){
 
   # read chunk
   las <- lidR::readLAS(chunk)
@@ -99,8 +100,8 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   las=lidR::filter_poi(las,Classification<=5&Z<Height_filter)
   las=lidR::classify_noise(las, lidR::sor(5,10))
 
-  las@data[Z<=2]$LMA=LMA_bush
-  las@data[Z<=2]$WD=WD_bush
+  las@data[Z<=H_strata_bush]$LMA=LMA_bush
+  las@data[Z<=H_strata_bush]$WD=WD_bush
   # add names to laz
   las=lidR::add_lasattribute(las,name="LMA",desc="leaf mass area")
   las=lidR::add_lasattribute(las,name="WD",desc="Wood density")
