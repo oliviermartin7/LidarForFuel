@@ -78,13 +78,12 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   ## Create a sequence to make strata  ----
   seq_layer=c(min(Z),seq(0,max(Z),d),max(Z))
   ## hist to get number of return in strata  ----
-  Ni=hist(Z,breaks=seq_layer,plot=F)$count
+  Ni=hist(Z,breaks=seq_layer,plot=F)$count4
   N=cumsum(Ni)
   ## NRD estimation  ----
   # Ni +1 et N +2 pour les cas où Ni=0 ou NRD=1 => NRDc de l'equations 23 et 24 de Pimont et al 2018
-  NRD=Ni/N
-  if(Ni==0|NRD==1){
-  NRD=(Ni+1)/(N+2)}
+  NRD[NRD==0]=(Ni[NRD==0]+1)/(N[NRD==0]+2)
+  NRD[NRD==1]=(Ni[NRD==1]+1)/(N[NRD==1]+2)
   ## Gap fraction estimation ----
   Gf=1-NRD
 
