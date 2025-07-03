@@ -78,7 +78,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   ## Create a sequence to make strata  ----
   seq_layer=c(min(Z),seq(0,max(Z),d),max(Z))
   ## hist to get number of return in strata  ----
-  Ni=hist(Z,breaks=seq_layer,plot=F)$count4
+  Ni=hist(Z,breaks=seq_layer,plot=F)$count
   N=cumsum(Ni)
   NRD=Ni/N
   ## NRD estimation  ----
@@ -151,7 +151,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   seq_layer=seq_layer[-c(1,length(seq_layer))]+(d/2)
 
   ## Table with strata height PAD and CBD ----
-  PAD_CBD_Profile=data.table::data.table(cbind(H=seq_layer),PAD=PAD[-1],CBD=CBD[-1],Var_PAD=Var_PAD[-1],NRD=NRD[-1],Ni=Ni[-1],N=N[-1])
+  PAD_CBD_Profile=data.table::data.table(cbind(H=seq_layer),PAD=PAD[-1],CBD=CBD[-1],SD_PAD=SD_PAD[-1],NRD=NRD[-1],Ni=Ni[-1],N=N[-1])
 
   # 2. Work on profile to get FPT and fuel metrics ----
 
