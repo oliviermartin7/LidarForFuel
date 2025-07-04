@@ -124,7 +124,9 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   ## Plant area density calculation (actually FAD --> fuel area density: leaves + twigs) ----
   PAD=-(log(Gf)*cos_theta/(G*omega)/d)
   # Var_PAD=(PAD^2/(NRD))/(N+2)
-  SD_PAD  = (2/d) * sqrt (NRD/((N+2)*(1-NRD)))
+  SD_PAD  = (2/d) * sqrt (NRD/(N*(1-NRD)))
+  SD_PAD[NRD==1]=(2/d) * sqrt (2+1/N[NRD==1])
+
   ### LMA from g/cm² to kg.m2
   LMA=mean(LMA,na.rm=T)/1000
 

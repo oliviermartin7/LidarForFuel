@@ -1,3 +1,4 @@
 export(fPCpretreatment)
 export(fCBDprofile_fuelmetrics)
+export(ffuelmetrics)
 import(data.table)

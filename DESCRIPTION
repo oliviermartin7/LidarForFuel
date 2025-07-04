@@ -37,3 +37,4 @@ Imports:
 Collate: 
   fCBDprofile_fuelmetrics.R
   fPCpretreatment.R
+  ffuelmetrics.R
