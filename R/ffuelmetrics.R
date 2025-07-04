@@ -1,8 +1,8 @@
 #' Fuel metrics LiDAR
 #' @description Computes fuel metrics from a bulk density profile. Produces similar outputs to the fCBDprofile_fuelmetrics function. This function is intended for use with bulk density profiles derived from field data, MLS, TLS, or model outputs.
-#' @param profile_table A table (e.g., data.frame or data.table) with two columns: H (height of the strata) and BD (bulk density in kg/m³).
+#' @param profile_table A table (e.g., data.frame or data.table) with at least two columns: H (height of the strata) and BD (bulk density in kg/m³). If BD is not available provide three more columns PAD (plant area density in (m²/m3) LMA (leaf mass area in g/m2. use value the average value 141 if unknown) and WD (wood density in kg/m3 use the average value 591 if unknown)
 #' @param threshold Numeric or character. Default is 0.012. A critical bulk density threshold used to identify different strata limits such as midstorey height, canopy base, and canopy top. Can be either: Numeric: a bulk density value (in kg/m³) or Character: a percentage of the maximum CBD value (cf example).
-#' @return A named numeric vector containing the computed fuel metrics.
+#' @return a list of two elements: 1) a named vector with all fuel metrics 2) a data.table with the PAD and CBD profile value plus additional columns if BD not provided (i.e BD_rollmean, LMA, WD, WMA FMA if BD not provided) (three columns: H, PAD and CBD),
 #' @details
 #' In addition to fuel metrics, this function also estimates structural metrics such as total height, plant area index above 1 meter (PAI_tot), and vertical complexity index (VCI) based on the plant area density profile.
 #' @examples
@@ -21,6 +21,32 @@
 
 
 ffuelmetrics= function(profile_table,threshold){
+
+  if(any(stringr::str_detect(names(profile_table ),"BD"))==F){
+
+    if(any(str_detect(names(profile_table ),"LMA"))==F|any(str_detect(names(Profile ),"WD"))==F){
+      stop("No BD (bulk density) column found. Please provide LMA and WD column in order to compute BD. Use value LMA = 141 and WD = 591 if unknown")
+    }
+    ### LMA from g/cm² to kg.m2
+    profile_table$LMA=profile_table$LMA
+
+    ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l*(1/2)/pi.r².l = 1/r
+    SVR=1/0.002
+    ### Wood mass area (WMA)
+    profile_table$WMA=profile_table$WD/SVR
+
+    ### Partition of wood and leaves => M. Soma phd thesis data
+    partW=0.51
+    partL=0.49
+    ## Fuel mass area  ----
+
+    profile_table$FMA=1/((partW/profile_table$WMA)+(partL/profile_table$LMA))
+
+    ## CBD in kg/m3 ----
+    profile_table$CBD=profile_table$PAD*(profile_table$FMA)
+  }
+
+
 # 2. Work on profile to get FPT and fuel metrics ----
   PAD_CBD_Profile=profile_table
   d=profile_table$H[2]-profile_table$H[1]
@@ -165,7 +191,7 @@ VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,Height,CBH,FSG,Top_Fuel,H_Bush
 
 names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1")
 
-return(VVP_metrics)
+return(list(VVP_metrics,PAD_CBD_Profile))
 
 }
 
