@@ -21,7 +21,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60){
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00"){
 
   # read chunk
   las <- lidR::readLAS(chunk)
@@ -48,7 +48,7 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
 
   }
   if(class(traj)[1]!="data.table"){
-    traj=data.table(cbind(st_coordinates(traj),Time=traj$gpstime))}
+    traj=data.table(cbind(sf::st_coordinates(traj),Time=traj$gpstime))}
   # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
 
   if(nrow(traj)==0){
@@ -99,6 +99,23 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # Remove points too low (<-3) or too high (>35m)
   las=lidR::filter_poi(las,Classification<=5&Z<Height_filter)
   las=lidR::classify_noise(las, lidR::sor(5,10))
+
+  start_date <- as.POSIXct(start_date)
+  # de seconde à date
+  new_date <- start_date + las@data$gpstime
+
+  # test le nombre de jour et l'ecart en jour
+  hist_date=hist(new_date,breaks="day",plot = FALSE)
+  count_days=hist_date$counts
+  if(length(count_days)>1){
+    nb_days=which(count_days!=0)[2]-which(count_days!=0)[1]
+    percentage_point_remove=round((1-max(count_days)/sum(count_days))*100)
+    date_days=lubridate::floor_date(new_date,unit="day")
+    las@data=las@data[date_days==summary(date_days)[[5]],]
+    warning(paste0("Careful ",percentage_point_remove," % of the returns were excluded because they had a deviation of more than ", nb_days, " days at acquisition"))
+  }
+
+
 
   las@data[Z<=H_strata_bush]$LMA=LMA_bush
   las@data[Z<=H_strata_bush]$WD=WD_bush

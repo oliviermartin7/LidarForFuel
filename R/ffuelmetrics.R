@@ -24,7 +24,7 @@ ffuelmetrics= function(profile_table,threshold){
 
   if(any(stringr::str_detect(names(profile_table ),"BD"))==F){
 
-    if(any(str_detect(names(profile_table ),"LMA"))==F|any(str_detect(names(Profile ),"WD"))==F){
+    if(any(str_detect(names(profile_table ),"LMA"))==F|any(str_detect(names(profile_table ),"WD"))==F){
       stop("No BD (bulk density) column found. Please provide LMA and WD column in order to compute BD. Use value LMA = 141 and WD = 591 if unknown")
     }
     ### LMA from g/cm² to kg.m2

@@ -16,6 +16,7 @@
 #' @param G numeric. Default = 0.5. Leaf projection ratio.
 #' @param gpstime gpstime of the point cloud. Only used to retrieve date of scanning
 #' @param Height_cover numeric, Default = 2. The height from which the canopy cover should be estimated.
+#' @param use_cover logical. Default = FALSE. Use cover for PAD estimates
 #' @return If datatype = "Pixel" raster is returned with 173 Bands corresponding to metrics and bulk density profile value per strata of depth d. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
 #' @details
 #' This function can be used with pixel_metrics lidR function to generate maps (raster). Most of the argument of the function (i.e X,Y,Z,Zref,Easting, Northing,Elevation,LMA,WD,gpstime) comes from a pretreated poincloud obtained with the function fPCpretreatment. Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
@@ -41,7 +42,7 @@
 #' }
 
 
-fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.012,scanning_angle=TRUE,WD,limit_N_points=400,limit_flightheight=800,omega=1,d=1,G=0.5){
+fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.012,scanning_angle=TRUE,use_cover=FALSE,WD,limit_N_points=400,limit_flightheight=800,omega=1,d=1,G=0.5){
   if(class(datatype)[1]=="LAS"){
     X=datatype$X
     Y=datatype$Y
@@ -123,6 +124,10 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   omega=omega # Clumping factor. 1= Random distribution = < 1 = clumped
   ## Plant area density calculation (actually FAD --> fuel area density: leaves + twigs) ----
   PAD=-(log(Gf)*cos_theta/(G*omega)/d)
+ if(use_cover==T){
+   PAD= (-log(1-Ni/(N*Cover))/(G*omega*(d/cos_theta)))*Cover
+ }
+
   # Var_PAD=(PAD^2/(NRD))/(N+2)
   SD_PAD  = (2/d) * sqrt (NRD/(N*(1-NRD)))
   SD_PAD[NRD==1]=(2/d) * sqrt (2+1/N[NRD==1])

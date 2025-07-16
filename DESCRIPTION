@@ -33,7 +33,8 @@ Imports:
     circular,
     lidR,
     terra,
-    sf
+    sf,
+    lubridate
 Collate: 
   fCBDprofile_fuelmetrics.R
   fPCpretreatment.R
