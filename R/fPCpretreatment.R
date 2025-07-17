@@ -9,6 +9,9 @@
 #' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m
 #' @param H_strata_bush numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
+#' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
+#' @param start_date date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"
+#' @param season_filter logical. Should the point cloud be filtered by season. Default is FALSE, if TRUE, only may to October (theoretically leaf-on..)  returns are kept
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
@@ -21,11 +24,50 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00"){
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=FALSE,deviation_days="Infinity"){
 
   # read chunk
   las <- lidR::readLAS(chunk)
+  start_date <- as.POSIXct(start_date)
+  date_days=lubridate::floor_date(new_date,unit="day")
+  new_date
+  # de seconde à date
+  new_date <- start_date + las@data$gpstime
+
+
+
+  # test la saison
+  if(season_filter){
+  months_acquisition=lubridate::month(new_date)
+  if(any(months_acquisition%in%c(1:4,11:12))){
+    pts_summer=which(test_m%in%c(5:10))
+    proportions_of_winter_pont=(1-length(pts_summer)/length(test_m))*100
+    las@data=las@data[pts_summer,]
+    warning(paste0("Careful ",proportions_of_winter_pont," % of the returns were excluded because they were sampled in winter "))
+
+  }
+  }
+
   if (lidR::is.empty(las)) return(NULL)
+
+  if(is.numeric(deviation_days)){
+    hist_test=hist(new_date,breaks="day")
+    count_days=hist_test$counts
+    if(length(count_days)>deviation_days){
+      max_nb_days=length(count_days)
+      seq_dates=seq.Date(from = as.Date(min(new_date)),to =as.Date(max(new_date)),by = "days")
+      id_vec_dates=(which(count_days==max(count_days))-deviation_days):(which(count_days==max(count_days))+deviation_days)
+      id_vec_dates=id_vec_dates[id_vec_dates>0]
+
+      good_dates=lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates],tz = "CET"),unit="day")
+      date_days=lubridate::floor_date(new_date,unit="day")
+      which(date_days%in%good_dates)
+      las@data=las@data[which(date_days%in%good_dates),]
+      percentage_point_remove=(1-nrow(las@data)/length(new_date))*100
+      warning(paste0("Careful ",round(percentage_point_remove)," % of the returns were removed because they had a deviation of days around the most abundant date greater than your threshold (", deviation_days, " days)."))
+
+    }
+  }
 
   las_4_traj=las
   traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)
@@ -100,20 +142,6 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   las=lidR::filter_poi(las,Classification<=5&Z<Height_filter)
   las=lidR::classify_noise(las, lidR::sor(5,10))
 
-  start_date <- as.POSIXct(start_date)
-  # de seconde à date
-  new_date <- start_date + las@data$gpstime
-
-  # test le nombre de jour et l'ecart en jour
-  hist_date=hist(new_date,breaks="day",plot = FALSE)
-  count_days=hist_date$counts
-  if(length(count_days)>1){
-    nb_days=which(count_days!=0)[2]-which(count_days!=0)[1]
-    percentage_point_remove=round((1-max(count_days)/sum(count_days))*100)
-    date_days=lubridate::floor_date(new_date,unit="day")
-    las@data=las@data[date_days==summary(date_days)[[5]],]
-    warning(paste0("Careful ",percentage_point_remove," % of the returns were excluded because they had a deviation of more than ", nb_days, " days at acquisition"))
-  }
 
 
 
