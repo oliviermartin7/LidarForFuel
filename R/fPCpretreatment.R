@@ -29,11 +29,9 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # read chunk
   las <- lidR::readLAS(chunk)
   start_date <- as.POSIXct(start_date)
-  date_days=lubridate::floor_date(new_date,unit="day")
-  new_date
+
   # de seconde à date
   new_date <- start_date + las@data$gpstime
-
 
 
   # test la saison
