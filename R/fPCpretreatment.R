@@ -69,7 +69,7 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
 
   las_4_traj=las
   traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)
-  if (nrow(filter_ground(las))==0) {
+  if (nrow(lidR::filter_ground(las))==0) {
     warning("Only ground points in the tile. NULL returned")
     return(NULL)
   }
