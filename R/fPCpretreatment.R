@@ -38,8 +38,8 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   if(season_filter){
   months_acquisition=lubridate::month(new_date)
   if(any(months_acquisition%in%c(1:4,11:12))){
-    pts_summer=which(test_m%in%c(5:10))
-    proportions_of_winter_pont=(1-length(pts_summer)/length(test_m))*100
+    pts_summer=which(months_acquisition%in%c(5:10))
+    proportions_of_winter_pont=(1-length(pts_summer)/length(months_acquisition))*100
     las@data=las@data[pts_summer,]
     warning(paste0("Careful ",proportions_of_winter_pont," % of the returns were excluded because they were sampled in winter "))
 
