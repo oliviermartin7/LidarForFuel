@@ -92,7 +92,7 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
 
   if(nrow(traj)==0){
-    traj= data.table(filter_ground(las)@data[,1:4])
+    traj= data.table(lidR::filter_ground(las)@data[,1:4])
     traj= traj[,.(Easting=mean(X),Northing=mean(Y),Elevation=mean(Z)+1400,Time=mean(gpstime)),]
   }
   names(traj)=c("Easting","Northing","Elevation","Time")
