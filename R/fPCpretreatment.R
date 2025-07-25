@@ -10,6 +10,7 @@
 #' @param H_strata_bush numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
+#' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
 #' @param start_date date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"
 #' @param season_filter logical. Should the point cloud be filtered by season. Default is FALSE, if TRUE, only may to October (theoretically leaf-on..)  returns are kept
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
@@ -24,7 +25,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=FALSE,deviation_days="Infinity"){
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=FALSE,deviation_days="Infinity",plot_hist_days=FALSE){
 
   # read chunk
   las <- lidR::readLAS(chunk)
@@ -41,15 +42,16 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
     pts_summer=which(months_acquisition%in%c(5:10))
     proportions_of_winter_pont=(1-length(pts_summer)/length(months_acquisition))*100
     las@data=las@data[pts_summer,]
-    warning(paste0("Careful ",proportions_of_winter_pont," % of the returns were excluded because they were sampled in winter "))
-
+    hist(new_date,breaks="day",plot = plot_hist_days,main="Histogram of acquisition date",xlab="Date of acquisition")
+    warning(paste0("Careful ",round(proportions_of_winter_pont)," % of the returns were excluded because they were sampled in winter (November to April)"))
+    new_date <- start_date + las@data$gpstime
   }
   }
 
   if (lidR::is.empty(las)) return(NULL)
 
   if(is.numeric(deviation_days)){
-    hist_test=hist(new_date,breaks="day")
+    hist_test=hist(new_date,breaks="day",plot = plot_hist_days,main="Histogram of acquisition date",xlab="Date of acquisition")
     count_days=hist_test$counts
     if(length(count_days)>deviation_days){
       max_nb_days=length(count_days)
@@ -60,7 +62,7 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
       good_dates=lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates],tz = "CET"),unit="day")
       date_days=lubridate::floor_date(new_date,unit="day")
       which(date_days%in%good_dates)
-      las@data=las@data[which(date_days%in%good_dates),]
+      las@data=las@data[which(date_days%in%good_dates),][is.na(X)==F,]
       percentage_point_remove=(1-nrow(las@data)/length(new_date))*100
       warning(paste0("Careful ",round(percentage_point_remove)," % of the returns were removed because they had a deviation of days around the most abundant date greater than your threshold (", deviation_days, " days)."))
 
