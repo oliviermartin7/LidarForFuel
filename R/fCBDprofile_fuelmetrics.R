@@ -289,7 +289,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
 
   # get metrics (above 0.5m)
   PAI_tot=sum(PAD_CBD_Profile[H>=H_PAI]$PAD)*d
-  VCI_PAD =-sum(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
+  VCI_PAD =-sum(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>=H_PAI]$PAD)*log(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>=H_PAI]$PAD)))/log(length(PAD_CBD_Profile[H>=H_PAI]$PAD))
   VCI_lidr=lidR::VCI(Z[Z>=H_PAI],zmax = max(Z))
   entropy_lidr=lidR::entropy(Z[Z>=H_PAI],zmax = max(Z))
   Height=max(PAD_CBD_Profile$H)

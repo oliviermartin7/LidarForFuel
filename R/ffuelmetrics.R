@@ -177,7 +177,7 @@ if(length(Discontinuity)>0){
 
 # get metrics (above 0.5m)
 PAI_tot=sum(PAD_CBD_Profile[H>=H_PAI]$PAD)*d
-VCI_PAD =-sum(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
+VCI_PAD =-sum(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>=H_PAI]$PAD)*log(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>=H_PAI]$PAD)))/log(length(PAD_CBD_Profile[H>=H_PAI]$PAD))
 Height=max(PAD_CBD_Profile$H)
 CBD_max=max(PAD_CBD_Profile[H>=H_PAI]$CBD_rollM)
 CFL=sum(PAD_CBD_Profile[H>1&H>=CBH&H<=Height]$CBD_rollM)*d
