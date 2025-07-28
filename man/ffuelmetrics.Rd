@@ -4,12 +4,14 @@
 \alias{ffuelmetrics}
 \title{Fuel metrics LiDAR}
 \usage{
-ffuelmetrics(profile_table, threshold)
+ffuelmetrics(profile_table, threshold, H_PAI = 0)
 }
 \arguments{
 \item{profile_table}{A table (e.g., data.frame or data.table) with at least two columns: H (height of the strata) and BD (bulk density in kg/m³). If BD is not available provide three more columns PAD (plant area density in (m²/m3) LMA (leaf mass area in g/m2. use value the average value 141 if unknown) and WD (wood density in kg/m3 use the average value 591 if unknown)}
 
 \item{threshold}{Numeric or character. Default is 0.012. A critical bulk density threshold used to identify different strata limits such as midstorey height, canopy base, and canopy top. Can be either: Numeric: a bulk density value (in kg/m³) or Character: a percentage of the maximum CBD value (cf example).}
+
+\item{H_PAI}{Numeric. Height from which PAI and VCI_PAD is estimated. Default is 0 (means from the ground to the top).}
 }
 \value{
 a list of two elements: 1) a named vector with all fuel metrics 2) a data.table with the PAD and CBD profile value plus additional columns if BD not provided (i.e BD_rollmean, LMA, WD, WMA FMA if BD not provided) (three columns: H, PAD and CBD),

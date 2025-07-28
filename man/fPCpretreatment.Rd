@@ -12,7 +12,11 @@ fPCpretreatment(
   WD_bush = 591,
   LMA_bush = 140,
   H_strata_bush = 2,
-  Height_filter = 60
+  Height_filter = 60,
+  start_date = "2011-09-14 00:00:00",
+  season_filter = FALSE,
+  deviation_days = "Infinity",
+  plot_hist_days = FALSE
 )
 }
 \arguments{
@@ -31,6 +35,14 @@ fPCpretreatment(
 \item{H_strata_bush}{numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.}
 
 \item{Height_filter}{numeric. Default = 80. Height limit to remove noise point}
+
+\item{start_date}{date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"}
+
+\item{season_filter}{logical. Should the point cloud be filtered by season. Default is FALSE, if TRUE, only may to October (theoretically leaf-on..)  returns are kept}
+
+\item{deviation_days}{numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default}
+
+\item{plot_hist_days}{logical. Should the histogram of dates of acquisition be displayed. Default =FALSE}
 }
 \value{
 a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics

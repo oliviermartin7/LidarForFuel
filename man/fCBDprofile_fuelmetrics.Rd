@@ -19,9 +19,11 @@ fCBDprofile_fuelmetrics(
   Height_Cover = 2,
   threshold = 0.012,
   scanning_angle = TRUE,
+  use_cover = FALSE,
   WD,
   limit_N_points = 400,
   limit_flightheight = 800,
+  H_PAI = 0,
   omega = 1,
   d = 1,
   G = 0.5
@@ -44,11 +46,15 @@ fCBDprofile_fuelmetrics(
 
 \item{scanning_angle}{logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1}
 
+\item{use_cover}{logical. Default = FALSE. Use cover for PAD estimates}
+
 \item{WD}{numeric. wood density associated to each point or a generic value}
 
 \item{limit_N_points}{numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.}
 
 \item{limit_flightheight}{numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.}
+
+\item{H_PAI}{Numeric. Height from which PAI, VCI and entropy is estimated. Default is 0 (means from the ground to the top).}
 
 \item{omega}{numeric. clumping factor. Default is 1. One means "no clumping" and therefore assumes a homogeneous distribution of vegetation element in the strata.}
 
