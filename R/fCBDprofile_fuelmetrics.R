@@ -17,6 +17,7 @@
 #' @param gpstime gpstime of the point cloud. Only used to retrieve date of scanning
 #' @param Height_cover numeric, Default = 2. The height from which the canopy cover should be estimated.
 #' @param use_cover logical. Default = FALSE. Use cover for PAD estimates
+#' @param H_PAI Numeric. Height from which PAI, VCI and entropy is estimated. Default is 0 (means from the ground to the top).
 #' @return If datatype = "Pixel" raster is returned with 173 Bands corresponding to metrics and bulk density profile value per strata of depth d. If datatype is a las a list of two elements: 1) a vector with all fuel metrics 2) a data.table with the PAD and CBD profile value (three columns: H, PAD and CBD),
 #' @details
 #' This function can be used with pixel_metrics lidR function to generate maps (raster). Most of the argument of the function (i.e X,Y,Z,Zref,Easting, Northing,Elevation,LMA,WD,gpstime) comes from a pretreated poincloud obtained with the function fPCpretreatment. Note that not only fuel metrics are quantified but also: Height, plant area index above one meter (PAI_tot), vertical complexity index (VCI) based on plant area density profile or based on point cloud (lidR method). Note that the bulk density values of the profile are given in the raster using one layer per strata (with a depth = d) starting from layer 23 (i.e Band 23). Note also that in case of using the plot approach (i.e datatype = las) the profile  is given as a data.table in the second element of the list.
@@ -42,7 +43,7 @@
 #' }
 
 
-fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.012,scanning_angle=TRUE,use_cover=FALSE,WD,limit_N_points=400,limit_flightheight=800,omega=1,d=1,G=0.5){
+fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.012,scanning_angle=TRUE,use_cover=FALSE,WD,limit_N_points=400,limit_flightheight=800,H_PAI=0,omega=1,d=1,G=0.5){
   if(class(datatype)[1]=="LAS"){
     X=datatype$X
     Y=datatype$Y
@@ -287,12 +288,12 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   }
 
   # get metrics (above 0.5m)
-  PAI_tot=sum(PAD_CBD_Profile[H>1]$PAD)*d
-  VCI_PAD =-sum(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
-  VCI_lidr=lidR::VCI(Z[Z>1],zmax = max(Z))
-  entropy_lidr=lidR::entropy(Z[Z>1],zmax = max(Z))
+  PAI_tot=sum(PAD_CBD_Profile[H>=H_PAI]$PAD)*d
+  VCI_PAD =-sum(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
+  VCI_lidr=lidR::VCI(Z[Z>=H_PAI],zmax = max(Z))
+  entropy_lidr=lidR::entropy(Z[Z>=H_PAI],zmax = max(Z))
   Height=max(PAD_CBD_Profile$H)
-  CBD_max=max(PAD_CBD_Profile[H>1]$CBD_rollM)
+  CBD_max=max(PAD_CBD_Profile[H>=H_PAI]$CBD_rollM)
   CFL=sum(PAD_CBD_Profile[H>1&H>=CBH&H<=Height]$CBD_rollM)*d
   TFL=sum(PAD_CBD_Profile[H>1&H<=Height]$CBD_rollM)*d
   if(CBH==0){MFL=TFL}else(MFL=sum(PAD_CBD_Profile[H>1&H<=H_Bush]$CBD_rollM)*d)

@@ -2,6 +2,7 @@
 #' @description Computes fuel metrics from a bulk density profile. Produces similar outputs to the fCBDprofile_fuelmetrics function. This function is intended for use with bulk density profiles derived from field data, MLS, TLS, or model outputs.
 #' @param profile_table A table (e.g., data.frame or data.table) with at least two columns: H (height of the strata) and BD (bulk density in kg/m³). If BD is not available provide three more columns PAD (plant area density in (m²/m3) LMA (leaf mass area in g/m2. use value the average value 141 if unknown) and WD (wood density in kg/m3 use the average value 591 if unknown)
 #' @param threshold Numeric or character. Default is 0.012. A critical bulk density threshold used to identify different strata limits such as midstorey height, canopy base, and canopy top. Can be either: Numeric: a bulk density value (in kg/m³) or Character: a percentage of the maximum CBD value (cf example).
+#' @param H_PAI Numeric. Height from which PAI and VCI_PAD is estimated. Default is 0 (means from the ground to the top).
 #' @return a list of two elements: 1) a named vector with all fuel metrics 2) a data.table with the PAD and CBD profile value plus additional columns if BD not provided (i.e BD_rollmean, LMA, WD, WMA FMA if BD not provided) (three columns: H, PAD and CBD),
 #' @details
 #' In addition to fuel metrics, this function also estimates structural metrics such as total height, plant area index above 1 meter (PAI_tot), and vertical complexity index (VCI) based on the plant area density profile.
@@ -20,15 +21,15 @@
 #' }
 
 
-ffuelmetrics= function(profile_table,threshold){
+ffuelmetrics= function(profile_table,threshold,H_PAI=0){
 
   if(any(stringr::str_detect(names(profile_table ),"BD"))==F){
 
     if(any(str_detect(names(profile_table ),"LMA"))==F|any(str_detect(names(profile_table ),"WD"))==F){
       stop("No BD (bulk density) column found. Please provide LMA and WD column in order to compute BD. Use value LMA = 141 and WD = 591 if unknown")
     }
-    ### LMA from g/cm² to kg.m2
-    profile_table$LMA=profile_table$LMA
+    ### LMA g/m² => kg/m²
+    profile_table$LMA=profile_table$LMA/1000
 
     ### Surface volume ratio (SVR: m²/m3) for 4mm diameter twigs (=> wood fuel) = 2.pi.r.l*(1/2)/pi.r².l = 1/r
     SVR=1/0.002
@@ -175,10 +176,10 @@ if(length(Discontinuity)>0){
 }
 
 # get metrics (above 0.5m)
-PAI_tot=sum(PAD_CBD_Profile[H>1]$PAD)*d
-VCI_PAD =-sum(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
+PAI_tot=sum(PAD_CBD_Profile[H>=H_PAI]$PAD)*d
+VCI_PAD =-sum(PAD_CBD_Profile[H>=H_PAI]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)*log(PAD_CBD_Profile[H>1]$PAD/sum(PAD_CBD_Profile[H>1]$PAD)))/log(length(PAD_CBD_Profile[H>1]$PAD))
 Height=max(PAD_CBD_Profile$H)
-CBD_max=max(PAD_CBD_Profile[H>1]$CBD_rollM)
+CBD_max=max(PAD_CBD_Profile[H>=H_PAI]$CBD_rollM)
 CFL=sum(PAD_CBD_Profile[H>1&H>=CBH&H<=Height]$CBD_rollM)*d
 TFL=sum(PAD_CBD_Profile[H>1&H<=Height]$CBD_rollM)*d
 if(CBH==0){MFL=TFL}else(MFL=sum(PAD_CBD_Profile[H>1&H<=H_Bush]$CBD_rollM)*d)
