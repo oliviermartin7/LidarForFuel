@@ -49,7 +49,7 @@ ffuelmetrics= function(profile_table,threshold,H_PAI=0){
 
 
 # 2. Work on profile to get FPT and fuel metrics ----
-  PAD_CBD_Profile=profile_table
+  PAD_CBD_Profile=data.table::data.table(profile_table)
   d=profile_table$H[2]-profile_table$H[1]
 ##  Define threshold when threshold is a proportion of CBD max----
 if(stringr::str_detect(threshold,"%")){
