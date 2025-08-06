@@ -79,7 +79,6 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
     first_last=lidR::filter_firstlast(las_4_traj)
     tab_count=first_last@data[, .(count = .N), by = gpstime]
 
-    las_4_traj@data=las_4_traj@data[gpstime!=tab_count[count>2]$gpstime]
     las_4_traj@data=las_4_traj@data[!gpstime%in%tab_count[count>2]$gpstime]
 
     traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)}
