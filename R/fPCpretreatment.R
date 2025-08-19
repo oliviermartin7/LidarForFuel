@@ -12,7 +12,7 @@
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
 #' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
 #' @param start_date date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"
-#' @param season_filter logical. Should the point cloud be filtered by season. Default is FALSE, if TRUE, only may to October (theoretically leaf-on..)  returns are kept
+#' @param season_filter numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
@@ -25,7 +25,7 @@
 #' names(M30_FontBlanche_pretreated)
 #' }
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=FALSE,deviation_days="Infinity",plot_hist_days=FALSE){
+fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=1:12,deviation_days="Infinity",plot_hist_days=FALSE){
 
   # read chunk
   las <- lidR::readLAS(chunk)
@@ -36,17 +36,17 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
 
 
   # test la saison
-  if(season_filter){
+
   months_acquisition=lubridate::month(new_date)
-  if(any(months_acquisition%in%c(1:4,11:12))){
-    pts_summer=which(months_acquisition%in%c(5:10))
+
+    pts_summer=which(months_acquisition%in%season_filter)
     proportions_of_winter_pont=(1-length(pts_summer)/length(months_acquisition))*100
     las@data=las@data[pts_summer,]
+    if(all(months_acquisition%in%season_filter)==FALSE){
     hist(new_date,breaks="day",plot = plot_hist_days,main="Histogram of acquisition date",xlab="Date of acquisition")
-    warning(paste0("Careful ",round(proportions_of_winter_pont)," % of the returns were excluded because they were sampled in winter (November to April)"))
-    new_date <- start_date + las@data$gpstime
+    warning(paste0("Careful ",round(proportions_of_winter_pont)," % of the returns were excluded because they were sampled outside of the chosen season (Month: ",paste0(lubridate::month(season_filter,label = T),collapse = " "),")"))
   }
-  }
+
 
   if (lidR::is.empty(las)) return(NULL)
 

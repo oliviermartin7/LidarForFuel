@@ -14,7 +14,7 @@ fPCpretreatment(
   H_strata_bush = 2,
   Height_filter = 60,
   start_date = "2011-09-14 00:00:00",
-  season_filter = FALSE,
+  season_filter = 1:12,
   deviation_days = "Infinity",
   plot_hist_days = FALSE
 )
@@ -38,7 +38,7 @@ fPCpretreatment(
 
 \item{start_date}{date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"}
 
-\item{season_filter}{logical. Should the point cloud be filtered by season. Default is FALSE, if TRUE, only may to October (theoretically leaf-on..)  returns are kept}
+\item{season_filter}{numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)}
 
 \item{deviation_days}{numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default}
 
