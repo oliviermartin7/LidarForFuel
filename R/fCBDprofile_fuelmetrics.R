@@ -7,7 +7,7 @@
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
 #' @param LMA numeric. Leaf mass area in g.cm² associated to each point or a generic value
 #' @param WD numeric. wood density associated to each point or a generic value
-#' @param threshold numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.
+#' @param threshold numeric or character. Default = 0.02. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.
 #' @param limit_flightheight numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param scanning_angle logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
