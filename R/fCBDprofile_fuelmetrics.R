@@ -61,11 +61,11 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   library(data.table)
   if(length(Z)<limit_N_points){
     warning("NULL return: The number of point < limit_N_points: check your tile or you pointcloud")
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1,Cover_4=-1,Cover_6=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover","Cover_4","Cover_6",paste0("CBD_",rep(1:150)))
     if(class(datatype)[1]=="LAS"){
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -74,6 +74,8 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   # get cover
 
   Cover=length(which(ReturnNumber[which(Z>Height_Cover)]==1))/length(which(ReturnNumber==1))
+  Cover_4=length(which(ReturnNumber[which(Z>4)]==1))/length(which(ReturnNumber==1))
+  Cover_6=length(which(ReturnNumber[which(Z>6)]==1))/length(which(ReturnNumber==1))
 
 
   # Get PAD and CBD profile ----
@@ -107,11 +109,11 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   if(mean(norm_U,na.rm=T)<limit_flightheight){
     warning("NULL return: limit_flightheight below the threshold. Check your trajectory and avoid using scanning_angle mode if the trajectory is uncertain")
 
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1,Cover_4=-1,Cover_6=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
     PAD_CBD_Profile=NULL
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover","Cover_4","Cover_6",paste0("CBD_",rep(1:150)))
     if(class(datatype)[1]=="LAS"){
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -167,16 +169,18 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   ##  Define threshold when threshold is a proportion of CBD max----
   if(stringr::str_detect(threshold,"%")){
     threshold_prop=as.numeric( stringr::str_split(threshold,"%",simplify = T)[,1])/100
-    threshold=max(PAD_CBD_Profile[H>1]$CBD)*threshold_prop
+    ifelse((max(PAD_CBD_Profile$H)/3)>2,Height_CBD=max(PAD_CBD_Profile$H)/3,Height_CBD=2)
+    threshold=max(PAD_CBD_Profile[H>Height_CBD]$CBD)*threshold_prop
+
   }
 
   ### no data above 0.5m
   if(max(PAD_CBD_Profile$H)<0.5){
     warning("NULL return: no data above 0.5m height")
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1,Cover_4=-1,Cover_6=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover","Cover_4","Cover_6",paste0("CBD_",rep(1:150)))
     if(class(datatype)[1]=="LAS"){
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -196,10 +200,10 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   }
   ### No data
   if(nrow(PAD_CBD_Profile_threshold)==0){
-    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1)
+    VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1,Cover_4=-1,Cover_6=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
-    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover",paste0("CBD_",rep(1:150)))
+    names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover","Cover_4","Cover_6",paste0("CBD_",rep(1:150)))
     if(class(datatype)[1]=="LAS"){
       return(list(VVP_metrics,PAD_CBD_Profile))}
     if(datatype=="Pixel"){
@@ -303,13 +307,13 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
     if(FSG==0){GSFL=0}else{GSFL=sum(PAD_CBD_Profile[H>H_Bush&H<=CBH]$CBD_rollM)*d}
 
 
-  VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,Height,CBH,FSG,Top_Fuel,H_Bush,continuity,VCI_PAD,VCI_lidr,entropy_lidr,PAI_tot,CBD_max,CFL,TFL,MFL,FL_1_3,GSFL,FL_0_1,FMA,date,Cover)
+  VVP_metrics=c(Profil_Type,Profil_Type_L,threshold,Height,CBH,FSG,Top_Fuel,H_Bush,continuity,VCI_PAD,VCI_lidr,entropy_lidr,PAI_tot,CBD_max,CFL,TFL,MFL,FL_1_3,GSFL,FL_0_1,FMA,date,Cover,Cover_4,Cover_6)
 
   VVP_metrics_CBD=rep(-1,150)
   VVP_metrics_CBD[1:length(PAD_CBD_Profile$CBD_rollM)]=PAD_CBD_Profile$CBD_rollM
   VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
 
-  names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover",paste0("CBD_",rep(1:150)))
+  names(VVP_metrics)=c("Profil_Type","Profil_Type_L","threshold","Height","CBH","FSG","Top_Fuel","H_Bush","continuity","VCI_PAD","VCI_lidr","entropy_lidr","PAI_tot","CBD_max","CFL","TFL","MFL","FL_1_3","GSFL","FL_0_1","FMA","date","Cover","Cover_4","Cover_6",paste0("CBD_",rep(1:150)))
 
   if(class(datatype)[1]=="LAS"){
     return(list(VVP_metrics,PAD_CBD_Profile))}
