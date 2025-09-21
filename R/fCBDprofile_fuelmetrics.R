@@ -169,7 +169,7 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   ##  Define threshold when threshold is a proportion of CBD max----
   if(stringr::str_detect(threshold,"%")){
     threshold_prop=as.numeric( stringr::str_split(threshold,"%",simplify = T)[,1])/100
-    ifelse((max(PAD_CBD_Profile$H)/3)>2,Height_CBD=max(PAD_CBD_Profile$H)/3,Height_CBD=2)
+    Height_CBD=ifelse((max(PAD_CBD_Profile$H)/3)>2,max(PAD_CBD_Profile$H)/3,2)
     threshold=max(PAD_CBD_Profile[H>Height_CBD]$CBD)*threshold_prop
 
   }
