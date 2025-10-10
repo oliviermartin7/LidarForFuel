@@ -11,6 +11,7 @@
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.
 #' @param limit_flightheight numeric. Default = 800. flight height above canopy in m. If the flight height is lower than limit_flyheight bulk density profile is not computed.  This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param scanning_angle logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1
+#' @param limit_vegetationheight. numeric. Default = 0.1. Vegetation height below which bulkdensity profile should not be computed. NULL -> -1 is returned.
 #' @param omega numeric. clumping factor. Default is 1. One means "no clumping" and therefore assumes a homogeneous distribution of vegetation element in the strata.
 #' @param d numeric. Default = 1. depth of the strata in meter to compute the profile
 #' @param G numeric. Default = 0.5. Leaf projection ratio.
@@ -43,7 +44,7 @@
 #' }
 
 
-fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.02,scanning_angle=TRUE,use_cover=FALSE,WD,limit_N_points=400,limit_flightheight=800,H_PAI=0,omega=0.77,d=1,G=0.5){
+fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.02,scanning_angle=TRUE,use_cover=FALSE,WD,limit_N_points=400,limit_flightheight=800,limit_vegetationheight=0.1,H_PAI=0,omega=0.77,d=1,G=0.5){
   if(class(datatype)[1]=="LAS"){
     X=datatype$X
     Y=datatype$Y
@@ -175,8 +176,8 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   }
 
   ### no data above 0.5m
-  if(max(PAD_CBD_Profile$H)<0.5){
-    warning("NULL return: no data above 0.5m height")
+  if(max(PAD_CBD_Profile$H)<limit_vegetationheight){
+    warning(paste0("NULL (-1) return: no data above",limit_vegetationheight, "m height"))
     VVP_metrics=c(Profil_Type=-1,Profil_Type_L=-1,threshold=-1,Height=-1,CBH=-1,FSG=-1,Top_Fuel=-1,H_Bush=-1,continuity=-1,VCI_PAD=-1,VCI_lidr=-1,entropy_lidr=-1,PAI_tot=-1,CBD_max=-1,CFL=-1,TFL=-1,MFL=-1,FL_1_3=-1,GSFL=-1,FL_0_1=-1,FMA=-1,date=date,Cover=-1,Cover_4=-1,Cover_6=-1)
     VVP_metrics_CBD=rep(-1,150)
     VVP_metrics=c(VVP_metrics,VVP_metrics_CBD)
@@ -187,13 +188,13 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
       return(as.list(VVP_metrics))}
   }
   ## Get CBD roll mean to smooth the profiles & get the profile above CBD threshold  ----
-  ### Organise roll mean CBD depending on number of 0.5m strata >3
+  ### Organise roll mean CBD depending on number of strata. >3
   if(nrow(PAD_CBD_Profile)>3){
     PAD_CBD_Profile$CBD_rollM=data.table::frollmean(PAD_CBD_Profile$CBD,3,algo="exact")
     PAD_CBD_Profile$CBD_rollM[1:3]=PAD_CBD_Profile$CBD[1:3]
     PAD_CBD_Profile_threshold=PAD_CBD_Profile[CBD_rollM>threshold]
   }
-  ### Organise roll mean CBD depending on number of 0.5m strata <= 3
+  ### Organise roll mean CBD depending on number of strata. <= 3. No rollmean
   if(nrow(PAD_CBD_Profile)<=3){
     PAD_CBD_Profile$CBD_rollM=PAD_CBD_Profile$CBD
     PAD_CBD_Profile_threshold=PAD_CBD_Profile[CBD_rollM>threshold]

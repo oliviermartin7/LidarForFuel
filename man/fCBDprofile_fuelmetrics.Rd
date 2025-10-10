@@ -17,14 +17,15 @@ fCBDprofile_fuelmetrics(
   LMA,
   gpstime,
   Height_Cover = 2,
-  threshold = 0.012,
+  threshold = 0.02,
   scanning_angle = TRUE,
   use_cover = FALSE,
   WD,
   limit_N_points = 400,
   limit_flightheight = 800,
+  limit_vegetationheight = 0.1,
   H_PAI = 0,
-  omega = 1,
+  omega = 0.77,
   d = 1,
   G = 0.5
 )
@@ -42,7 +43,7 @@ fCBDprofile_fuelmetrics(
 
 \item{gpstime}{gpstime of the point cloud. Only used to retrieve date of scanning}
 
-\item{threshold}{numeric or character. Default = 0.012. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.}
+\item{threshold}{numeric or character. Default = 0.02. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.}
 
 \item{scanning_angle}{logical. Default = TRUE. Use the scanning angle computed from the trajectories to estimate cos(theta). If false: cos(theta) = 1}
 
@@ -61,6 +62,8 @@ fCBDprofile_fuelmetrics(
 \item{d}{numeric. Default = 1. depth of the strata in meter to compute the profile}
 
 \item{G}{numeric. Default = 0.5. Leaf projection ratio.}
+
+\item{limit_vegetationheight.}{numeric. Default = 0.1. Vegetation height below which bulkdensity profile should not be computed. NULL -> -1 is returned.}
 
 \item{Height_cover}{numeric, Default = 2. The height from which the canopy cover should be estimated.}
 }
