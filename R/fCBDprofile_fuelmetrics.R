@@ -120,6 +120,9 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
     if(datatype=="Pixel"){
       return(as.list(VVP_metrics))}
   }
+  ### remove the bottom & top value of the seq and add d/2 to get the middle height of the strata for each stratum
+  seq_layer=seq_layer[-c(1,length(seq_layer))]+(d/2)
+
 
   ### cos theta take into account scanning angle
   cos_theta=mean(abs(Nz_U))
@@ -131,6 +134,14 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   PAD=-(log(Gf)*cos_theta/(G*omega)/d)
  if(use_cover==T){
    PAD= (-log(1-Ni/(N*Cover))/(G*omega*(d/cos_theta)))*Cover
+   if(Height_Cover>=max(seq_layer)){
+     PAD=-(log(Gf)*cos_theta/(G*omega)/d)
+     warning(paste0("Cover method was not use as Height_Cover > Vegetation Height"))
+   }
+   if(Cover==0){
+     PAD=-(log(Gf)*cos_theta/(G*omega)/d)
+     warning(paste0("Cover method was not use as Cover = 0"))
+   }
  }
 
   # Var_PAD=(PAD^2/(NRD))/(N+2)
@@ -159,8 +170,6 @@ fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Eastin
   CBD=PAD*(FMA)
 
 
-  ### remove the bottom & top value of the seq and add d/2 to get the middle height of the strata for each stratum
-  seq_layer=seq_layer[-c(1,length(seq_layer))]+(d/2)
 
   ## Table with strata height PAD and CBD ----
   PAD_CBD_Profile=data.table::data.table(cbind(H=seq_layer),PAD=PAD[-1],CBD=CBD[-1],SD_PAD=SD_PAD[-1],NRD=NRD[-1],Ni=Ni[-1],N=N[-1])
