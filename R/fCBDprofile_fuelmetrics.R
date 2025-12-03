@@ -5,7 +5,7 @@
 #' @param X,Y,Z,Zref numeric, coordinates of a point cloud (Z being the normalized Z coordinate and Zref the original one)
 #' @param ReturnNumber numeric, the return number of a pulse. Used to for calculating cover.
 #' @param Easting,Northing,Elevation numeric, coordinates of the plane associated to each point
-#' @param LMA numeric. Leaf mass area in g.cm² associated to each point or a generic value
+#' @param LMA numeric. Leaf mass area in g/m² associated to each point or a generic value
 #' @param WD numeric. wood density associated to each point or a generic value
 #' @param threshold numeric or character. Default = 0.02. Bulk density critical threshold  used to discriminate the different strata limits, midstrorey height, canopy base, canopy top etc. Either numeric : a bulk density value (in kg/m3) or character: a percentage of maximum CBD value.
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.
