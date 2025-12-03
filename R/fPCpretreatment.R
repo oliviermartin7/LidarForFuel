@@ -5,8 +5,8 @@
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
 #' @param LMA character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)
 #' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
-#' @param LMA_bush  character or numeric.Default = 140. similar to LMA but for the understorey strata 0 to 2m
-#' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m
+#' @param LMA_bush  character or numeric.Default = 140. similar to LMA but for the understorey strata (see H_strata_bush)
+#' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata (see H_strata_bush)
 #' @param H_strata_bush numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default

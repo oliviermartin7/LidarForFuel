@@ -28,9 +28,9 @@ fPCpretreatment(
 
 \item{WD}{character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).}
 
-\item{WD_bush}{character or numeric. Default = 591. similar to WD but for the understorey strata 0 to 2m}
+\item{WD_bush}{character or numeric. Default = 591. similar to WD but for the understorey strata (see H_strata_bush)}
 
-\item{LMA_bush}{character or numeric.Default = 140. similar to LMA but for the understorey strata 0 to 2m}
+\item{LMA_bush}{character or numeric.Default = 140. similar to LMA but for the understorey strata (see H_strata_bush)}
 
 \item{H_strata_bush}{numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.}
 
