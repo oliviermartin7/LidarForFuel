@@ -138,10 +138,8 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # Normalyze height
   las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
   # Remove points too low (<-3) or too high (>35m). Keep vegetation, soil, non classified and water point only
-  las=lidR::filter_poi(las,Classification<=5&Classification==9&Z<Height_filter)
-  las=lidR::classify_noise(las, lidR::sor(5,10))
-
-
+  las <- lidR::filter_poi(las, (Classification <= 5 | Classification == 9) & Z < Height_filter)
+  las <- lidR::classify_noise(las, lidR::sor(5, 10))
 
 
   las@data[Z<=H_strata_bush]$LMA=LMA_bush
