@@ -25,7 +25,7 @@ Imports:
     pracma,
     progress,
     R.matlab,
-    RANN
+    RANN,
     Rfast,
     rgl,
     sf,
