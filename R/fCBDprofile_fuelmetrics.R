@@ -42,8 +42,7 @@
 #' terra::plot(M30_FontBlanche_Raster[[8:23]])
 #'
 #' }
-
-
+#' @export
 fCBDprofile_fuelmetrics=function(datatype="Pixel",X,Y,Z,Zref,ReturnNumber,Easting,Northing,Elevation,LMA,gpstime,Height_Cover=2,threshold=0.02,scanning_angle=TRUE,use_cover=FALSE,WD,limit_N_points=400,limit_flightheight=800,limit_vegetationheight=0.1,H_PAI=0,omega=0.77,d=1,G=0.5){
   if(class(datatype)[1]=="LAS"){
     X=datatype$X

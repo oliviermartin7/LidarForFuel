@@ -24,8 +24,8 @@
 #' # displaying the new attributes in the las
 #' names(M30_FontBlanche_pretreated)
 #' }
-
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=1:12,deviation_days="Infinity",plot_hist_days=FALSE){
+#' @export
+#' @import data.table
 
   # read chunk
   las <- lidR::readLAS(chunk)
