@@ -1,9 +1,9 @@
 filter_seasons <- function(las, months = 1:12, gpstime_ref = "2011-09-14 01:46:40", plot_hist_days = FALSE) {
-  if (identical(sort(months), 1:12)) {
+  if ((identical(sort(months), 1:12)) || lidR::is.empty(las)) {
     return(las)
   }
 
-  datetime <- as.POSIXct(gpstime_ref) + las@data$gpstime
+  datetime <- as.POSIXct(gpstime_ref, tz = "UTC") + las@data$gpstime
 
   # test la saison
   months_acquisition <- lubridate::month(datetime)
@@ -128,7 +128,6 @@ fPCpretreatment <- function(
     return(NULL)
   }
 
-  las <- filter_deviation_day(las, deviation_days, plot_hist_days = plot_hist_days)
 
   las_4_traj <- las
   traj <- try(

@@ -1,21 +1,32 @@
 testthat::test_that("filter_season", {
   plot_hist_days <- FALSE
-  path2laz <- system.file(
-    "extdata", "M30_FontBlanche.laz",
-    package = "lidarforfuel"
-  )
-  las <- lidR::readLAS(path2laz)
+  ref <- as.POSIXct("2011-09-14 01:46:40", tz = "UTC")
+  gpstime <- seq.Date(as.Date("2023-07-01"), as.Date("2023-08-31"), by = "days")
+  gpstime <- as.POSIXct(gpstime) - ref
+  data <- data.frame(gpstime = gpstime)
+  data[["X"]] <- runif(nrow(data))
+  data[["Y"]] <- runif(nrow(data))
+  data[["Z"]] <- runif(nrow(data))
+  las <- lidR::LAS(data)
 
-  # here LAS is only month 6 (June)
+  # here returned las should be full
   months <- 5:10
   las1 <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
   testthat::expect_true(nrow(las1@data) == nrow(las@data))
 
+  # returned las should be half size
+  months <- 7
+  testthat::expect_warning({
+    las1 <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
+    testthat::expect_true(nrow(las1@data) == nrow(las@data) / 2)
+  })
+
+  # returned las should be half empty
   months <- 1:5
   testthat::expect_warning({
-    las <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
+    las1 <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
   })
-  testthat::expect_true(nrow(las@data) == 0)
+  testthat::expect_true(nrow(las1@data) == 0)
 })
 
 testthat::test_that("filter_date_mode", {
