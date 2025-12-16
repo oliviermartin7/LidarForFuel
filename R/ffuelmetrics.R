@@ -45,6 +45,10 @@ ffuelmetrics= function(profile_table,threshold,H_PAI=0){
 
     ## CBD in kg/m3 ----
     profile_table$CBD=profile_table$PAD*(profile_table$FMA)
+    profile_table[!is.finite(CBD)] <- NA_real_
+    #TODO should understand why PAD can be infinite or NA
+    profile_table[!is.finite(CBD)] <- 0
+    profile_table[is.na(CBD)] <- 0
   }
 
 

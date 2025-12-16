@@ -61,8 +61,7 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
 
       good_dates=lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates],tz = "CET"),unit="day")
       date_days=lubridate::floor_date(new_date,unit="day")
-      which(date_days%in%good_dates)
-      las@data=las@data[which(date_days%in%good_dates),][is.na(X)==F,]
+      las@data=las@data[date_days%in%good_dates][is.na(X)==F,]
       percentage_point_remove=(1-nrow(las@data)/length(new_date))*100
       warning(paste0("Careful ",round(percentage_point_remove)," % of the returns were removed because they had a deviation of days around the most abundant date greater than your threshold (", deviation_days, " days)."))
 
@@ -138,7 +137,7 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # Normalyze height
   las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
   # Remove points too low (<-3) or too high (>35m). Keep vegetation, soil, non classified and water point only
-  las=lidR::filter_poi(las,Classification<=5&Classification==9&Z<Height_filter)
+  las=lidR::filter_poi(las,Classification<=5|Classification==9&Z<Height_filter)
   las=lidR::classify_noise(las, lidR::sor(5,10))
 
 
