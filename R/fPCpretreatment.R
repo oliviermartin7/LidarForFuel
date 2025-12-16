@@ -88,7 +88,9 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
 #' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
-#' @param start_date date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"
+#' @param start_date date. The reference datetime to retrieve datetime from relative gpstime of the laz. 
+#' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
+#' plus 1e9 seconds, as defined in LAS 1.4 specifications.
 #' @param season_filter numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details

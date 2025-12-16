@@ -6,21 +6,21 @@
 \usage{
 fPCpretreatment(
   chunk,
-  classify = F,
+  classify = FALSE,
   LMA = 140,
   WD = 591,
   WD_bush = 591,
   LMA_bush = 140,
   H_strata_bush = 2,
   Height_filter = 60,
-  start_date = "2011-09-14 00:00:00",
+  start_date = "2011-09-14 01:46:40",
   season_filter = 1:12,
-  deviation_days = "Infinity",
+  deviation_days = Inf,
   plot_hist_days = FALSE
 )
 }
 \arguments{
-\item{chunk}{character. path to a las (laz) file. Can be apply to a catalog see lidr catalog apply)}
+\item{chunk}{character. path to a las (laz) file. Can be apply to a catalog see lidr catalog apply) # nolint: line_length_linter.}
 
 \item{classify}{logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified}
 
@@ -36,7 +36,9 @@ fPCpretreatment(
 
 \item{Height_filter}{numeric. Default = 80. Height limit to remove noise point}
 
-\item{start_date}{date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"}
+\item{start_date}{date. The reference datetime to retrieve datetime from relative gpstime of the laz. 
+It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
+plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 
 \item{season_filter}{numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)}
 
@@ -55,9 +57,9 @@ The attributes added to the laz are LMA : LMA value of each point. Zref :origina
 }
 \examples{
 \donttest{
-path2laz=system.file("extdata","M30_FontBlanche.laz", package="lidarforfuel")
- #LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
-M30_FontBlanche_pretreated<-fPCpretreatment(path2laz,LMA=120.6)
+path2laz <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+# LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
+M30_FontBlanche_pretreated <- fPCpretreatment(path2laz, LMA = 120.6)
 # displaying the new attributes in the las
 names(M30_FontBlanche_pretreated)
 }
