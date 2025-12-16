@@ -75,6 +75,51 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
   return(las)
 }
 
+add_traj_from_las <- function(las) {
+  las_4_traj <- las
+  traj <- try(
+    lidR::track_sensor(las_4_traj, algorithm = lidR::Roussel2020()),
+    silent = TRUE
+  )
+  if (nrow(lidR::filter_ground(las)) == 0) {
+    warning("Only ground points in the tile. NULL returned")
+    return(NULL)
+  }
+  if (class(traj)[1] == "try-error") {
+    first_last <- lidR::filter_firstlast(las_4_traj)
+    tab_count <- first_last@data[, .(count = .N), by = gpstime]
+
+    las_4_traj@data <- las_4_traj@data[!gpstime %in% tab_count[count > 2]$gpstime]
+
+    traj <- try(lidR::track_sensor(las_4_traj, thin_pulse_with_time = 0, algorithm = lidR::Roussel2020()), silent = T)
+  }
+  # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
+  if (class(traj)[1] == "try-error") {
+    traj <- data.table::data.table(lidR::filter_ground(las)@data[, 1:4])
+    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400, Time = mean(gpstime)), ]
+  }
+  if (class(traj)[1] != "data.table") {
+    traj <- data.table::data.table(cbind(sf::st_coordinates(traj), Time = traj$gpstime))
+  }
+  # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
+
+  if (nrow(traj) == 0) {
+    traj <- data.table::data.table(lidR::filter_ground(las)@data[, 1:4])
+    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400, Time = mean(gpstime)), ]
+  }
+  names(traj) <- c("Easting", "Northing", "Elevation", "Time")
+  # Find closest gpstime between traj and las
+  nn2_gpstimes <- RANN::nn2(traj$Time, las@data$gpstime, k = 1)
+  las@data <- cbind(las@data, traj[nn2_gpstimes$nn.idx, ])
+
+  las <- lidR::add_lasattribute(las, name = "Easting", desc = "traj")
+  las <- lidR::add_lasattribute(las, name = "Northing", desc = "traj")
+  las <- lidR::add_lasattribute(las, name = "Elevation", desc = "traj")
+  las <- lidR::add_lasattribute(las, name = "Time", desc = "aeroplane time")
+
+  return(las)
+}
+
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
 #' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
@@ -88,7 +133,7 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
 #' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
-#' @param start_date date. The reference datetime to retrieve datetime from relative gpstime of the laz. 
+#' @param start_date date. The reference datetime to retrieve datetime from relative gpstime of the laz.
 #' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 #' plus 1e9 seconds, as defined in LAS 1.4 specifications.
 #' @param season_filter numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)
@@ -121,6 +166,7 @@ fPCpretreatment <- function(
 ) {
   # read chunk
   las <- lidR::readLAS(chunk)
+  # TODO: filter virtual points, cf virtual classes in lidar-hd specs
   las <- filter_seasons(las, season_filter, plot_hist_days = plot_hist_days)
   las <- filter_date_mode(las, deviation_days, plot_hist_days = plot_hist_days)
   # does it really happens in lidar-hd?
@@ -130,42 +176,7 @@ fPCpretreatment <- function(
     return(NULL)
   }
 
-
-  las_4_traj <- las
-  traj <- try(
-    lidR::track_sensor(las_4_traj, algorithm = lidR::Roussel2020()),
-    silent = TRUE
-  )
-  if (nrow(lidR::filter_ground(las)) == 0) {
-    warning("Only ground points in the tile. NULL returned")
-    return(NULL)
-  }
-  if (class(traj)[1] == "try-error") {
-    first_last <- lidR::filter_firstlast(las_4_traj)
-    tab_count <- first_last@data[, .(count = .N), by = gpstime]
-
-    las_4_traj@data <- las_4_traj@data[!gpstime %in% tab_count[count > 2]$gpstime]
-
-    traj <- try(lidR::track_sensor(las_4_traj, algorithm = lidR::Roussel2020()), silent = T)
-  }
-  # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
-  if (class(traj)[1] == "try-error") {
-    traj <- data.table::data.table(lidR::filter_ground(las)@data[, 1:4])
-    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400, Time = mean(gpstime)), ]
-  }
-  if (class(traj)[1] != "data.table") {
-    traj <- data.table::data.table(cbind(sf::st_coordinates(traj), Time = traj$gpstime))
-  }
-  # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
-
-  if (nrow(traj) == 0) {
-    traj <- data.table::data.table(lidR::filter_ground(las)@data[, 1:4])
-    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400, Time = mean(gpstime)), ]
-  }
-  names(traj) <- c("Easting", "Northing", "Elevation", "Time")
-  # Find closest gpstime between traj and las
-  nn2_gpstimes <- RANN::nn2(traj$Time, las@data$gpstime, k = 1)
-  las@data <- cbind(las@data, traj[nn2_gpstimes$nn.idx, ])
+  las <- add_traj_from_las(las)
 
   if (classify == T) {
     lidR::classify_ground(las, algorithm = csf())
@@ -216,15 +227,11 @@ fPCpretreatment <- function(
   las <- lidR::add_lasattribute(las, name = "LMA", desc = "leaf mass area")
   las <- lidR::add_lasattribute(las, name = "WD", desc = "Wood density")
   las <- lidR::add_lasattribute(las, name = "Zref", desc = "original Z")
-  las <- lidR::add_lasattribute(las, name = "Easting", desc = "traj")
-  las <- lidR::add_lasattribute(las, name = "Northing", desc = "traj")
-  las <- lidR::add_lasattribute(las, name = "Elevation", desc = "traj")
   # if (norm_ground == T){
   #   las=lidR::add_lasattribute(las,name="Nx",desc="normal")
   #   las=lidR::add_lasattribute(las,name="Ny",desc="normal")
   #   las=lidR::add_lasattribute(las,name="Nz",desc="normal")
   # }
-  las <- lidR::add_lasattribute(las, name = "Time", desc = "plane time")
   # las=remove_lasattribute(las, name="Reflectance")
   # las=remove_lasattribute(las, name="Deviation")
   # las@data=las@data[,c("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")]
