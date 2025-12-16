@@ -1,7 +1,7 @@
 Package: lidarforfuel
 Type: Package
 Title: Compute fuel metrics from ALS
-Version: 1.0.0.0001
+Version: 1.0.0.9000
 Author: Olivier Martin-Ducup, François PImont
 Maintainer: Olivier Martin <oli.martin@ntymail.com>
 Description: This package provides a set of tools to compute fuel metrics. The method is fully described in  the paper Martin-Ducup et al 2024.
