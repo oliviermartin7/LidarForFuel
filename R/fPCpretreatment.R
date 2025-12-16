@@ -1,3 +1,37 @@
+filter_seasons <- function(las, months = 1:12, gpstime_ref = "2011-09-14 01:46:40", plot_hist_days = FALSE) {
+  if (identical(sort(months), 1:12)) {
+    return(las)
+  }
+
+  datetime <- as.POSIXct(gpstime_ref) + las@data$gpstime
+
+  # test la saison
+  months_acquisition <- lubridate::month(datetime)
+
+  pts_summer <- months_acquisition %in% months
+  las <- lidR::filter_poi(las, pts_summer)
+  proportions_of_winter_pont <- (1 - nrow(las@data) / length(months_acquisition)) * 100
+  if (proportions_of_winter_pont > 0) {
+    if (plot_hist_days) {
+      hist(
+        datetime,
+        breaks = "day",
+        main = "Histogram of acquisition date", xlab = "Date of acquisition"
+      )
+    }
+    warning(
+      paste0(
+        "Careful ", round(proportions_of_winter_pont),
+        " % of the returns were excluded because they were sampled outside of",
+        " the chosen season (Month: ",
+        paste0(lubridate::month(months, label = T), collapse = " "), ")"
+      )
+    )
+  }
+
+  return(las)
+}
+
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
 #' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
@@ -42,28 +76,7 @@ fPCpretreatment <- function(
 ) {
   # read chunk
   las <- lidR::readLAS(chunk)
-  start_date <- as.POSIXct(start_date)
-
-  # de seconde à date
-  new_date <- start_date + las@data$gpstime
-
-
-  # test la saison
-
-  months_acquisition <- lubridate::month(new_date)
-
-  pts_summer <- which(months_acquisition %in% season_filter)
-  proportions_of_winter_pont <- (1 - length(pts_summer) / length(months_acquisition)) * 100
-  las@data <- las@data[pts_summer, ]
-  if (all(months_acquisition %in% season_filter) == FALSE) {
-    hist(new_date, breaks = "day", plot = plot_hist_days, main = "Histogram of acquisition date", xlab = "Date of acquisition")
-    warning(paste0("Careful ", round(proportions_of_winter_pont), " % of the returns were excluded because they were sampled outside of the chosen season (Month: ", paste0(lubridate::month(season_filter, label = T), collapse = " "), ")"))
-  }
-
-
-  if (lidR::is.empty(las)) {
-    return(NULL)
-  }
+  las <- filter_seasons(las, season_filter, plot_hist_days = plot_hist_days)
 
 
   new_date <- as.POSIXct(start_date) + las@data$gpstime
