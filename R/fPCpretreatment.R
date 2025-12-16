@@ -32,6 +32,49 @@ filter_seasons <- function(las, months = 1:12, gpstime_ref = "2011-09-14 01:46:4
   return(las)
 }
 
+filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40", plot_hist_days = FALSE) {
+  # filter the points that are not in the same day as the statistical data mode and +- deviation days
+  datetime <- as.POSIXct(gpstime_ref) + las@data$gpstime
+  if (is.infinite(deviation_days)) {
+    return(las)
+  }
+
+  hist_test <- hist(
+    datetime,
+    breaks = "day",
+    plot = plot_hist_days,
+    main = "Histogram of acquisition date",
+    xlab = "Date of acquisition"
+  )
+  count_days <- hist_test$counts
+  if (length(count_days) > deviation_days) {
+    seq_dates <- seq.Date(
+      from = as.Date(min(datetime)),
+      to = as.Date(max(datetime)),
+      by = "days"
+    )
+    id_max_count <- which(count_days == max(count_days))
+    id_vec_dates <- (id_max_count - deviation_days):(id_max_count + deviation_days)
+    id_vec_dates <- id_vec_dates[id_vec_dates > 0]
+
+    good_dates <- lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates], tz = "CET"), unit = "day")
+    date_days <- lubridate::floor_date(datetime, unit = "day")
+    las <- lidR::filter_poi(las, date_days %in% good_dates)
+    percentage_point_remove <- (1 - nrow(las@data) / length(datetime)) * 100
+    warning(
+      paste0(
+        "Careful ",
+        round(percentage_point_remove),
+        " % of the returns were removed because they had a deviation of days",
+        " around the most abundant date greater than your threshold (",
+        deviation_days, " days)."
+      )
+    )
+  }
+
+  return(las)
+}
+
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
 #' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
@@ -71,47 +114,21 @@ fPCpretreatment <- function(
   Height_filter = 60,
   start_date = "2011-09-14 01:46:40",
   season_filter = 1:12,
-  deviation_days = "Infinity",
+  deviation_days = Inf,
   plot_hist_days = FALSE
 ) {
   # read chunk
   las <- lidR::readLAS(chunk)
   las <- filter_seasons(las, season_filter, plot_hist_days = plot_hist_days)
+  las <- filter_date_mode(las, deviation_days, plot_hist_days = plot_hist_days)
+  # does it really happens in lidar-hd?
+  las <- lidR::filter_poi(las, !is.na(X))
 
-
-  new_date <- as.POSIXct(start_date) + las@data$gpstime
-  if (is.numeric(deviation_days)) {
-    hist_test <- hist(
-      new_date,
-      breaks = "day", plot = plot_hist_days,
-      main = "Histogram of acquisition date", xlab = "Date of acquisition"
-    )
-    count_days <- hist_test$counts
-    if (length(count_days) > deviation_days) {
-      seq_dates <- seq.Date(
-        from = as.Date(min(new_date)),
-        to = as.Date(max(new_date)),
-        by = "days"
-      )
-      id_vec_dates <- (which(count_days == max(count_days)) - deviation_days):(which(count_days == max(count_days)) + deviation_days)
-      id_vec_dates <- id_vec_dates[id_vec_dates > 0]
-
-      good_dates <- lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates], tz = "CET"), unit = "day")
-      date_days <- lubridate::floor_date(new_date, unit = "day")
-      las@data <- las@data[which(date_days %in% good_dates), ][is.na(X) == F, ]
-      percentage_point_remove <- (1 - nrow(las@data) / length(new_date)) * 100
-      warning(
-        paste0(
-          "Careful ",
-          round(percentage_point_remove),
-          " % of the returns were removed because they had a deviation of days",
-          " around the most abundant date greater than your threshold (",
-          deviation_days, " days)."
-        )
-      )
-
-    }
+  if (lidR::is.empty(las)) {
+    return(NULL)
   }
+
+  las <- filter_deviation_day(las, deviation_days, plot_hist_days = plot_hist_days)
 
   las_4_traj <- las
   traj <- try(
