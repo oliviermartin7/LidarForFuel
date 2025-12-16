@@ -109,6 +109,7 @@ fPCpretreatment <- function(
           deviation_days, " days)."
         )
       )
+
     }
   }
 
@@ -190,7 +191,6 @@ fPCpretreatment <- function(
   # Remove points too low (<-3) or too high (>35m). Keep vegetation, soil, non classified and water point only
   las <- lidR::filter_poi(las, (Classification <= 5 | Classification == 9) & Z < Height_filter)
   las <- lidR::classify_noise(las, lidR::sor(5, 10))
-
 
   las@data[Z <= H_strata_bush]$LMA <- LMA_bush
   las@data[Z <= H_strata_bush]$WD <- WD_bush
