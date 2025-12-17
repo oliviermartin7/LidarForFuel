@@ -1,7 +1,130 @@
+filter_seasons <- function(las, months = 1:12, gpstime_ref = "2011-09-14 01:46:40", plot_hist_days = FALSE) {
+  if ((identical(sort(months), 1:12)) || lidR::is.empty(las)) {
+    return(las)
+  }
+
+  datetime <- as.POSIXct(gpstime_ref, tz = "UTC") + las@data$gpstime
+
+  # test la saison
+  months_acquisition <- lubridate::month(datetime)
+
+  pts_summer <- months_acquisition %in% months
+  las <- lidR::filter_poi(las, pts_summer)
+  proportions_of_winter_pont <- (1 - nrow(las@data) / length(months_acquisition)) * 100
+  if (proportions_of_winter_pont > 0) {
+    if (plot_hist_days) {
+      hist(
+        datetime,
+        breaks = "day",
+        main = "Histogram of acquisition date", xlab = "Date of acquisition"
+      )
+    }
+    warning(
+      paste0(
+        "Careful ", round(proportions_of_winter_pont),
+        " % of the returns were excluded because they were sampled outside of",
+        " the chosen season (Month: ",
+        paste0(lubridate::month(months, label = TRUE), collapse = " "), ")"
+      )
+    )
+  }
+
+  return(las)
+}
+
+filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40", plot_hist_days = FALSE) {
+  # filter the points that are not in the same day as the statistical data mode and +- deviation days
+  datetime <- as.POSIXct(gpstime_ref) + las@data$gpstime
+  if (is.infinite(deviation_days)) {
+    return(las)
+  }
+
+  hist_test <- hist(
+    datetime,
+    breaks = "day",
+    plot = plot_hist_days,
+    main = "Histogram of acquisition date",
+    xlab = "Date of acquisition"
+  )
+  count_days <- hist_test$counts
+  if (length(count_days) > deviation_days) {
+    seq_dates <- seq.Date(
+      from = as.Date(min(datetime)),
+      to = as.Date(max(datetime)),
+      by = "days"
+    )
+    id_max_count <- which(count_days == max(count_days))
+    id_vec_dates <- (id_max_count - deviation_days):(id_max_count + deviation_days)
+    id_vec_dates <- id_vec_dates[id_vec_dates > 0]
+
+    good_dates <- lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates], tz = "CET"), unit = "day")
+    date_days <- lubridate::floor_date(datetime, unit = "day")
+    las <- lidR::filter_poi(las, date_days %in% good_dates)
+    percentage_point_remove <- (1 - nrow(las@data) / length(datetime)) * 100
+    warning(
+      paste0(
+        "Careful ",
+        round(percentage_point_remove),
+        " % of the returns were removed because they had a deviation of days",
+        " around the most abundant date greater than your threshold (",
+        deviation_days, " days)."
+      )
+    )
+  }
+
+  return(las)
+}
+
+add_traj_from_las <- function(las) {
+  .N <- X <- Y <- Z <- gpstime <- ReturnNumber <- NULL
+  las_4_traj <- las
+  traj <- try(
+    lidR::track_sensor(las_4_traj, algorithm = lidR::Roussel2020()),
+    silent = TRUE
+  )
+  if (nrow(lidR::filter_ground(las)) == 0) {
+    warning("Only ground points in the tile. NULL returned")
+    return(NULL)
+  }
+  if (class(traj)[1] == "try-error") {
+    first_last <- lidR::filter_firstlast(las_4_traj)
+    tab_count <- first_last@data[, .(count = .N), by = gpstime]
+
+    las_4_traj@data <- las_4_traj@data[!gpstime %in% tab_count[count > 2]$gpstime]
+
+    traj <- try(lidR::track_sensor(las_4_traj, thin_pulse_with_time = 0, algorithm = lidR::Roussel2020()), silent = T)
+  }
+  # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
+  if (class(traj)[1] == "try-error") {
+    traj <- data.table::data.table(lidR::filter_ground(las)@data[, 1:4])
+    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400, Time = mean(gpstime)), ]
+  }
+  if (class(traj)[1] != "data.table") {
+    traj <- data.table::data.table(cbind(sf::st_coordinates(traj), Time = traj$gpstime))
+  }
+  # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
+
+  if (nrow(traj) == 0) {
+    traj <- data.table::data.table(lidR::filter_ground(las)@data[, 1:4])
+    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400, Time = mean(gpstime)), ]
+  }
+  names(traj) <- c("Easting", "Northing", "Elevation", "Time")
+  # Find closest gpstime between traj and las
+  nn2_gpstimes <- RANN::nn2(traj$Time, las@data$gpstime, k = 1)
+  las@data <- cbind(las@data, traj[nn2_gpstimes$nn.idx, ])
+
+  las <- lidR::add_lasattribute(las, name = "Easting", desc = "traj")
+  las <- lidR::add_lasattribute(las, name = "Northing", desc = "traj")
+  las <- lidR::add_lasattribute(las, name = "Elevation", desc = "traj")
+  las <- lidR::add_lasattribute(las, name = "Time", desc = "aeroplane time")
+
+  las
+}
+
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
 #' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
-#' @param chunk character. path to a las (laz) file. Can be apply to a catalog see lidr catalog apply)
+#' @param chunk character. path to a las (laz) file. Can be apply to a catalog see lidr catalog apply) # nolint: line_length_linter.
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
 #' @param LMA character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)
 #' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
@@ -11,98 +134,56 @@
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
 #' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
-#' @param start_date date. The absolute starting date to retrieve date from relative gpstime of the laz. Default is "2011-09-14 00:00:00"
+#' @param start_date date. The reference datetime to retrieve datetime from relative gpstime of the laz.
+#' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
+#' plus 1e9 seconds, as defined in LAS 1.4 specifications.
 #' @param season_filter numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
 #' @examples
 #' \donttest{
-#' path2laz=system.file("extdata","M30_FontBlanche.laz", package="lidarforfuel")
-#'  #LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
-#' M30_FontBlanche_pretreated<-fPCpretreatment(path2laz,LMA=120.6)
+#' path2laz <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+#' # LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
+#' M30_FontBlanche_pretreated <- fPCpretreatment(path2laz, LMA = 120.6)
 #' # displaying the new attributes in the las
 #' names(M30_FontBlanche_pretreated)
 #' }
+#' @export
+#' @import data.table
+fPCpretreatment <- function(
+  chunk,
+  classify = FALSE,
+  LMA = 140,
+  WD = 591,
+  WD_bush = 591,
+  LMA_bush = 140,
+  H_strata_bush = 2,
+  Height_filter = 60,
+  start_date = "2011-09-14 01:46:40",
+  season_filter = 1:12,
+  deviation_days = Inf,
+  plot_hist_days = FALSE
+) {
 
-fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush=140,H_strata_bush=2,Height_filter=60,start_date="2011-09-14 00:00:00",season_filter=1:12,deviation_days="Infinity",plot_hist_days=FALSE){
+  X <- Z <- Classification <- NULL
 
   # read chunk
   las <- lidR::readLAS(chunk)
-  start_date <- as.POSIXct(start_date)
+  # TODO: filter virtual points, cf virtual classes in lidar-hd specs
+  las <- filter_seasons(las, season_filter, plot_hist_days = plot_hist_days)
+  las <- filter_date_mode(las, deviation_days, plot_hist_days = plot_hist_days)
+  # does it really happens in lidar-hd?
+  las <- lidR::filter_poi(las, !is.na(X))
 
-  # de seconde à date
-  new_date <- start_date + las@data$gpstime
-
-
-  # test la saison
-
-  months_acquisition=lubridate::month(new_date)
-
-    pts_summer=which(months_acquisition%in%season_filter)
-    proportions_of_winter_pont=(1-length(pts_summer)/length(months_acquisition))*100
-    las@data=las@data[pts_summer,]
-    if(all(months_acquisition%in%season_filter)==FALSE){
-    hist(new_date,breaks="day",plot = plot_hist_days,main="Histogram of acquisition date",xlab="Date of acquisition")
-    warning(paste0("Careful ",round(proportions_of_winter_pont)," % of the returns were excluded because they were sampled outside of the chosen season (Month: ",paste0(lubridate::month(season_filter,label = T),collapse = " "),")"))
-  }
-
-
-  if (lidR::is.empty(las)) return(NULL)
-
-  if(is.numeric(deviation_days)){
-    hist_test=hist(new_date,breaks="day",plot = plot_hist_days,main="Histogram of acquisition date",xlab="Date of acquisition")
-    count_days=hist_test$counts
-    if(length(count_days)>deviation_days){
-      max_nb_days=length(count_days)
-      seq_dates=seq.Date(from = as.Date(min(new_date)),to =as.Date(max(new_date)),by = "days")
-      id_vec_dates=(which(count_days==max(count_days))-deviation_days):(which(count_days==max(count_days))+deviation_days)
-      id_vec_dates=id_vec_dates[id_vec_dates>0]
-
-      good_dates=lubridate::floor_date(as.POSIXct(seq_dates[id_vec_dates],tz = "CET"),unit="day")
-      date_days=lubridate::floor_date(new_date,unit="day")
-      las@data=las@data[date_days%in%good_dates][is.na(X)==F,]
-      percentage_point_remove=(1-nrow(las@data)/length(new_date))*100
-      warning(paste0("Careful ",round(percentage_point_remove)," % of the returns were removed because they had a deviation of days around the most abundant date greater than your threshold (", deviation_days, " days)."))
-
-    }
-  }
-
-  las_4_traj=las
-  traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)
-  if (nrow(lidR::filter_ground(las))==0) {
-    warning("Only ground points in the tile. NULL returned")
+  if (lidR::is.empty(las)) {
     return(NULL)
   }
-  if(class(traj)[1]=="try-error"){
-    first_last=lidR::filter_firstlast(las_4_traj)
-    tab_count=first_last@data[, .(count = .N), by = gpstime]
 
-    las_4_traj@data=las_4_traj@data[!gpstime%in%tab_count[count>2]$gpstime]
+  las <- add_traj_from_las(las)
 
-    traj=try(lidR::track_sensor(las_4_traj,algorithm = lidR::Roussel2020()),silent=T)}
-  # if track sensor not working at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
-  if(class(traj)[1]=="try-error"){
-    traj=data.table::data.table(lidR::filter_ground(las)@data[,1:4])
-    traj= traj[,.(Easting=mean(X),Northing=mean(Y),Elevation=mean(Z)+1400,Time=mean(gpstime)),]
-
-  }
-  if(class(traj)[1]!="data.table"){
-    traj=data.table::data.table(cbind(sf::st_coordinates(traj),Time=traj$gpstime))}
-  # if track sensor not working  at all take mean coordinates ( 1400 for Z) and gpstime to estimate trajectory
-
-  if(nrow(traj)==0){
-    traj= data.table::data.table(lidR::filter_ground(las)@data[,1:4])
-    traj= traj[,.(Easting=mean(X),Northing=mean(Y),Elevation=mean(Z)+1400,Time=mean(gpstime)),]
-  }
-  names(traj)=c("Easting","Northing","Elevation","Time")
-  # Find closest gpstime between traj and las
-  nn2_gpstimes=RANN::nn2(traj$Time,las@data$gpstime,k=1)
-  las@data=cbind(las@data,traj[nn2_gpstimes$nn.idx,])
-
-  if(classify==T){
-    lidR::classify_ground(las,algorithm = csf())
-
+  if (classify == TRUE) {
+    lidR::classify_ground(las, algorithm = lidR::csf())
   }
 
   # if (norm_ground == TRUE){
@@ -119,45 +200,42 @@ fPCpretreatment <- function(chunk,classify=F,LMA=140,WD=591,WD_bush=591,LMA_bush
   # }
 
   # LMA
-  if(is.numeric(LMA)){las@data$LMA=LMA}
-  if(is.numeric(WD)){las@data$WD=WD}
-  if(is.numeric(LMA)==F){
-    ## Load LMA map
-    LMA_map=terra::rast(LMA)
-    ### Add LMA to point cloud
-    las=lidR::merge_spatial(las,LMA_map$LMA,attribute = "LMA")
+  if (is.numeric(LMA)) {
+    las@data$LMA <- LMA
   }
-  if(is.numeric(WD)==F){
+  if (is.numeric(WD)) {
+    las@data$WD <- WD
+  }
+  if (is.numeric(LMA) == FALSE) {
     ## Load LMA map
-    WD_map=terra::rast(WD)
+    LMA_map <- terra::rast(LMA)
+    ### Add LMA to point cloud
+    las <- lidR::merge_spatial(las, LMA_map$LMA, attribute = "LMA")
+  }
+  if (is.numeric(WD) == FALSE) {
+    ## Load LMA map
+    WD_map <- terra::rast(WD)
     ### Add WD to point cloud
-    las=lidR::merge_spatial(las,WD_map$WD,attribute = "WD")
+    las <- lidR::merge_spatial(las, WD_map$WD, attribute = "WD")
   }
 
   # Normalyze height
-  las=lidR::normalize_height(las = las,algorithm =  lidR::tin() )
+  las <- lidR::normalize_height(las = las, algorithm = lidR::tin())
   # Remove points too low (<-3) or too high (>35m). Keep vegetation, soil, non classified and water point only
-  las=lidR::filter_poi(las,Classification<=5|Classification==9&Z<Height_filter)
-  las=lidR::classify_noise(las, lidR::sor(5,10))
+  las <- lidR::filter_poi(las, (Classification <= 5 | Classification == 9) & Z < Height_filter)
+  las <- lidR::classify_noise(las, lidR::sor(5, 10))
 
-
-
-
-  las@data[Z<=H_strata_bush]$LMA=LMA_bush
-  las@data[Z<=H_strata_bush]$WD=WD_bush
+  las@data[Z <= H_strata_bush]$LMA <- LMA_bush
+  las@data[Z <= H_strata_bush]$WD <- WD_bush
   # add names to laz
-  las=lidR::add_lasattribute(las,name="LMA",desc="leaf mass area")
-  las=lidR::add_lasattribute(las,name="WD",desc="Wood density")
-  las=lidR::add_lasattribute(las,name="Zref",desc="original Z")
-  las=lidR::add_lasattribute(las,name="Easting",desc="traj")
-  las=lidR::add_lasattribute(las,name="Northing",desc="traj")
-  las=lidR::add_lasattribute(las,name="Elevation",desc="traj")
+  las <- lidR::add_lasattribute(las, name = "LMA", desc = "leaf mass area")
+  las <- lidR::add_lasattribute(las, name = "WD", desc = "Wood density")
+  las <- lidR::add_lasattribute(las, name = "Zref", desc = "original Z")
   # if (norm_ground == T){
   #   las=lidR::add_lasattribute(las,name="Nx",desc="normal")
   #   las=lidR::add_lasattribute(las,name="Ny",desc="normal")
   #   las=lidR::add_lasattribute(las,name="Nz",desc="normal")
   # }
-  las=lidR::add_lasattribute(las,name="Time",desc="plane time")
   # las=remove_lasattribute(las, name="Reflectance")
   # las=remove_lasattribute(las, name="Deviation")
   # las@data=las@data[,c("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")]

@@ -19,8 +19,7 @@
 #' Fuel_metrics <- ffuelmetrics(profile_table=Profile,threshold=0.02)
 #'
 #' }
-
-
+#' @export
 ffuelmetrics= function(profile_table,threshold,H_PAI=0){
 
   if(any(stringr::str_detect(names(profile_table ),"BD"))==F){

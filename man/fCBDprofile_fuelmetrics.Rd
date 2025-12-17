@@ -39,7 +39,7 @@ fCBDprofile_fuelmetrics(
 
 \item{Easting, Northing, Elevation}{numeric, coordinates of the plane associated to each point}
 
-\item{LMA}{numeric. Leaf mass area in g.cm² associated to each point or a generic value}
+\item{LMA}{numeric. Leaf mass area in g/m² associated to each point or a generic value}
 
 \item{gpstime}{gpstime of the point cloud. Only used to retrieve date of scanning}
 
