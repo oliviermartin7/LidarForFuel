@@ -24,7 +24,7 @@ filter_seasons <- function(las, months = 1:12, gpstime_ref = "2011-09-14 01:46:4
         "Careful ", round(proportions_of_winter_pont),
         " % of the returns were excluded because they were sampled outside of",
         " the chosen season (Month: ",
-        paste0(lubridate::month(months, label = T), collapse = " "), ")"
+        paste0(lubridate::month(months, label = TRUE), collapse = " "), ")"
       )
     )
   }
@@ -76,6 +76,7 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 }
 
 add_traj_from_las <- function(las) {
+  .N <- X <- Y <- Z <- gpstime <- ReturnNumber <- NULL
   las_4_traj <- las
   traj <- try(
     lidR::track_sensor(las_4_traj, algorithm = lidR::Roussel2020()),
@@ -117,7 +118,7 @@ add_traj_from_las <- function(las) {
   las <- lidR::add_lasattribute(las, name = "Elevation", desc = "traj")
   las <- lidR::add_lasattribute(las, name = "Time", desc = "aeroplane time")
 
-  return(las)
+  las
 }
 
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
@@ -164,6 +165,9 @@ fPCpretreatment <- function(
   deviation_days = Inf,
   plot_hist_days = FALSE
 ) {
+
+  X <- Z <- Classification <- NULL
+
   # read chunk
   las <- lidR::readLAS(chunk)
   # TODO: filter virtual points, cf virtual classes in lidar-hd specs
@@ -178,8 +182,8 @@ fPCpretreatment <- function(
 
   las <- add_traj_from_las(las)
 
-  if (classify == T) {
-    lidR::classify_ground(las, algorithm = csf())
+  if (classify == TRUE) {
+    lidR::classify_ground(las, algorithm = lidR::csf())
   }
 
   # if (norm_ground == TRUE){
@@ -202,13 +206,13 @@ fPCpretreatment <- function(
   if (is.numeric(WD)) {
     las@data$WD <- WD
   }
-  if (is.numeric(LMA) == F) {
+  if (is.numeric(LMA) == FALSE) {
     ## Load LMA map
     LMA_map <- terra::rast(LMA)
     ### Add LMA to point cloud
     las <- lidR::merge_spatial(las, LMA_map$LMA, attribute = "LMA")
   }
-  if (is.numeric(WD) == F) {
+  if (is.numeric(WD) == FALSE) {
     ## Load LMA map
     WD_map <- terra::rast(WD)
     ### Add WD to point cloud
