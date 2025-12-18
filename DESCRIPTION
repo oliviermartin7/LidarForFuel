@@ -2,12 +2,14 @@ Package: lidarforfuel
 Type: Package
 Title: Compute fuel metrics from ALS
 Version: 1.0.0.9000
-Author: Olivier Martin-Ducup, François PImont
-Maintainer: Olivier Martin <oli.martin@ntymail.com>
-Description: This package provides a set of tools to compute fuel metrics. The method is fully described in  the paper Martin-Ducup et al 2024.
+Authors@R: c(
+    person("Olivier", "Martin", email = "oli.martin@ntymail.com", role = c("aut", "cre", "cph")),
+    person("François", "Pimont", email = "", role = c("aut", "cph")),
+    person("Florian", "de Boissieu", email = "", role = ("ctb")))
+Description: This package provides a set of tools to compute fuel metrics. The method is fully described in the paper Martin-Ducup et al 2025.
 License: CeCILL
 Encoding: UTF-8
-URL: 
+URL: https://www.sciencedirect.com/science/article/pii/S0168192324004544
 RoxygenNote: 7.3.3
 Imports: 
     circular,
