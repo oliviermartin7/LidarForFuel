@@ -16,7 +16,8 @@ fPCpretreatment(
   start_date = "2011-09-14 01:46:40",
   season_filter = 1:12,
   deviation_days = Inf,
-  plot_hist_days = FALSE
+  plot_hist_days = FALSE,
+  traj = NULL
 )
 }
 \arguments{
@@ -36,7 +37,7 @@ fPCpretreatment(
 
 \item{Height_filter}{numeric. Default = 80. Height limit to remove noise point}
 
-\item{start_date}{date. The reference datetime to retrieve datetime from relative gpstime of the laz. 
+\item{start_date}{date. The reference datetime to retrieve datetime from relative gpstime of the laz.
 It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 
@@ -45,6 +46,8 @@ plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 \item{deviation_days}{numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default}
 
 \item{plot_hist_days}{logical. Should the histogram of dates of acquisition be displayed. Default =FALSE}
+
+\item{traj}{data.frame with columns Easting, Northing, Elevation, Time. Trajectory covering the LAS chunk. If NULL, the function will try to compute it.}
 }
 \value{
 a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
