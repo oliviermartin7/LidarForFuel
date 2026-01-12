@@ -78,3 +78,24 @@ testthat::test_that("fPCpretreatment", {
   )
   testthat::expect_contains(names(m30_font_blanche_pretreated), expected_names)
 })
+
+testthat::test_that("lasrmdup", {
+  las_file <- system.file("extdata", "example.laz", package = "rlas")
+  las <- lidR::readLAS(las_file)
+  las@data$ReturnNumber <- 1 # make duplicates
+  las1 <- lasrmdup(las)
+
+  testthat::expect_true(nrow(las) > nrow(las1))
+})
+
+testthat::test_that("lasrenumber", {
+  las_file <- system.file("extdata", "example.laz", package = "rlas")
+  # example is wrongly numbered unfortunatly...
+  las <- lidR::readLAS(las_file) |> lasrenumber()
+  las1 <- lidR::readLAS(las_file) |> lasrenumber()
+  las@data[, ReturnNumber := ReturnNumber + 1] # remove first return
+  testthat::expect_all_false(las$ReturnNumber == las1$ReturnNumber)
+  las2 <- lasrenumber(las)
+  testthat::expect_all_true(las2$ReturnNumber == las1$ReturnNumber)
+})
+

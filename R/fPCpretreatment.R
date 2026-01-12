@@ -86,8 +86,9 @@ lasrenumber <- function(las) {
 
 lasrmdup <- function(las) {
     ReturnNumber <- dup <- NULL
-    las@data[, dup := any(duplicated(ReturnNumber)), by = "gpstime"]
-    las@data <- las@data[dup == FALSE][, dup := NULL][]
+    dup = las@data[, .(any(duplicated(ReturnNumber))), by = "gpstime"]
+    dup = dup[dup$V1==FALSE,]
+    las@data <- las@data[dup, on="gpstime"]
     las
 }
 
