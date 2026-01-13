@@ -85,35 +85,38 @@ lasrenumber <- function(las) {
 }
 
 lasrmdup <- function(las) {
-    ReturnNumber <- dup <- NULL
-    dup = las@data[, .(any(duplicated(ReturnNumber))), by = "gpstime"]
-    dup = dup[dup$V1==FALSE,]
-    las@data <- las@data[dup, on="gpstime"]
-    las
+  ReturnNumber <- dup <- NULL
+  dup <- las@data[, .(any(duplicated(ReturnNumber))), by = "gpstime"]
+  dup <- dup[dup$V1 == FALSE, ]
+  las@data <- las@data[dup, on = "gpstime"]
+  las
 }
 
-get_traj <- function(las, thin = 0.0001, interval = .2, rmdup=TRUE, renum=TRUE) {
+get_traj <- function(las, thin = 0.0001, interval = .2, rmdup = TRUE, renum = TRUE) {
   .N <- X <- Y <- Z <- gpstime <- ReturnNumber <- NULL
-  
+
   if (rmdup) {
-    tic("Remove duplicates")
+    # tictoc::tic("Remove duplicates")
     # remove points with duplicated ReturnNumber
     las <- lasrmdup(las)
-    toc()
+    # tictoc::toc()
   }
 
   if (renum) {
+    # tictoc::tic("Renumber returns")
     las <- lasrenumber(las)
+    # tictoc::toc()
   }
 
-  traj <- try({
-    lidR::track_sensor(
+  traj <- try(
+    {
+      traj <- lidR::track_sensor(
         las,
         algorithm = lidR::Roussel2020(interval = interval),
         thin_pulse_with_time = thin
       )
-      traj <- data.table::data.table(cbind(sf::st_coordinates(traj), Time = traj$gpstime))
-      traj <- traj[, .(Easting = X, Northing = Y, Elevation = Z, Time = gpstime), ]
+      traj <- cbind(sf::st_coordinates(traj), Time = traj$gpstime) |> data.table::as.data.table()
+      traj <- traj[, .(Easting = X, Northing = Y, Elevation = Z, Time), ]
     },
     silent = TRUE
   )
@@ -124,7 +127,7 @@ get_traj <- function(las, thin = 0.0001, interval = .2, rmdup=TRUE, renum=TRUE) 
       warning("No ground point found, trajectory cannot be computed.")
       return(NULL)
     }
-    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400), by="gpstime"]
+    traj <- traj[, .(Easting = mean(X), Northing = mean(Y), Elevation = mean(Z) + 1400), by = "gpstime"]
     traj <- traj[, .(Easting, Northing, Elevation, Time = gpstime)]
     warning("Trajectory could not be computed, setting it to 1400m above of the ground points.")
   }
@@ -133,7 +136,6 @@ get_traj <- function(las, thin = 0.0001, interval = .2, rmdup=TRUE, renum=TRUE) 
 }
 
 add_traj_to_las <- function(las, traj) {
-
   # Find closest gpstime between traj and las
   nn2_gpstimes <- RANN::nn2(traj$Time, las$gpstime, k = 1)
   las@data <- cbind(las@data, traj[nn2_gpstimes$nn.idx, ])
@@ -163,7 +165,7 @@ add_traj_to_las <- function(las, traj) {
 #' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 #' plus 1e9 seconds, as defined in LAS 1.4 specifications.
 #' @param season_filter numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)
-#' @param traj data.frame. Trajectory of the LAS chunk. If NULL, the function will try to compute it.
+#' @param traj data.frame with columns Easting, Northing, Elevation, Time. Trajectory covering the LAS chunk. If NULL, the function will try to compute it.
 #' @return a Normalized point cloud (.laz) with several new attributes need to run fCBDprofile_fuelmetrics
 #' @details
 #' The attributes added to the laz are LMA : LMA value of each point. Zref :original Z; Easting, Northing, Elevation, Time that are the X,Y,Z position of the plane and the its GPStime for each point (obtained from lidR::track_sensor()). In a following version it will be possible to directly load a trajectory file if available.
@@ -207,9 +209,11 @@ fPCpretreatment <- function(
   }
 
   if (is.null(traj)) {
-    warning("Computing trajectory from LAS file...
-    Trajectory would better be computed outside pretreatment,
-    with a buffer (e.g. 500m) to avoid border effects.")
+    warning(paste0(
+      "Computing trajectory from LAS file...\n",
+      "Trajectory would better be computed outside pretreatment,",
+      "with a buffer (e.g. 500m) to avoid border effects."
+    ))
     traj <- get_traj(las, thin = 0.0001, interval = .2, rmdup = TRUE, renum = TRUE)
   }
   las <- add_traj_to_las(las, traj)
