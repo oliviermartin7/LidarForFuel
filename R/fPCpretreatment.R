@@ -95,25 +95,33 @@ lasrmdup <- function(las) {
 get_traj <- function(las, thin = 0.0001, interval = .2, rmdup = TRUE, renum = TRUE) {
   .N <- X <- Y <- Z <- gpstime <- ReturnNumber <- NULL
 
+  if (thin > 0) {
+    # thinning pulses before rmdup
+    # reduces considerably the computation time
+    data <- las@data
+    ftime <- plyr::round_any(data$gpstime - min(data$gpstime), thin)
+    times <- data[, first(gpstime), by = ftime]$V1
+    data <- data[gpstime %in% times]
+    las@data <- data
+  }
+
   if (rmdup) {
-    # tictoc::tic("Remove duplicates")
     # remove points with duplicated ReturnNumber
+    # warning: can be very long for big las
     las <- lasrmdup(las)
-    # tictoc::toc()
   }
 
   if (renum) {
-    # tictoc::tic("Renumber returns")
     las <- lasrenumber(las)
-    # tictoc::toc()
   }
 
   traj <- try(
     {
+      lidR:::track_sensor.LAS()
       traj <- lidR::track_sensor(
         las,
         algorithm = lidR::Roussel2020(interval = interval),
-        thin_pulse_with_time = thin
+        thin_pulse_with_time = 0
       )
       traj <- cbind(sf::st_coordinates(traj), Time = traj$gpstime) |> data.table::as.data.table()
       traj <- traj[, .(Easting = X, Northing = Y, Elevation = Z, Time), ]
@@ -211,7 +219,7 @@ fPCpretreatment <- function(
   if (is.null(traj)) {
     warning(paste0(
       "Computing trajectory from LAS file...\n",
-      "Trajectory would better be computed outside pretreatment,",
+      "Trajectory would better be computed outside pretreatment, ",
       "with a buffer (e.g. 500m) to avoid border effects."
     ))
     traj <- get_traj(las, thin = 0.0001, interval = .2, rmdup = TRUE, renum = TRUE)
@@ -237,18 +245,16 @@ fPCpretreatment <- function(
 
   # LMA
   if (is.numeric(LMA)) {
-    las@data$LMA <- LMA
-  }
-  if (is.numeric(WD)) {
-    las@data$WD <- WD
-  }
-  if (is.numeric(LMA) == FALSE) {
+    las@data[["LMA"]] <- LMA
+  } else {
     ## Load LMA map
     LMA_map <- terra::rast(LMA)
     ### Add LMA to point cloud
     las <- lidR::merge_spatial(las, LMA_map$LMA, attribute = "LMA")
   }
-  if (is.numeric(WD) == FALSE) {
+  if (is.numeric(WD)) {
+    las@data[["WD"]] <- WD
+  } else {
     ## Load LMA map
     WD_map <- terra::rast(WD)
     ### Add WD to point cloud
