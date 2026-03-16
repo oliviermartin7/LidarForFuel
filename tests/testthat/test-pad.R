@@ -23,6 +23,18 @@ test_that("pad", {
     unlist()
   expect_all_true(c("date", "Cover", "Cover_4", "Cover_6") %in% names(pad))
 
+  # test null cover
+  nlas1 <- nlas
+  nlas1@data = nlas1@data[Z < 2]
+  pad <- lidR::cloud_metrics(nlas1, pad_metrics(z0 = 0, dz = 0.5, nlayers = 2)) |>
+    unlist()
+  expect_true(pad["Cover"]==0)
+  nlas1@data = nlas1@data[Z < 0]
+  pad <- lidR::cloud_metrics(nlas1, pad_metrics(z0 = 0, dz = 0.5, nlayers = 2)) |>
+    unlist()
+  expect_true(is.null(pad))
+  # expect_all_true(names(pad) == c("date", "Cover", "Cover_4", "Cover_6", "PAD_0_0.5", "PAD_0.5_1"))
+
 
   # pixel metrics
   expect_warning(
