@@ -41,9 +41,8 @@ get_traj <- function(
   interval = .2,
   rmdup = TRUE,
   renum = TRUE,
-  multi_pulse = FALSE
+  multi_pulse = TRUE
 ) {
-  X <- Y <- Z <- gpstime <- PointSourceID <- NULL
 
   if (thin > 0) {
     # thinning pulses before rmdup
@@ -53,6 +52,10 @@ get_traj <- function(
     times <- data[, first(gpstime), by = ftime]$V1
     data <- data[gpstime %in% times]
     las@data <- data
+  }
+
+  if (!"UserData" %in% names(las@data)) {
+    multi_pulse <- FALSE
   }
 
   if (rmdup) {
@@ -65,41 +68,15 @@ get_traj <- function(
     las <- lasrenumber(las, multi_pulse = multi_pulse)
   }
 
-  traj <- try(
-    {
-      traj <- lidR::track_sensor(
-        las,
-        algorithm = lidR::Roussel2020(interval = interval),
-        thin_pulse_with_time = 0,
-        multi_pulse = multi_pulse
-      )
-    },
-    silent = TRUE
+  traj <- lidR::track_sensor(
+    las,
+    algorithm = lidR::Roussel2020(interval = interval),
+    thin_pulse_with_time = 0,
+    multi_pulse = multi_pulse
   )
 
-  try_default_traj <- FALSE
-  if (inherits(traj, "try-error")) {
-    warning("Failed to compute trajectory with lidR::track_sensor.")
-    try_default_traj <- TRUE
-  }
   if (nrow(traj) == 0) {
-    warning("Trajectory computed with lidR::track_sensor is empty.")
-    try_default_traj <- TRUE
-  }
-
-  if (try_default_traj) {
-    warning("Setting default trajectory to 1400m above of the ground points.")
-    traj <- lidR::filter_ground(las)@data[, list(gpstime, X, Y, Z, PointSourceID)]
-    if (nrow(traj) == 0) {
-      warning("No ground point found, cannot set default trajectory.")
-      return(NULL)
-    }
-    traj <- traj[, list(
-      X = mean(X), Y = mean(Y), Z = mean(Z) + 1400,
-      PointSourceID = PointSourceID[1],
-      SCORE = 0
-    ), by = "gpstime"]
-    traj <- traj |> sf::st_as_sf(coords = c("X", "Y", "Z"), crs = sf::st_crs(las))
+    stop("Trajectory computed with lidR::track_sensor is empty.")
   }
 
   return(traj)

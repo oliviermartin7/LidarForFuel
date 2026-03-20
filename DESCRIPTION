@@ -10,6 +10,7 @@ Description: This package provides a set of tools to compute fuel metrics. The m
 License: CeCILL
 Encoding: UTF-8
 URL: https://www.sciencedirect.com/science/article/pii/S0168192324004544
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
     circular,
@@ -41,4 +42,5 @@ Collate:
   fCBDprofile_fuelmetrics.R
   fPCpretreatment.R
   ffuelmetrics.R
+  pad.R
   trajectory.R

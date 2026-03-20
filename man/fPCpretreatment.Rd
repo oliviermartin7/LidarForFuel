@@ -59,10 +59,12 @@ Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. T
 }
 \details{
 The attributes added to the laz are:
-- LMA : LMA value of each point
-- Zref :original Z
-- Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
-  and the its GPStime for each point (obtained from lidR::track_sensor()).
+\itemize{
+\item LMA : LMA value of each point
+\item Zref :original Z
+\item Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
+and the its GPStime for each point (obtained from lidR::track_sensor()).
+}
 }
 \examples{
 \donttest{
