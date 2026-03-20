@@ -32,6 +32,8 @@
 #' \itemize{
 #'   \item date as the mean gpstime
 #'   \item Cover layers at `height_cover`, 4m and 6m
+#'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
+#'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
 #'   \item PAD layers from `z0` to `z0 + nlayers * dz`,
 #' }
 #'
@@ -203,6 +205,7 @@ pad_metrics <- function(
   output <- c(
     list(date = date),
     list(Cover = cover_h, Cover_4 = cover_4, Cover_6 = cover_6),
+    list(cos_theta = cos_theta),
     output
   )
   return(output)
