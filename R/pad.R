@@ -55,7 +55,7 @@ pad_metrics <- function(
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
-  limit_N_points = 400, limit_flight_agl = 800, keep_N = FALSE
+  limit_N_points = 0, limit_flight_agl = 800, keep_N = FALSE
 ) {
   fun <- substitute(
     ~ .pad_metrics(
@@ -88,7 +88,7 @@ pad_metrics <- function(
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
-  limit_N_points = 400, limit_flight_agl = 800,
+  limit_N_points = 0, limit_flight_agl = 800,
   keep_N = FALSE
 ) {
   if (length(Z) < limit_N_points) {
