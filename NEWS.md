@@ -8,6 +8,8 @@
 * new arg `traj` for `fPCpretreatment`: trajectory should be computed
   separately with buffer.
 * add tests
+* add function `pad_metrics` (PR #17) :
+  * change default from `limit_N_points=400` to `limit_N_points=0`
 
 ## Change
 
@@ -20,6 +22,10 @@
   * `Height_Cover` --> `height_cover`
   * `limit_flightheight` --> `limit_flight_height`
   * `limit_vegetationheight` --> `limit_vegetation_height`
+
+* remove alternative trajectory when not enough multi-returns to compute: 
+  * before: the sensor location was set to the average of ground point plus 1400m
+  * now: NA is returned
 
 ## Fix
 

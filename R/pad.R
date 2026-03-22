@@ -32,6 +32,8 @@
 #' \itemize{
 #'   \item date as the mean gpstime
 #'   \item Cover layers at `height_cover`, 4m and 6m
+#'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
+#'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
 #'   \item PAD layers from `z0` to `z0 + nlayers * dz`,
 #' }
 #'
@@ -55,7 +57,7 @@ pad_metrics <- function(
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
-  limit_N_points = 400, limit_flight_agl = 800, keep_N = FALSE
+  limit_N_points = 0, limit_flight_agl = 800, keep_N = FALSE
 ) {
   fun <- substitute(
     ~ .pad_metrics(
@@ -88,7 +90,7 @@ pad_metrics <- function(
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
-  limit_N_points = 400, limit_flight_agl = 800,
+  limit_N_points = 0, limit_flight_agl = 800,
   keep_N = FALSE
 ) {
   if (length(Z) < limit_N_points) {
@@ -203,6 +205,7 @@ pad_metrics <- function(
   output <- c(
     list(date = date),
     list(Cover = cover_h, Cover_4 = cover_4, Cover_6 = cover_6),
+    list(cos_theta = cos_theta),
     output
   )
   return(output)
