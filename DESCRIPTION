@@ -44,3 +44,5 @@ Collate:
   ffuelmetrics.R
   pad.R
   trajectory.R
+  computeLiDARMetrics_V1.R
+  

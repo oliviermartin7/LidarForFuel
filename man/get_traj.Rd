@@ -10,7 +10,7 @@ get_traj(
   interval = 0.2,
   rmdup = TRUE,
   renum = TRUE,
-  multi_pulse = FALSE
+  multi_pulse = TRUE
 )
 }
 \arguments{

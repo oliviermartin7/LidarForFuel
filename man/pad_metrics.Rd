@@ -15,7 +15,7 @@ pad_metrics(
   cover_type = "all",
   height_cover = 2,
   use_cover = TRUE,
-  limit_N_points = 400,
+  limit_N_points = 0,
   limit_flight_agl = 800,
   keep_N = FALSE
 )
@@ -39,7 +39,7 @@ pad_metrics(
   cover_type = "all",
   height_cover = 2,
   use_cover = TRUE,
-  limit_N_points = 400,
+  limit_N_points = 0,
   limit_flight_agl = 800,
   keep_N = FALSE
 )
@@ -85,6 +85,8 @@ The list of PAD metrics includes:
 \itemize{
 \item date as the mean gpstime
 \item Cover layers at \code{height_cover}, 4m and 6m
+\item cos_theta which is the average scan zenith angle used in the computation of PAD.
+If \code{scanning_angle = FALSE}, \code{cos_theta} is set to 1, i.e. pulses are considered vertical.
 \item PAD layers from \code{z0} to \code{z0 + nlayers * dz},
 }
 
