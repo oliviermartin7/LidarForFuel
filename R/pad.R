@@ -6,6 +6,9 @@
 #' @param z0 numeric. Default = 0. Minimum height of the first layer in meters.
 #' @param dz numeric. Default = 1. Height of a layer in meters.
 #' @param nlayers numeric. Default = 60. Number of layers.
+#' @param ground_margin numeric. Default = 0.1. Margin between the ground (Z=0) and the minimum height
+#' of the first layer in meters. This margin is used to remove the points near the ground from the PAD
+#' computation.
 #' @param G numeric. Default = 0.5. Leaf projection ratio.
 #' @param omega numeric. clumping factor.
 #' Default is 1.
@@ -35,7 +38,7 @@
 #'   \item Cover_h_pad as the cover metric used for the PAD computation above `height_cover`.
 #'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
 #'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
-#'   \item PAD layers from `z0` to `z0 + nlayers * dz`,
+#'   \item PAD layers from `z0` to `z0 + nlayers * dz`, named as `PAD_{dz}_{zi}` with zi the bottom edge of layer i.
 #' }
 #'
 #' If keep_N = TRUE, the list also contains Ni and N layers at same heights than PAD layers.
@@ -55,6 +58,7 @@
 #' @export
 pad_metrics <- function(
   z0 = 0, dz = 1, nlayers = 60,
+  ground_margin = 0.1,
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
@@ -64,13 +68,15 @@ pad_metrics <- function(
     ~ .pad_metrics(
       gpstime, X, Y, Z, Zref, ReturnNumber,
       Easting, Northing, Elevation,
-      z0 = z0, dz = dz, nlayers = nlayers, G = G, omega = omega,
+      z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,
+      G = G, omega = omega,
       scanning_angle = scanning_angle,
       cover_type = cover_type, height_cover = height_cover, use_cover = use_cover,
       limit_N_points = limit_N_points, limit_flight_agl = limit_flight_agl,
       keep_N = keep_N
     ), list(
-      z0 = z0, dz = dz, nlayers = nlayers, G = G, omega = omega,
+      z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,
+      G = G, omega = omega,
       scanning_angle = scanning_angle,
       cover_type = cover_type, height_cover = height_cover, use_cover = use_cover,
       limit_N_points = limit_N_points, limit_flight_agl = limit_flight_agl,
@@ -87,7 +93,7 @@ pad_metrics <- function(
 .pad_metrics <- function(
   gpstime, X, Y, Z, Zref, ReturnNumber,
   Easting, Northing, Elevation,
-  z0 = 0, dz = 1, nlayers = 60,
+  z0 = 0, dz = 1, nlayers = 60, ground_margin = 0.1,
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
@@ -121,6 +127,10 @@ pad_metrics <- function(
     z_max_pad <- z0 + dz * nlayers
   }
   breaks <- c(-Inf, seq(z0, z_max_pad, dz))
+  # min z of each layer
+  min_layer <- breaks[-length(breaks)]
+  # adjust break for the layer near the ground
+  breaks[breaks == 0] <- breaks[breaks == 0] + ground_margin
 
   ## get number of return in strata
   Ni <- cut(Z, breaks = breaks) |>
@@ -128,8 +138,6 @@ pad_metrics <- function(
     c()
   N <- cumsum(Ni)
 
-  # min z of each layer
-  min_layer <- breaks[-length(breaks)]
 
   # remove first layer useless for the rest
   Ni <- Ni[-1]
@@ -190,16 +198,14 @@ pad_metrics <- function(
   min_empty <- plyr::round_any(max(Z), dz, ceiling)
   PAD[min_layer >= min_empty] <- 0
 
-  intervals <- names(PAD) |>
-    gsub("(\\(|\\[|\\]|\\))", "", x = _) |>
-    gsub(",", "_", x = _)
-
-  names(PAD) <- paste0("PAD_", intervals)
+  # naming of layers
+  z_names <- paste(dz, min_layer, sep = "_")
+  names(PAD) <- paste0("PAD_", z_names)
   output <- as.list(PAD)
 
   if (keep_N) {
-    names(Ni) <- paste0("Ni_", intervals)
-    names(N) <- paste0("N_", intervals)
+    names(Ni) <- paste0("Ni_", z_names)
+    names(N) <- paste0("N_", z_names)
 
     output <- c(output, as.list(Ni))
     output <- c(output, as.list(N))
