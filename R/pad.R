@@ -66,7 +66,7 @@ pad_metrics <- function(
 ) {
   fun <- substitute(
     ~ .pad_metrics(
-      gpstime, X, Y, Z, Zref, ReturnNumber,
+      gpstime, X, Y, Z, Zref, ReturnNumber, Classification,
       Easting, Northing, Elevation,
       z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,
       G = G, omega = omega,
@@ -91,7 +91,7 @@ pad_metrics <- function(
 #'
 #' @export
 .pad_metrics <- function(
-  gpstime, X, Y, Z, Zref, ReturnNumber,
+  gpstime, X, Y, Z, Zref, ReturnNumber, Classification,
   Easting, Northing, Elevation,
   z0 = 0, dz = 1, nlayers = 60, ground_margin = 0.1,
   G = 0.5, omega = 0.77,
@@ -104,6 +104,9 @@ pad_metrics <- function(
     warning("NULL return: the number of points < limit_N_points. Check the point cloud.")
     return(NULL)
   }
+
+  veg_gnd_points <- (Classification >= 5 | Classification == 9)
+  Z_veg_gnd <- Z[veg_gnd_points]
 
   if (scanning_angle) {
     ## calculates component of  vector U (plane -> point). To take into account scanning angle in PAD estimation ----
@@ -132,12 +135,16 @@ pad_metrics <- function(
   # adjust break for the layer near the ground
   breaks[breaks == 0] <- breaks[breaks == 0] + ground_margin
 
-  ## get number of return in strata
-  Ni <- cut(Z, breaks = breaks) |>
+  ## get number of returns intercepted in each strata
+  Ni <- cut(Z[veg_gnd_points], breaks = breaks) |>
     table() |>
     c()
-  N <- cumsum(Ni)
 
+  # get number of "pulses" entering each strata
+  N <- cut(Z, breaks = breaks) |>
+    table() |>
+    c() |>
+    cumsum()
 
   # remove first layer useless for the rest
   Ni <- Ni[-1]
@@ -157,23 +164,24 @@ pad_metrics <- function(
 
 
   ### cos theta take into account scanning angle
-  cos_theta <- mean(abs(Nz_U))
+  cos_theta <- mean(abs(Nz_U[veg_gnd_points]))
 
   ## Plant area density calculation (actually FAD --> fuel area density: leaves + twigs) ----
   if (cover_type == "first") {
     # first returns covers
     first_returns <- ReturnNumber == 1
+    fr_veg_gnd <- first_returns[veg_gnd_points]
     N_f <- sum(first_returns)
-    cover_h_pad <- sum(first_returns[Z > height_cover]) / N_f
-    cover_2 <- sum(first_returns[Z > 2]) / N_f
-    cover_4 <- sum(first_returns[Z > 4]) / N_f
-    cover_6 <- sum(first_returns[Z > 6]) / N_f
+    cover_h_pad <- sum(fr_veg_gnd[Z_veg_gnd > height_cover]) / N_f
+    cover_2 <- sum(fr_veg_gnd[Z_veg_gnd > 2]) / N_f
+    cover_4 <- sum(fr_veg_gnd[Z_veg_gnd > 4]) / N_f
+    cover_6 <- sum(fr_veg_gnd[Z_veg_gnd > 6]) / N_f
   } else if (cover_type == "all") {
     # compute "NRD" cover, i.e. all returns above height_cover
-    cover_h_pad <- sum(Z > height_cover) / length(Z)
-    cover_2 <- sum(Z > 2) / length(Z)
-    cover_4 <- sum(Z > 4) / length(Z)
-    cover_6 <- sum(Z > 6) / length(Z)
+    cover_h_pad <- sum(Z_veg_gnd > height_cover) / length(Z)
+    cover_2 <- sum(Z_veg_gnd > 2) / length(Z)
+    cover_4 <- sum(Z_veg_gnd > 4) / length(Z)
+    cover_6 <- sum(Z_veg_gnd > 6) / length(Z)
   } else {
     stop("cover_type must be 'all' or 'first'")
   }
@@ -195,7 +203,7 @@ pad_metrics <- function(
   }
 
   # set PAD to 0 for upper strata with no points
-  min_empty <- plyr::round_any(max(Z), dz, ceiling)
+  min_empty <- plyr::round_any(max(Z_veg_gnd), dz, ceiling)
   PAD[min_layer >= min_empty] <- 0
 
   # naming of layers

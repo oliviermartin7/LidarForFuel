@@ -174,36 +174,36 @@ fPCpretreatment <- function(
   #   las@data=cbind(las@data,dtm_las@data[nn2_las_DTM$nn.idx,4:6])
   # }
 
-  # LMA
-  if (is.numeric(LMA)) {
-    las@data[["LMA"]] <- LMA
-  } else {
-    ## Load LMA map
-    LMA_map <- terra::rast(LMA)
-    ### Add LMA to point cloud
-    las <- lidR::merge_spatial(las, LMA_map$LMA, attribute = "LMA")
-  }
-  if (is.numeric(WD)) {
-    las@data[["WD"]] <- WD
-  } else {
-    ## Load LMA map
-    WD_map <- terra::rast(WD)
-    ### Add WD to point cloud
-    las <- lidR::merge_spatial(las, WD_map$WD, attribute = "WD")
-  }
+  # # LMA
+  # if (is.numeric(LMA)) {
+  #   las@data[["LMA"]] <- LMA
+  # } else {
+  #   ## Load LMA map
+  #   LMA_map <- terra::rast(LMA)
+  #   ### Add LMA to point cloud
+  #   las <- lidR::merge_spatial(las, LMA_map$LMA, attribute = "LMA")
+  # }
+  # if (is.numeric(WD)) {
+  #   las@data[["WD"]] <- WD
+  # } else {
+  #   ## Load LMA map
+  #   WD_map <- terra::rast(WD)
+  #   ### Add WD to point cloud
+  #   las <- lidR::merge_spatial(las, WD_map$WD, attribute = "WD")
+  # }
 
   # Normalyze height
   las <- lidR::normalize_height(las = las, algorithm = lidR::tin())
-  # Remove points too low (<-3) or too high (>35m). Keep vegetation, ground, unclassified and water point only
-  las <- lidR::filter_poi(las, (Classification <= 5 | Classification == 9) & Z < Height_filter)
+  # filter out classe 66 (virtual points) and points above maximum height
+  las <- lidR::filter_poi(las, Classification != 66 & Z < Height_filter)
   las <- lidR::classify_noise(las, lidR::sor(5, 10))
 
-  las@data[Z <= H_strata_bush]$LMA <- LMA_bush
-  las@data[Z <= H_strata_bush]$WD <- WD_bush
-  # add names to laz
-  las <- lidR::add_lasattribute(las, name = "LMA", desc = "leaf mass area")
-  las <- lidR::add_lasattribute(las, name = "WD", desc = "Wood density")
-  las <- lidR::add_lasattribute(las, name = "Zref", desc = "original Z")
+  # las@data[Z <= H_strata_bush]$LMA <- LMA_bush
+  # las@data[Z <= H_strata_bush]$WD <- WD_bush
+  # # add names to laz
+  # las <- lidR::add_lasattribute(las, name = "LMA", desc = "leaf mass area")
+  # las <- lidR::add_lasattribute(las, name = "WD", desc = "Wood density")
+  # las <- lidR::add_lasattribute(las, name = "Zref", desc = "original Z")
   # if (norm_ground == T){
   #   las=lidR::add_lasattribute(las,name="Nx",desc="normal")
   #   las=lidR::add_lasattribute(las,name="Ny",desc="normal")
