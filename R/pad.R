@@ -31,7 +31,8 @@
 #' The list of PAD metrics includes:
 #' \itemize{
 #'   \item date as the mean gpstime
-#'   \item Cover layers at `height_cover`, 4m and 6m
+#'   \item Cover layers at 2m, 4m and 6m
+#'   \item Cover_h_pad as the cover metric used for the PAD computation above `height_cover`.
 #'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
 #'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
 #'   \item PAD layers from `z0` to `z0 + nlayers * dz`,
@@ -119,8 +120,8 @@ pad_metrics <- function(
   } else {
     z_max_pad <- z0 + dz * nlayers
   }
-
   breaks <- c(-Inf, seq(z0, z_max_pad, dz))
+
   ## get number of return in strata
   Ni <- cut(Z, breaks = breaks) |>
     table() |>
@@ -155,12 +156,14 @@ pad_metrics <- function(
     # first returns covers
     first_returns <- ReturnNumber == 1
     N_f <- sum(first_returns)
-    cover_h <- sum(first_returns[Z > height_cover]) / N_f
+    cover_h_pad <- sum(first_returns[Z > height_cover]) / N_f
+    cover_2 <- sum(first_returns[Z > 2]) / N_f
     cover_4 <- sum(first_returns[Z > 4]) / N_f
     cover_6 <- sum(first_returns[Z > 6]) / N_f
   } else if (cover_type == "all") {
     # compute "NRD" cover, i.e. all returns above height_cover
-    cover_h <- sum(Z > height_cover) / length(Z)
+    cover_h_pad <- sum(Z > height_cover) / length(Z)
+    cover_2 <- sum(Z > 2) / length(Z)
     cover_4 <- sum(Z > 4) / length(Z)
     cover_6 <- sum(Z > 6) / length(Z)
   } else {
@@ -173,11 +176,13 @@ pad_metrics <- function(
     if (height_cover >= max(Z)) {
       warning(paste0("height_cover > maximum vegetation height"))
     }
-    if (cover_h == 0) {
+    if (cover_h_pad == 0) {
       PAD <- -(log(Gf) * cos_theta / (G * omega) / dz)
       warning(paste0("Cover method was not use as Cover = 0"))
     } else {
-      PAD <- (-log(1 - Ni / (N * cover_h)) / (G * omega * (dz / cos_theta))) * cover_h
+      cover_h_pad_v <- rep(cover_h_pad, length(min_layer))
+      cover_h_pad_v[min_layer < height_cover] <- 1
+      PAD <- (-log(1 - Ni / (N * cover_h_pad)) / (G * omega * (dz / cos_theta))) * cover_h_pad
     }
   }
 
@@ -186,8 +191,8 @@ pad_metrics <- function(
   PAD[min_layer >= min_empty] <- 0
 
   intervals <- names(PAD) |>
-    gsub("(\\(|\\[|\\]|\\))", "", x=_) |>
-    gsub(",", "_", x=_)
+    gsub("(\\(|\\[|\\]|\\))", "", x = _) |>
+    gsub(",", "_", x = _)
 
   names(PAD) <- paste0("PAD_", intervals)
   output <- as.list(PAD)
@@ -204,7 +209,7 @@ pad_metrics <- function(
 
   output <- c(
     list(date = date),
-    list(Cover = cover_h, Cover_4 = cover_4, Cover_6 = cover_6),
+    list(Cover_h_pad = cover_h_pad, Cover_2 = cover_2, Cover_4 = cover_4, Cover_6 = cover_6),
     list(cos_theta = cos_theta),
     output
   )
