@@ -2,6 +2,7 @@
 
 export(.pad_metrics)
 export(add_traj_to_las)
+export(class_metrics)
 export(fCBDprofile_fuelmetrics)
 export(fPCpretreatment)
 export(ffuelmetrics)
