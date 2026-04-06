@@ -35,20 +35,39 @@
 #- use CBH2 rather than CBH (CBH2 is higher as it requires the canopy to be continuously above the threshold below its maximum)
 #- Parfois CBH2<CBHlow (1/3% des placettes) => CBHlow semble mieux adapté à ces cas => proposition de remplacement de CBH2 par CBHlow
 
-computeLiDARMetrics <- function(
-  PADval = NULL, # PAD values in m2/m3; either PAD or CBD should be provided
-  CBDval = NULL, # CBD values in kg/m3
-  FMAcan = NULL, # fuel mass area in kg/m2 for canopy
-  FMAshrub = NULL, # fuel mass area in kg/m2 for shrub
-  zval, # height values in m
-  dz = 0.5, # vertical resolution of the CBDval in m
-  LadderFuelBDthresholds = c(0.01, 0.02, 0.05), # minimal bulk density thresholds for Understorey and Ladder fuels (kg/m3)
-  CanopyHeightThreshold = 1, # default minimal value of height in m to look for CBH and CTH, typically 1 to 3 m
-  CanopyBDTreshFrac = 0.1, # fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.3 is closer to CBDmin)
-  CanopyTopBDThresholds = c(0.0012, 0.01), # minimal bulkDensity to look for CTH (canopy height but in terms of fuel<Height)
-  CBHThresholdRatio = 1 / 5, # ratio of total height above which we look for CBH
-  bdmax = 1.00, # max value of bulk density kg/m3 for canopy (above 1 m only)
-  M = 2.5, # M factor from Perrakis 2025
+#' Fuel metrics from PAD profiles or bulk density profiles
+#' 
+#' @param PADval numeric vector. PAD values in m2/m3. Set to NULL to input directly CBDval.
+#' @param CBDval numeric vector. CBD values in kg/m3, only used if PADval is NULL.
+#' @param FMAcan numeric. Fuel mass area in kg/m2 for canopy
+#' @param FMAshrub numeric. Fuel mass area in kg/m2 for shrub
+#' @param zval numeric vector. Middle height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.
+#' @param dz numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.
+#' @param LadderFuelBDthresholds numeric vector. Minimal bulk density thresholds for Understorey and Ladder fuels (kg/m3)
+#' @param CanopyHeightThreshold numeric. Default minimal value of height in m to look for CBH and CTH, typically 1 to 3 m
+#' @param CanopyBDTreshFrac numeric. Fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.3 is closer to CBDmin)
+#' @param CanopyTopBDThresholds numeric vector. Minimal bulkDensity to look for CTH (canopy height but in terms of fuel<Height)
+#' @param CBHThresholdRatio numeric. Ratio of total height above which we look for CBH
+#' @param bdmax numeric. Max value of bulk density kg/m3 for canopy (above 1 m only)
+#' @param M numeric. M factor from Perrakis 2025
+#' @param asTibble logical. If TRUE, returns a tibble.
+#'
+#' @name ffuelmetrics2
+#' @export
+ffuelmetrics2 <- function(
+  PADval = NULL,
+  CBDval = NULL,
+  FMAcan = NULL,
+  FMAshrub = NULL,
+  zval,
+  dz = 0.5,
+  LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
+  CanopyHeightThreshold = 1,
+  CanopyBDTreshFrac = 0.1,
+  CanopyTopBDThresholds = c(0.0012, 0.01),
+  CBHThresholdRatio = 1 / 5,
+  bdmax = 1.00,
+  M = 2.5,
   asTibble = F
 ) { # two different output formats depending on the need (plots or raster)
 
@@ -301,8 +320,9 @@ computeLiDARMetrics <- function(
 }
 
 
-# application à un raster
-computeLiDARMetricsRast <- function(
+#' @rdname ffuelmetrics2
+#' @export
+ffuelmetrics2Rast <- function(
   PAD_rast = NULL, # PAD values in m2/m3; either PAD or CBD should be provided
   CBD_rast = NULL, # CBD values in kg/m3
   FMAcan_rast = NULL, # fuel mass area in kg/m2 for canopy
@@ -332,7 +352,7 @@ computeLiDARMetricsRast <- function(
   metrics2 <- terra::app(
     PAD_FMA,
     fun = function(v) { # v = valeurs pour un pixel donné, pour toutes les couches y compris les FMA
-      computeLiDARMetrics(
+      ffuelmetrics2(
         PADval = v[1:nPAD], # profil PAD du pixel,
         FMAcan = v[nPAD + 1], # FMAcan
         FMAshrub = v[nPAD + 2], # FMAshrub
@@ -342,7 +362,7 @@ computeLiDARMetricsRast <- function(
     }
   )
   # just to get names of outputs, because terra::app does not keep names
-  name_template <- names(computeLiDARMetrics(CBDval = rep(0, length(zval)), FMAcan = 1, FMAshrub = 1, zval = zval))
+  name_template <- names(ffuelmetrics2(CBDval = rep(0, length(zval)), FMAcan = 1, FMAshrub = 1, zval = zval))
   names(metrics2) <- name_template
   return(metrics2)
 }
