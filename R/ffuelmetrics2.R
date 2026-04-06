@@ -36,7 +36,7 @@
 #- Parfois CBH2<CBHlow (1/3% des placettes) => CBHlow semble mieux adapté à ces cas => proposition de remplacement de CBH2 par CBHlow
 
 #' Fuel metrics from PAD profiles or bulk density profiles
-#' 
+#'
 #' @param PADval numeric vector. PAD values in m2/m3. Set to NULL to input directly CBDval.
 #' @param CBDval numeric vector. CBD values in kg/m3, only used if PADval is NULL.
 #' @param FMAcan numeric. Fuel mass area in kg/m2 for canopy
@@ -68,7 +68,7 @@ ffuelmetrics2 <- function(
   CBHThresholdRatio = 1 / 5,
   bdmax = 1.00,
   M = 2.5,
-  asTibble = F
+  asTibble = FALSE
 ) { # two different output formats depending on the need (plots or raster)
 
   zlow <- 1.0 # limitation of lower uncertain strata in m, for TFL2 computation, etc
@@ -336,7 +336,7 @@ ffuelmetrics2Rast <- function(
   CBHThresholdRatio = 1 / 5, # ratio of total height above which we look for CBH
   bdmax = 1.00, # max value of bulk density kg/m3 for canopy (above 1 m only)
   M = 2.5, # M factor from Perrakis 2025
-  asTibble = F
+  asTibble = FALSE
 ) {
   # préparation du PAD_rast
   if (is.null(PAD_rast)) {

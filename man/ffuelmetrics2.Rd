@@ -19,7 +19,7 @@ ffuelmetrics2(
   CBHThresholdRatio = 1/5,
   bdmax = 1,
   M = 2.5,
-  asTibble = F
+  asTibble = FALSE
 )
 
 ffuelmetrics2Rast(
@@ -36,7 +36,7 @@ ffuelmetrics2Rast(
   CBHThresholdRatio = 1/5,
   bdmax = 1,
   M = 2.5,
-  asTibble = F
+  asTibble = FALSE
 )
 }
 \arguments{
