@@ -76,7 +76,7 @@ get_traj <- function(
   )
 
   if (nrow(traj) == 0) {
-    stop("Trajectory computed with lidR::track_sensor is empty.")
+    stop("Computed trajectory is empty: maybe not enough points to compute (expects 50 points by interval).")
   }
 
   return(traj)

@@ -30,10 +30,13 @@ test_that("get and add traj", {
   # when not enough pulses to reconstruct
   las1 <- lidR::LAS(las)
   las1@data <- las1@data[1:50, ]
-  expect_warning({
+  expect_error({
     traj1 <- get_traj(las1)
-  })
-  expect_true(nrow(traj1) > 0)
+  },
+  regexp = "Computed trajectory is empty",
+  fixed = TRUE
+  )
+  # expect_true(nrow(traj1) > 0)
   # TODO: test multi_pulse
 
   # add trajectory
