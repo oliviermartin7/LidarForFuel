@@ -150,7 +150,7 @@ ffuelmetrics2 <- function(
     idx_true2 <- which(zval > CanopyHeightThreshold & zval < zval[idmax]) #>CanopyHeightThreshold and <idmax
     if (length(idx_true2) > 0) { # there is space between maxCBD and canopyHeightThreshold
       CanBDmin <- min(CBDval[idx_true2])
-      if (!is.na(CanBDmin) & !is.na(CanBDmax) & CanBDmin < CanBDmax) { # normal configuration with a minimum below CanBDmax
+      if (!is.na(CanBDmin) && !is.na(CanBDmax) && CanBDmin < CanBDmax) { # normal configuration with a minimum below CanBDmax
         idmin <- idx_true2[which(CBDval[idx_true2] == CanBDmin)[1]] # lower id of CBDmin
         CanBDTresh <- CanBDmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDmax # Threshold is a fraction of CanBDmax between CanBDmin and max
         above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
@@ -317,7 +317,7 @@ ffuelmetrics2Rast <- function(
     # print(global(is.na(PAD_rast), sum))
   }
   PAD_FMA <- c(PAD_rast, FMAcan_rast, FMAshrub_rast) # on empile les FMA à PAD pour utiliser terra:app
-  nPAD <- nlyr(PAD_rast)
+  nPAD <- terra::nlyr(PAD_rast)
   # calcul des metrics2 avec terra::app
   metrics2 <- terra::app(
     PAD_FMA,
