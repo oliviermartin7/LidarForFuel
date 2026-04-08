@@ -251,11 +251,13 @@ pad_metrics <- function(
 #' }
 #' @export
 parse_pad_heights <- function(pad_names) {
-  index <- which(grepl("^PAD_", pad_names))
-  pad_names <- pad_names[index]
-  pad_names <- sub("PAD_", "", pad_names)
-  pad_names <- strsplit(pad_names, "_")
-  pad_names <- matrix(unlist(pad_names) |> as.numeric(), ncol = 2, byrow = TRUE)
-  pad_names <- as.data.frame(cbind(index, pad_names)) |>
-    setNames(c("index", "dz", "z_bottom"))
+  idx <- grep("^PAD_", pad_names)
+  pad_heights <- pad_names[idx] |>
+    sub("PAD_", "", x = _) |>
+    strsplit("_") |>
+    unlist() |>
+    as.numeric() |>
+    matrix(ncol = 2, byrow = TRUE)
+  pad_heights <- as.data.frame(cbind(idx, pad_heights)) |>
+    setNames(c("idx", "dz", "z_bottom"))
 }
