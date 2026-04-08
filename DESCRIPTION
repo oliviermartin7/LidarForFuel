@@ -32,6 +32,7 @@ Imports:
     Rfast,
     rgl,
     sf,
+    slider,
     stats,
     stringr,
     svMisc,
