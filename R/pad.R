@@ -235,3 +235,27 @@ pad_metrics <- function(
   )
   return(output)
 }
+
+#' Parse dz and z_bottom from PAD names
+#'
+#' @param pad_names A vector of PAD names of type "PAD_{dz}_{z_bottom}".
+#'
+#' @return A data frame with columns "index", "dz", and "z_bottom",
+#' where "index" is the index of the PAD layer in the pad_names vector,
+#' "dz" is the layer thickness in meters, and "z_bottom" is the
+#' bottom height of the layer in meters.
+#'
+#' @examples \dontrun{
+#' pad <- lidR::cloud_metrics(nlas, pad_metrics())
+#' parse_pad_heights(names(pad))
+#' }
+#' @export
+parse_pad_heights <- function(pad_names) {
+  index <- which(grepl("^PAD_", pad_names))
+  pad_names <- pad_names[index]
+  pad_names <- sub("PAD_", "", pad_names)
+  pad_names <- strsplit(pad_names, "_")
+  pad_names <- matrix(unlist(pad_names) |> as.numeric(), ncol = 2, byrow = TRUE)
+  pad_names <- as.data.frame(cbind(index, pad_names)) |>
+    setNames(c("index", "dz", "z_bottom"))
+}
