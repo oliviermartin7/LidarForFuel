@@ -44,5 +44,7 @@ Collate:
   ffuelmetrics.R
   pad.R
   trajectory.R
+  ffuelmetrics2.R
+  class_metrics.R
   
   
