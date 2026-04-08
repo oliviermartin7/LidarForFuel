@@ -9,6 +9,7 @@ pad_metrics(
   z0 = 0,
   dz = 1,
   nlayers = 60,
+  ground_margin = 0.1,
   G = 0.5,
   omega = 0.77,
   scanning_angle = TRUE,
@@ -27,12 +28,14 @@ pad_metrics(
   Z,
   Zref,
   ReturnNumber,
+  Classification,
   Easting,
   Northing,
   Elevation,
   z0 = 0,
   dz = 1,
   nlayers = 60,
+  ground_margin = 0.1,
   G = 0.5,
   omega = 0.77,
   scanning_angle = TRUE,
@@ -50,6 +53,10 @@ pad_metrics(
 \item{dz}{numeric. Default = 1. Height of a layer in meters.}
 
 \item{nlayers}{numeric. Default = 60. Number of layers.}
+
+\item{ground_margin}{numeric. Default = 0.1. Margin between the ground (Z=0) and the minimum height
+of the first layer in meters. This margin is used to remove the points near the ground from the PAD
+computation.}
 
 \item{G}{numeric. Default = 0.5. Leaf projection ratio.}
 
@@ -84,10 +91,11 @@ This limit serves as a safeguard to eliminate cases where the trajectory reconst
 The list of PAD metrics includes:
 \itemize{
 \item date as the mean gpstime
-\item Cover layers at \code{height_cover}, 4m and 6m
+\item Cover layers at 2m, 4m and 6m
+\item Cover_h_pad as the cover metric used for the PAD computation above \code{height_cover}.
 \item cos_theta which is the average scan zenith angle used in the computation of PAD.
 If \code{scanning_angle = FALSE}, \code{cos_theta} is set to 1, i.e. pulses are considered vertical.
-\item PAD layers from \code{z0} to \code{z0 + nlayers * dz},
+\item PAD layers from \code{z0} to \code{z0 + nlayers * dz}, named as \verb{PAD_\{dz\}_\{zi\}} with zi the bottom edge of layer i.
 }
 
 If keep_N = TRUE, the list also contains Ni and N layers at same heights than PAD layers.
