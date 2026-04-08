@@ -187,19 +187,25 @@ pad_metrics <- function(
   }
 
   if (use_cover) {
-    PAD <- -(log(Gf) * cos_theta / (G * omega) / dz)
+    PAD <- -log(Gf) * cos_theta / (G * omega * dz)
   } else {
     if (height_cover >= max(Z)) {
       warning(paste0("height_cover > maximum vegetation height"))
     }
     if (cover_h_pad == 0) {
-      PAD <- -(log(Gf) * cos_theta / (G * omega) / dz)
+      PAD <- -log(Gf) * cos_theta / (G * omega * dz)
       warning(paste0("Cover method was not use as Cover = 0"))
     } else {
       cover_h_pad_v <- rep(cover_h_pad, length(min_layer))
       cover_h_pad_v[min_layer < height_cover] <- 1
-      PAD <- (-log(1 - Ni / (N * cover_h_pad)) / (G * omega * (dz / cos_theta))) * cover_h_pad
+      PAD <- -log(1 - NRD / cover_h_pad) * cover_h_pad * cos_theta / (G * omega * dz)
     }
+  }
+
+  if (ground_margin > 0) {
+    # regularize PAD on the bottom PAD layer
+    # making the hypothesis of the same PAD below ground margin than above
+    PAD[min_layer == 0] <- PAD[min_layer == 0] * dz / (dz - ground_margin)
   }
 
   # set PAD to 0 for upper strata with no points
