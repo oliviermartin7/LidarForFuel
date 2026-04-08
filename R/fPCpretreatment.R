@@ -83,11 +83,6 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 #' @param chunk LAS object, LAScluster chunk or character. If character, the path to a las (laz) file is expected.
 #' Can be apply to a catalog see lidR::catalog_apply # nolint: line_length_linter.
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
-#' @param LMA character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)
-#' @param WD character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).
-#' @param LMA_bush  character or numeric.Default = 140. similar to LMA but for the understorey strata (see H_strata_bush)
-#' @param WD_bush character or numeric. Default = 591. similar to WD but for the understorey strata (see H_strata_bush)
-#' @param H_strata_bush numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.
 #' @param Height_filter numeric. Default = 80. Height limit to remove noise point
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
 #' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
@@ -100,15 +95,13 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 #' @return LAS object. A normalized point cloud (.laz) with several new attributes needed to run fCBDprofile_fuelmetrics, see details.
 #' @details
 #' The attributes added to the laz are:
-#' - LMA : LMA value of each point
-#' - Zref :original Z
+#' - Zref : Z value before normalization, i.e. altitude of the point
 #' - Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
 #'   and the its GPStime for each point (obtained from lidR::track_sensor()).
 #' @examples
 #' \donttest{
 #' path2laz <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
-#' # LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
-#' M30_FontBlanche_pretreated <- fPCpretreatment(path2laz, LMA = 120.6)
+#' M30_FontBlanche_pretreated <- fPCpretreatment(path2laz)
 #' # displaying the new attributes in the las
 #' names(M30_FontBlanche_pretreated)
 #' }
@@ -117,11 +110,6 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 fPCpretreatment <- function(
   chunk,
   classify = FALSE,
-  LMA = 140,
-  WD = 591,
-  WD_bush = 591,
-  LMA_bush = 140,
-  H_strata_bush = 2,
   Height_filter = 60,
   start_date = "2011-09-14 01:46:40",
   season_filter = 1:12,
@@ -174,6 +162,12 @@ fPCpretreatment <- function(
   #   las@data=cbind(las@data,dtm_las@data[nn2_las_DTM$nn.idx,4:6])
   # }
 
+
+  # LMA = 140,
+  # WD = 591,
+  # WD_bush = 591,
+  # LMA_bush = 140,
+  # H_strata_bush = 2,
   # # LMA
   # if (is.numeric(LMA)) {
   #   las@data[["LMA"]] <- LMA
