@@ -83,15 +83,17 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 #' @param chunk LAS object, LAScluster chunk or character. If character, the path to a las (laz) file is expected.
 #' Can be apply to a catalog see lidR::catalog_apply # nolint: line_length_linter.
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
-#' @param Height_filter numeric. Default = 80. Height limit to remove noise point
+#' @param season_filter numeric. A vector of integer for months to keep (e.g: filter_season = 5:10 keep retunrs between may and october)
 #' @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
+#' @param exclude_classes numeric. Default = NULL. A vector of integer for classes to filter out of the point cloud. If NULL, all classes are kept.
 #' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
-#' @param start_date date. The reference datetime to retrieve datetime from relative gpstime of the laz.
+#' @param gpstime_ref character. Default = "2011-09-14 01:46:40". The datetime corresponding to gpstime=0, in order to retrieve the real datetime of points.
 #' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 #' plus 1e9 seconds, as defined in LAS 1.4 specifications.
-#' @param season_filter numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)
 #' @param traj sf object. Trajectory covering the LAS chunk. The sf object is expected to have a column gpstime and Point Z geometries.
 #' If NULL, the function will try to compute it.
+#' @param dtm rast or stars object. Digital terrain model (DTM) to use for height normalisation. It should be larger than the area of interest.
+#' If provided, the DTM is tinned to interpolate at each point location. If NULL, the normalisation function is using the tin of ground points.
 #' @return LAS object. A normalized point cloud (.laz) with several new attributes needed to run fCBDprofile_fuelmetrics, see details.
 #' @details
 #' The attributes added to the laz are:
@@ -110,26 +112,24 @@ filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-1
 fPCpretreatment <- function(
   chunk,
   classify = FALSE,
-  Height_filter = 60,
-  start_date = "2011-09-14 01:46:40",
   season_filter = 1:12,
   deviation_days = Inf,
+  exclude_classes = NULL,
   plot_hist_days = FALSE,
-  traj = NULL
+  gpstime_ref = "2011-09-14 01:46:40",
+  traj = NULL,
+  dtm = NULL
 ) {
-  X <- Z <- Classification <- NULL
-
+  Classification <- NULL
   # read chunk
   if (inherits(chunk, "LAS")) {
     las <- chunk
   } else {
     las <- lidR::readLAS(chunk)
   }
-  # TODO: filter virtual points, cf virtual classes in lidar-hd specs
-  las <- filter_seasons(las, season_filter, plot_hist_days = plot_hist_days)
-  las <- filter_date_mode(las, deviation_days, plot_hist_days = plot_hist_days)
-  # TODO: does it really happens in lidar-hd?
-  las <- lidR::filter_poi(las, !is.na(X))
+
+  las <- filter_seasons(las, months = season_filter, gpstime_ref = gpstime_ref, plot_hist_days = plot_hist_days)
+  las <- filter_date_mode(las, deviation_days, gpstime_ref = gpstime_ref, plot_hist_days = plot_hist_days)
 
   if (lidR::is.empty(las)) {
     return(NULL)
@@ -138,7 +138,7 @@ fPCpretreatment <- function(
   if (is.null(traj)) {
     warning(paste0(
       "Computing trajectory from LAS file...\n",
-      "Trajectory would better be computed outside pretreatment, ",
+      "Trajectory should rather be computed outside pretreatment, ",
       "with a buffer (e.g. 500m) to avoid border effects."
     ))
     traj <- get_traj(las, thin = 0.0001, interval = .2, rmdup = TRUE, renum = TRUE)
@@ -148,11 +148,14 @@ fPCpretreatment <- function(
   if (classify == TRUE) {
     lidR::classify_ground(las, algorithm = lidR::csf())
   }
+  # filter classes, typically 66, i.e. virtual points in lidar-hd
+  if (!is.null(exclude_classes)) {
+    las <- lidR::filter_poi(las, !(Classification %in% exclude_classes))
+  }
 
   # if (norm_ground == TRUE){
   #   # Filter ground points
-  #   las_ground=lidR::filter_ground(las)
-  #   dtm = lidR::rasterize_terrain(las_ground, algorithm = tin(),res=3)
+  #   las_ground=lidR::filter_ground(lasdtm = lidR::rasterize_terrain(las_ground, algorithm = tin(),res=3)
   #   dtm_las=LAS(data.table(as.data.frame(dtm,xy=T)))
   #   # calculate normals on dtm and get vector components
   #   dtm_las=geom_features(las=dtm_las,search_radius = 6,features_list = c("Nx","Ny","Nz"))
@@ -186,10 +189,8 @@ fPCpretreatment <- function(
   #   las <- lidR::merge_spatial(las, WD_map$WD, attribute = "WD")
   # }
 
-  # Normalyze height
-  las <- lidR::normalize_height(las = las, algorithm = lidR::tin())
-  # filter out classe 66 (virtual points) and points above maximum height
-  las <- lidR::filter_poi(las, Classification != 66 & Z < Height_filter)
+  # Normalize height
+  las <- lidR::normalize_height(las = las, algorithm = lidR::tin(), dtm = dtm)
   las <- lidR::classify_noise(las, lidR::sor(5, 10))
 
   # las@data[Z <= H_strata_bush]$LMA <- LMA_bush
