@@ -69,7 +69,7 @@ test_that("fPCpretreatment", {
   # LMA value selected = 120.6 that is the LMA for Pinus halepensis, the
   # dominant species of the plot
   expect_warning(
-    m30_font_blanche_pretreated <- fPCpretreatment(path2laz, LMA = 120.6)
+    m30_font_blanche_pretreated <- fPCpretreatment(path2laz)
   )
   # displaying the new attributes in the las
   expected_names <- c(

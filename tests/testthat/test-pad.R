@@ -15,13 +15,20 @@ test_that("pad", {
   expect_true(names(pad[length(pad)]) == glue("PAD_{dz}_59.5"))
   expect_true(pad[glue("PAD_{dz}_17")] == 0)
   expect_all_true(sup_layers %in% names(pad))
+  # test parse_pad_heights
+  pad_heights <- parse_pad_heights(names(pad))
+  expect_equal(pad_heights$dz, rep(dz, 120))
+  expect_equal(pad_heights$z_bottom, seq(0, by = dz, length.out = 120))
 
+  # test without using cover
   pad <- lidR::cloud_metrics(nlas, pad_metrics(use_cover = FALSE)) |>
     unlist()
+  expect_length(pad, 120 + 5)
 
   pad <- lidR::cloud_metrics(nlas, pad_metrics(z0 = 0, dz = dz, nlayers = 2)) |>
     unlist()
   expect_all_true(names(pad) == c(sup_layers, glue("PAD_{dz}_0"), glue("PAD_{dz}_0.5")))
+
 
   pad <- lidR::cloud_metrics(nlas, pad_metrics(use_cover = FALSE)) |>
     unlist()
@@ -50,6 +57,10 @@ test_that("pad", {
   pad_rast <- lidR::pixel_metrics(nlas, pad_metrics(), res = 10)
   expect_all_true(terra::res(pad_rast) == c(10, 10))
   expect_true(terra::nlyr(pad_rast) == (60 + 6))
+  # test parse_pad_heights
+  pad_heights <- parse_pad_heights(names(pad_rast))
+  expect_equal(pad_heights$dz, rep(1, 60))
+  expect_equal(pad_heights$z_bottom, seq(0, by = 1, length.out = 60))
 
   # test with Ni
   pad_rast <- lidR::pixel_metrics(nlas, pad_metrics(keep_N = TRUE), res = 10)

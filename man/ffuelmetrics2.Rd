@@ -8,23 +8,25 @@
 ffuelmetrics2(
   PADval = NULL,
   CBDval = NULL,
+  smooth_pad = FALSE,
   FMAcan = NULL,
   FMAshrub = NULL,
   zval,
-  dz = 0.5,
+  dz,
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
   CanopyHeightThreshold = 1,
   CanopyBDTreshFrac = 0.1,
   CanopyTopBDThresholds = c(0.0012, 0.01),
-  CBHThresholdRatio = 1/5,
+  CBHThresholdRatio = 1/3,
   bdmax = 1,
   M = 2.5,
-  asTibble = FALSE
+  as_tibble = FALSE
 )
 
 ffuelmetrics2Rast(
   PAD_rast = NULL,
   CBD_rast = NULL,
+  smooth_pad = FALSE,
   FMAcan_rast = NULL,
   FMAshrub_rast = NULL,
   zval,
@@ -44,29 +46,32 @@ ffuelmetrics2Rast(
 
 \item{CBDval}{numeric vector. CBD values in kg/m3, only used if PADval is NULL.}
 
+\item{smooth_pad}{boolean. If true PADval is smoothed by a moving average with a window of 3.
+Recommended for dz=0.5 or if point number is limited}
+
 \item{FMAcan}{numeric. Fuel mass area in kg/m2 for canopy}
 
 \item{FMAshrub}{numeric. Fuel mass area in kg/m2 for shrub}
 
-\item{zval}{numeric vector. Middle height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.}
+\item{zval}{numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.}
 
 \item{dz}{numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.}
 
-\item{LadderFuelBDthresholds}{numeric vector. Minimal bulk density thresholds for Understorey and Ladder fuels (kg/m3)}
+\item{LadderFuelBDthresholds}{numeric vector. Minimal bulk density thresholds for Ladder fuels (kg/m3)}
 
-\item{CanopyHeightThreshold}{numeric. Default minimal value of height in m to look for CBH and CTH, typically 1 to 3 m}
+\item{CanopyHeightThreshold}{numeric. Default minimal value of height in m for canopy/ladder (versus surface fuel) to look for CBH and CTH, typically 1 to 3 m (default 1m)}
 
-\item{CanopyBDTreshFrac}{numeric. Fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.3 is closer to CBDmin)}
+\item{CanopyBDTreshFrac}{numeric. Fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.1 is close to CBDmin)}
 
 \item{CanopyTopBDThresholds}{numeric vector. Minimal bulkDensity to look for CTH (canopy height but in terms of fuel<Height)}
 
 \item{CBHThresholdRatio}{numeric. Ratio of total height above which we look for CBH}
 
-\item{bdmax}{numeric. Max value of bulk density kg/m3 for canopy (above 1 m only)}
+\item{bdmax}{numeric. Max value of bulk density kg/m3 for canopy (above CanopyHeightThreshold=1 m only)}
 
 \item{M}{numeric. M factor from Perrakis 2025}
 
-\item{asTibble}{logical. If TRUE, returns a tibble.}
+\item{as_tibble}{logical. If TRUE, returns a tibble.}
 }
 \description{
 Fuel metrics from PAD profiles or bulk density profiles

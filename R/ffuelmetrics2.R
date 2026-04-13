@@ -1,87 +1,104 @@
-# modification 31/03/2026 : bottom and top of lader fuel + SFLeq that were overwritten => v1
-# modification 15/01/2026 : CanopyBDTreshFrac = 0.1 et dz=1.0
-
-# TODO should be passed entirely in PAD (with FMAshrub and can)
-# The computeFuelMetrics function computes from PADval  (vertical profiles) and zval (elevation of PADval, typically (0.25,0.75,...))
+# The ffuelmetrics2 function computes from PADval  (vertical profiles) and zval (elevation of PADval, typically (0.25,0.75,...) or (0.5,1.5,...))
 # if PADval is not provided CBDval can be used (assuming a constant FMA has been used in the whole profile)
-# typical usage of the fonction when applied to multiple tiles is shown just after the function (2s par tiles of 500m approximately)
-# - CTH, in m corresponding to canopy top height in m : CTH corresponds to highest value with CBD>=  CanopyTopBDThreshold=0.0012 kg/m3 or 0.01kg/m3
-# - CDH, in m corresponding to canopy dominant height in m : CTH corresponds to highest value with CBD>=0.1*canBDmax
-# In practice the best top height estimates seems to be min(CDH,CTH_0p0100) [See expert rules]
-# - CBH [not used], in m corresponding to canopy base height located above CanopyHeightThreshold (typically =1 to 3m), derived from a maximum of CBD (CanBDmax) measured in [min(CanopyHeightThreshold, CTH/3), CTH] and a minimum
-# CBD(CanBDmin) measured in in [min(CanopyHeightThreshold, CTH/3), height of CBH==canBDmax[. For determination of CBH, we use a threshold of CBD corresponding to a weighted average of CBDmin and CBDmax
-# (CanopyBDTreshFrac = 0.3, # fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.3 is closer to CBDmin))
-# in some rare cases CBD is decreasing above CTH/3 so in this case CBH and CBDmax and min are looked for below CTH/3
-# - CBH2 is similar to CBH but sometimes higher as CBH2 expects that CBD is > CanBDThresh continuously between[CBH2,height of CBHmax]; this is not the case for CBH in case of multiple maximum
-# CBDThreshold = 0.05
-# - TFL2: sum of bulk density >1m (complementary to FL_k1+FL_k2 (if dz=0.5) or FL_k1 is dz=1m)
-# - LadderBot and LadderTop, in m corresponding to the lower fuel strata with CBH > LadderFuelBDthreshold, typically ranging between 0.01 and 0.1 kg/m3
-# - LadderFuelLoad (fuel load between 1m and LadderTop) : this is the amount that is supposed to burn when ladder fuel burns so it should incorporate biomass between 1 and LadderBot (if any)
-# - SFLeq0 and  SFLeq_int are equivalent surface fuel derived from ladder fuel role in crowning proba following perrakis 2022 idea (computed from 1m to LadderTop)
-# - ProfType :
-#    *1: No dominant strata (1a: no CBH2, 1b: CBHLow &(no CBH2 or TODO CBH2<CBHLow): in this case LadderFuel are computed up to CBHLow)
-#    *2: Two strata: Dominant + <1m, with no LadderFuel>1m avec et sans cover low
-#    *3: Two strata: Dominant +Continuous LadderFuel, with LadderFuelBot==1.25m
-#    *4: Three strata: Dominant + Intermediate LadderFuel (LadderFuelBot>1.25) avec et sans cover low
-# LFL is fuel load between 1m and LadderTop (computed only for median threshold) : should be identical to LadderFuelLoad_0p020
-# CFL is canopy fuel load (that burns in case of crowning) can be computed from TFL2-LadderFuelLoad (computed only for median threshold)
+# Typical usage of the fonction when applied to multiple tiles is shown just after the function (2s par tiles of 500m approximately)
+
+# CANOPY METRICS (CTH, CDH, CBH2, CBDcan)
+# • CTH, in m corresponding to canopy top height in m : CTH corresponds to highest value with CBD>=  CanopyTopBDThreshold=0.0012 kg/m3 or 0.01kg/m3
+# • CDH, in m corresponding to canopy dominant height in m : CTH corresponds to highest value with CBD>=0.1*canBDmax and min(CDH,CTH_0p0100)
+# • CBH2, in m corresponding to canopy base height, computed from a relative CBD threshold : it can be either :
+#     - Representative of the dominant canopy : located above CanopyHeightThreshold (typically =1 to 3m), derived from a maximum of CBD (CanBDmax) measured in [min(CanopyHeightThreshold, CTH*CBHThresholdRatio), CTH] and a minimum
+# CBD(CanBDmin) measured in in [min(CanopyHeightThreshold, CTH*CBHThresholdRatio). For determination of CBH2, we use a threshold of CBD corresponding to a weighted average of CBDmin and CBDmax
+# (CanopyBDTreshFrac),   fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.1 is closer to CBDmin)). Moreover CBD is > CanBDThresh continuously between[CBH2,height of CBHmax]
+# Default parameters are CanopyHeightThreshold = 1m; CTH*CBHThresholdRatio = CTH/3; CanopyBDTreshFrac = 0.1
+#     - When no obvious CBH exists in the upper part of the canopy (ie CBD is decreasing above CTH * CBHThresholdRatio), CBDmax is looked for in [CanopyHeightThreshold, CTH*CBHThresholdRatio] (called CBHlow in the code)
+#     - When none of the above exists, CBH2 = CanopyHeightThreshold (default it 1m)
+# • CBDcan, in kg/m3 corresponding to sum(CBDval)/(CH-CBH2)
+
+# LADDER FUEL METRICS (LadderTop, LadderBot, ProfType, SFLeq0, SFLeq_int)
+# • LadderBot and LadderTop, in m corresponding to the top and bottom of intermediate fuel strata with CBH > LadderFuelBDthreshold, typically ranging between 0.01 and 0.1 kg/m3 (LadderFuelBDthresholds = c(0.01, 0.02, 0.05))
+#     Forced to be in [CanopyHeightThreshold; CBH2]
+# • FSG, in m Fuel Strata Gap  = CBH2 - LadderTop + 0.5*dz
+# • ProfType :
+#    -1: No dominant strata : CBH2= CanopyHeightThreshold (1m)
+#    -2: Two strata: Dominant (CBH2>1m) + <CanopyHeightThreshold (1m) : with no LadderFuel (LadderTop=LadderBot=CanopyHeightThreshold)
+#    -3: Two strata: Dominant + Continuous LadderFuel [0, LadderTop] (ie LadderBot=CanopyHeightThreshold)
+#    -4: Three strata: Dominant + Intermediate LadderFuel strictly above [0-1m] (LadderFuelBot>CanopyHeightThreshold)
+
+# FUEL LOAD METRICS in kg/m2
+# • FL_k1 and FL_k2 : fuel loads in first and second layer (should be corrected by post treatment because underestimated)
+# • SFL, surface fuel load (uncorrected, without liter) below CanopyHeightThreshold : it is equal to FL_k1+FL_k2 (if dz=0.5) or FL_k1 (if dz=1m)
+# • CLFL, canopy + ladderfuel above CanopyHeightThreshold
+# • CFL is canopy fuel load (that burns in case of crowning) (above can be computed from CLFL-LadderFuelLoad (computed only for median threshold)
+# • LadderFuelLoad (fuel load between CanopyHeightThreshold and LadderTop) : this is the amount that is supposed to burn when ladder fuel burns so it should incorporate biomass between 1 and LadderBot (if any)
+# • LFL is fuel load between 1m and LadderTop (computed only for median threshold) : should be identical to LadderFuelLoad_0p020, can be 0 is no ladderfuel
+#     NB : total fuel load = SFL + LFL + CFL = SFL + CLFL
+# •SFLeq0 and  SFLeq_int are equivalent surface fuel derived from ladder fuel role in crowning proba following perrakis 2022 idea (computed from CanopyHeightThreshold to LadderTop)
 
 
-# on peut globalement borner les CBD autour de 1kg/m3
-# sur les points DFCI (grandes placettes 20m le q99 vaut 1.26 en dessous de 0.5; 1.07 entre 0.5 et 1 et 0.298 au dessus de 1)
-
-# Expert rules;règles expertes issues des analyses du 5/12/2025
+# divers notes
+# NB on borne toutes CBD autour de 1kg/m3 (sur les points DFCI (grandes placettes 20m le q99 vaut 1.26 en dessous de 0.5; 1.07 entre 0.5 et 1 et 0.298 au dessus de 1)
 #- CDH vaut CTH quand pas de définition (en pratique strate de 1m); En pratique, il semble utile de prendre le min des deux CDH et CTH
-#- use CBH2 rather than CBH (CBH2 is higher as it requires the canopy to be continuously above the threshold below its maximum)
-#- Parfois CBH2<CBHlow (1/3% des placettes) => CBHlow semble mieux adapté à ces cas => proposition de remplacement de CBH2 par CBHlow
+# modification 15/01/2026 : default CanopyBDTreshFrac = 0.1 et dz=1.0
+# modification 31/03/2026 : -0.5*dz bottom and top of lader fuel + SFLeq that were overwritten => v1
+# modification 08/04/2026 : -0.5*dz CBHlow
+
 
 #' Fuel metrics from PAD profiles or bulk density profiles
 #'
 #' @param PADval numeric vector. PAD values in m2/m3. Set to NULL to input directly CBDval.
 #' @param CBDval numeric vector. CBD values in kg/m3, only used if PADval is NULL.
+#' @param smooth_pad boolean. If true PADval is smoothed by a moving average with a window of 3.
+#' Recommended for dz=0.5 or if point number is limited
 #' @param FMAcan numeric. Fuel mass area in kg/m2 for canopy
 #' @param FMAshrub numeric. Fuel mass area in kg/m2 for shrub
-#' @param zval numeric vector. Middle height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.
+#' @param zval numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.
 #' @param dz numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.
-#' @param LadderFuelBDthresholds numeric vector. Minimal bulk density thresholds for Understorey and Ladder fuels (kg/m3)
-#' @param CanopyHeightThreshold numeric. Default minimal value of height in m to look for CBH and CTH, typically 1 to 3 m
-#' @param CanopyBDTreshFrac numeric. Fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.3 is closer to CBDmin)
+#' @param LadderFuelBDthresholds numeric vector. Minimal bulk density thresholds for Ladder fuels (kg/m3)
+#' @param CanopyHeightThreshold numeric. Default minimal value of height in m for canopy/ladder (versus surface fuel) to look for CBH and CTH, typically 1 to 3 m (default 1m)
+#' @param CanopyBDTreshFrac numeric. Fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.1 is close to CBDmin)
 #' @param CanopyTopBDThresholds numeric vector. Minimal bulkDensity to look for CTH (canopy height but in terms of fuel<Height)
 #' @param CBHThresholdRatio numeric. Ratio of total height above which we look for CBH
-#' @param bdmax numeric. Max value of bulk density kg/m3 for canopy (above 1 m only)
+#' @param bdmax numeric. Max value of bulk density kg/m3 for canopy (above CanopyHeightThreshold=1 m only)
 #' @param M numeric. M factor from Perrakis 2025
-#' @param asTibble logical. If TRUE, returns a tibble.
+#' @param as_tibble logical. If TRUE, returns a tibble.
 #'
 #' @name ffuelmetrics2
 #' @export
 ffuelmetrics2 <- function(
   PADval = NULL,
   CBDval = NULL,
+  smooth_pad = FALSE, # default is false
   FMAcan = NULL,
   FMAshrub = NULL,
   zval,
-  dz = 0.5,
-  LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
-  CanopyHeightThreshold = 1,
-  CanopyBDTreshFrac = 0.1,
-  CanopyTopBDThresholds = c(0.0012, 0.01),
-  CBHThresholdRatio = 1 / 5,
-  bdmax = 1.00,
-  M = 2.5,
-  asTibble = FALSE
+  dz,
+  LadderFuelBDthresholds = c(0.01, 0.02, 0.05), # CBD thresholds for ladder fuels
+  CanopyHeightThreshold = 1, # height threshold for considering canopy/ladder versus surface fuel
+  CanopyBDTreshFrac = 0.1, # fraction between CBHmin and CBHmax
+  CanopyTopBDThresholds = c(0.0012, 0.01), # CBD threshold to look for canopy top
+  CBHThresholdRatio = 1 / 3, # fraction of canopy top to look for CBHmax in dominant canopy
+  bdmax = 1.00, # CBD bound
+  M = 2.5, # M factor perrakis
+  as_tibble = FALSE
 ) { # two different output formats depending on the need (plots or raster)
 
-  zlow <- 1.0 # limitation of lower uncertain strata in m, for TFL2 computation, etc
-  ztmp <- dz * (0.5 + c(1:3))
+  # convert zval to center height of strata
+  zval <- zval + 0.5 * dz
+
+  # 1. Initialization
+  # top of the surface fuel strata (default 1m)
+  zlow <- CanopyHeightThreshold # limitation of surface fuel strata in m,
+  ztmp <- dz * (0.5 + c(1:5))
   zval_1mplus <- min(ztmp[ztmp > zlow]) # center height of first cell above zlow
 
+  # when PAD not provided use CBD instead
   if (is.null(PADval)) {
     PADval <- CBDval / FMAcan # recomputation of PAD profile assuming a constant FMA has been applied to the whole profile
   }
   stopifnot(length(PADval) == length(zval)) # check if length of CBDval and zval are consistent
 
-  PADval[!is.finite(PADval)] <- NA_real_
   # TODO should understand why PAD can be infinite or NA or negative
+  PADval[!is.finite(PADval)] <- NA_real_
   invalid <- is.na(PADval) | !is.finite(PADval) | PADval < 0
   # if(any(invalid)) stop("PADval contains NA, infinite or negative values")
   PADval[!is.finite(PADval)] <- 0
@@ -89,6 +106,13 @@ ffuelmetrics2 <- function(
   PADval[PADval == -1] <- 0
   PADval[PADval < 0] <- 0
   n <- length(zval)
+
+  # smoothing
+  if (smooth_pad) {
+    # largeur de la fenêtre pour la moyenne mobile
+    k <- 3 # sur 3 points
+    PADval <- slider::slide_dbl(PADval, mean, .before = 1, .after = 1)
+  }
 
   # computation of CBDval from PAD with FMAcan and FMAshrub below heightThreshold and bdmax
   CBDval <- pmin(PADval * ifelse(zval > CanopyHeightThreshold, FMAcan, FMAshrub), bdmax) # max value at 1kg/m3
@@ -104,7 +128,7 @@ ffuelmetrics2 <- function(
   CBD_cbh <- NA
   CBD_cbh2 <- NA
 
-  # 1. --- Bande du haut (CTH / CBH) ---
+  # 2. --- Canopy top from CanopyTopBDThresholds CTH ---
   # CTHs for 0.0012 and 0.01 kg/m3 threshold
   suf <- gsub("\\.", "p", sprintf("%0.4f", CanopyTopBDThresholds))
   CTHs <- setNames(numeric(length(CanopyTopBDThresholds)), paste0("CTH_", suf))
@@ -114,11 +138,11 @@ ffuelmetrics2 <- function(
   }
 
 
-  # 2. Computation of CBH and CBH2 for the canopy
-  # computing CBH and CBH2 from a maxbd in [1/3CTH,CTH] (can be inf when CanBDmin<CanBDmax) (using the upper CTH...)
+  # 3A. Computation of  CBH2 for the upper canopy case
+  # first computing CBH2 from a maxbd in [1/3CTH,CTH] (can be inf when CanBDmin<CanBDmax) (using the upper CTH...)
   suf <- gsub("\\.", "p", sprintf("%0.4f", max(CanopyTopBDThresholds)))
   CTH <- as.numeric(CTHs[paste0("CTH_", suf)])
-  idx_true <- which(zval > max(CanopyHeightThreshold, CTH * CBHThresholdRatio) & zval <= CTH) #>CanopyHeightThreshold and CTH/5 and <CTH
+  idx_true <- which(zval > max(CanopyHeightThreshold, CTH * CBHThresholdRatio) & zval <= CTH) #>CanopyHeightThreshold and CTH/3 and <CTH
   if (length(idx_true) > 0) { # there are points in the canopy
     CanBDmax <- max(CBDval[idx_true]) # CBD max >CanopyHeightThreshold and CTH/3 and <CTH
     idmax <- idx_true[which(CBDval[idx_true] == CanBDmax)[1]] # lower id of max between max(CanopyHeightThreshold 1/3CTH) and height of CBDmax
@@ -126,7 +150,7 @@ ffuelmetrics2 <- function(
     idx_true2 <- which(zval > CanopyHeightThreshold & zval < zval[idmax]) #>CanopyHeightThreshold and <idmax
     if (length(idx_true2) > 0) { # there is space between maxCBD and canopyHeightThreshold
       CanBDmin <- min(CBDval[idx_true2])
-      if (!is.na(CanBDmin) & !is.na(CanBDmax) & CanBDmin < CanBDmax) { # normal configuration with a minimum below CanBDmax
+      if (!is.na(CanBDmin) && !is.na(CanBDmax) && CanBDmin < CanBDmax) { # normal configuration with a minimum below CanBDmax
         idmin <- idx_true2[which(CBDval[idx_true2] == CanBDmin)[1]] # lower id of CBDmin
         CanBDTresh <- CanBDmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDmax # Threshold is a fraction of CanBDmax between CanBDmin and max
         above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
@@ -144,34 +168,7 @@ ffuelmetrics2 <- function(
       }
     }
   }
-  # we assume that below CBH and CBH2 we have shrub (when exists) (otherwise we keep the original localisation of FMAshrub below CanopyHeightThreshold)
-  if (!is.na(CBH)) {
-    CBDval[zval > CBH] <- pmin(PADval[zval > CBH] * FMAcan, bdmax) # max value at 1kg/m3
-    CBDval[zval <= CBH] <- pmin(PADval[zval <= CBH] * FMAshrub, bdmax)
-  } else if (!is.na(CBH2)) {
-    CBDval[zval > CBH2] <- pmin(PADval[zval > CBH2] * FMAcan, bdmax) # max value at 1kg/m3
-    CBDval[zval <= CBH2] <- pmin(PADval[zval <= CBH2] * FMAshrub, bdmax)
-  }
-
-  # 3. CDH canopy dominant height and CBDcan (4/12/2025)
-  above_CDH <- (CBDval >= 0.1 * CanBDmax) & !is.na(CanBDmax) & !is.na(CBDval)
-  CDH <- if (any(above_CDH)) max(zval[above_CDH]) else NA_real_ # max height with CBD>0.1*CanBDmax
-  if (is.na(CDH)) {
-    CDH <- CTH
-  } # (nb missing data for CDH consist in 0.75m strata...)}
-
-  # CBDcan
-  height <- min(CDH, CTH)
-  inCan <- (!is.na(CBH2) & zval >= CBH2 & zval <= height)
-  CBDcan <- if (any(inCan)) sum(CBDval[inCan]) else 0
-
-  # 4. no treshold for CBDval in cell k1 and k2, but a treatment will be applied afterwards (to correct bias - quantile mapping)
-  TFL2 <- sum(CBDval[zval > zlow]) * dz
-  FL_k1 <- CBDval[1] * dz
-  FL_k2 <- CBDval[2] * dz
-
-  # 5. CBHlow  between CanopyHeightThreshold and CTH/3
-  # else { # we are in a special case where the CBH should be looking for in [CanopyHeightThreshold;CTH/3]
+  # 3B. Computing of CBH2 from CBHlow  between CanopyHeightThreshold and CTH/3
   idx_true <- which(zval > CanopyHeightThreshold & zval <= CTH * CBHThresholdRatio) #>CanopyHeightThreshold and CTH/3
   if (length(idx_true) > 0) { # there is space between  CanopyHeightThreshold and CTH/3
     CanBDlowmax <- max(CBDval[idx_true]) # CBD max
@@ -183,34 +180,57 @@ ffuelmetrics2 <- function(
       CanBDTresh <- CanBDlowmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDlowmax # Threshold is a fraction of CanBDlowmax between CanBDlowmin and max
       above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
       if (any(above_CBH)) {
-        CBHlow <- min(zval[above_CBH])
+        CBHlow <- min(zval[above_CBH]) - 0.5 * dz # added by fp for consistency with CBH2 7/04/2026
         CBD_cbhlow <- CBDval[zval == CBHlow][1]
       }
     }
   }
-  if (!is.na(CBHlow)) {
-    if (CBHlow <= zval_1mplus + 0.001) {
-      CBHlow <- NA_real_
-    }
-  } # on remet à NA les CBHlow correspondant à maille 1.25, car pas intéressant
+  # when CBH2 does not exist above CTH/3, we use CBHlow (if it exists)
+  if (is.na(CBH2)) {
+    CBH2 <- CBHlow
+  }
+  # 3C. when CBH2 still not exist => CanopyHeightThreshold
+  if (is.na(CBH2)) {
+    CBH2 <- CanopyHeightThreshold
+  }
 
-  # TODO consistency between CBH2 and CBHlow (CBHlow should not be larger than CBH2) à étudier
-  # if (!is.na(CBHlow)&!is.na(CBH2)) {CBHlow}
+  # 4. Correction of CBDval from FMAcan and FMAshrub depending on CBH2
+  CBDval[zval > CBH2] <- pmin(PADval[zval > CBH2] * FMAcan, bdmax) # max value at 1kg/m3
+  CBDval[zval <= CBH2] <- pmin(PADval[zval <= CBH2] * FMAshrub, bdmax)
 
-  # 6. LadderTop, bot et charges
-  # = NA;LadderBot= NA;
+
+  # 5. CDH canopy dominant height and CBDcan (4/12/2025) and min value with CTH
+  above_CDH <- (CBDval >= 0.1 * CanBDmax) & !is.na(CanBDmax) & !is.na(CBDval)
+  CDH <- if (any(above_CDH)) max(zval[above_CDH]) else NA_real_ # max height with CBD>0.1*CanBDmax
+  if (is.na(CDH)) {
+    CDH <- CTH
+  } # (nb missing data for CDH consist in 0.75m strata...)}
+  CDH <- min(CDH, CTH)
+
+  # 6. CBDcan
+  height <- min(CDH, CTH)
+  inCan <- (!is.na(CBH2) & zval >= CBH2 & zval <= height)
+  CBDcan <- if (any(inCan)) sum(CBDval[inCan]) else 0
+
+  # 7. no treshold for CBDval in cell k1 and k2, but a treatment will be applied afterwards (to correct bias - quantile mapping)
+  CLFL <- sum(CBDval[zval > zlow]) * dz # canopy + ladderfuel
+  FL_k1 <- CBDval[1] * dz
+  FL_k2 <- CBDval[2] * dz
+
+
+  # 8. LadderTop, bot et charges
 
   # --- Bande du bas (LadderBot / LadderTop) ---
-  # ladderMax = ifelse (is.na(CBH2),Inf,CBH2-dz) # now LadderTop to be lower than CBH2 when exist
-  ladderMax <- ifelse(is.na(CBH2), Inf, CBH2) # change on 31/03/2026 now LadderTop can reach CBH2 when exist (but still<=)
-  # ladderMax = ifelse (is.na(CBH2),ifelse (is.na(CBHlow),Inf,CBHlow-dz),CBH2-dz) # now LadderTop to be lower than CBH2/CBHlow
-  # ifelse (is.na(CBHlow),CBH2-dz,CBHlow-dz)) # now LadderTop to be lower than CBH2/CBHlow
+  # ladderMax <- ifelse(is.na(CBH2), Inf, CBH2) # change on 31/03/2026 now LadderTop can reach CBH2 when exist (but still<=)
+  ladderMax <- CBH2
 
-  # fonction interne qui calcule les seuils de ladderFuels pour différentes métriques
+  # fonction interne qui calcule les seuils de ladderFuels and ProfTypes pour différents seuils
   .ladder_properties_for_threshold <- function(thr) {
-    above <- (CBDval >= thr) & !is.na(CBDval) & zval > 1 & zval <= ladderMax # inclus le filtre zval>1 et CBH2-dz (4/12/2025)
-    LadderBot <- LadderTop <- NA_real_
+    LadderBot <- LadderTop <- CanopyHeightThreshold # NA_real_ # now initialised at 1m (8/04/2026)
     LadderLoad <- SFLeq0 <- SFLeq_int <- 0
+    ProfType <- ifelse(CBH2 == CanopyHeightThreshold, 1, 2) # initialised to 1 or 2 depending on CBH2 (8/04/2026)
+
+    above <- (CBDval >= thr) & !is.na(CBDval) & zval > 1 & zval <= ladderMax # inclus le filtre zval>1 et <=CBH2 (4/12/2025)
     idx_true <- which(above)
     if (length(idx_true) > 0) {
       i <- idx_true[1]
@@ -218,16 +238,17 @@ ffuelmetrics2 <- function(
       j <- i
       while (j <= n && isTRUE(above[j])) j <- j + 1 # isTRUE évite NA
       LadderTop <- zval[j - 1] + 0.5 * dz # +0.5dz added 31/03/2026 to get upper of the layer (zval is cell-centered)
-      # LadderLoad = sum(CBDval[c(i:j-1)]) * dz # initially load between the bot and top, now between 1m and top
-      LadderLoad <- sum(CBDval[zval > zlow & zval <= LadderTop]) * dz
-      # if(!is.na(CBH2)) { # NB this section was overwritten later so commented here (31/03/2026)
-      #  # ladder fuel equivalent in terms of surface fuel for crowning
-      #  SFLeq0 = M * LadderLoad * CBH2/(CBH2-0.5*LadderTop) # basic formulae as in Perrakis 2025
-      #  k=zval>zlow & zval<=LadderTop
-      #  SFLeq_int = M * sum(CBDval[k]*CBH2/(CBH2-zval[k]))*dz   # integrated formulae
-      # }
+
+      ProfType <- ifelse(LadderBot <= CanopyHeightThreshold, 3, 4) # set to 3 or 4 depending on LadderBot (8/04/2026)
+
+      k <- which(zval > zlow & zval <= LadderTop) # between zlow=1m and LadderTop
+      LadderLoad <- sum(CBDval[k]) * dz
+      SFLeq0 <- M * LadderLoad * CBH2 / (CBH2 - 0.5 * LadderTop) # basic formulae as in Perrakis 2025
+      SFLeq_int <- M * sum(CBDval[k] * CBH2 / (CBH2 - zval[k])) * dz # integrated formulae
     }
-    c(LadderBot = LadderBot, LadderTop = LadderTop, LadderLoad = LadderLoad, SFLeq0 = SFLeq0, SFLeq_int = SFLeq_int)
+    CFL <- sum(CBDval[zval > LadderTop]) * dz # Canopy fuel load kg/m2 (everything above ladder top)  = TL2-LadderLoad0p020
+    FSG <- CBH2 - LadderTop + 0.5 * dz
+    c(LadderBot = LadderBot, LadderTop = LadderTop, LadderLoad = LadderLoad, SFLeq0 = SFLeq0, SFLeq_int = SFLeq_int, ProfType = ProfType, CFL = CFL, FSG = FSG)
   }
   # --- Ladders pour chaque seuil ---
   thresholds <- sort(unique(LadderFuelBDthresholds))
@@ -237,82 +258,30 @@ ffuelmetrics2 <- function(
   ladders <- unlist(ladder_list, use.names = FALSE)
   names(ladders) <- as.vector(rbind(
     paste0("LadderBot_", suf), paste0("LadderTop_", suf), paste0("LadderLoad_", suf),
-    paste0("SFLeq0_", suf), paste0("SFLeq_intot_", suf)
+    paste0("SFLeq0_", suf), paste0("SFLeq_intot_", suf), paste0("ProfType_", suf), paste0("CFL_", suf), paste0("FSG_", suf)
   ))
 
-  # ---  ProfTypes pour chaque seuil ---
-  # fonction interne qui calcule les seuils de ladderFuels pour différentes métriques
-  .profType_for_threshold <- function(thr) {
-    suf <- gsub("\\.", "p", sprintf("%0.3f", thr))
-    LadderTop <- ladders[paste0("LadderTop_", suf)]
-    LadderBot <- ladders[paste0("LadderBot_", suf)]
-    if (is.na(CBH2)) { # Type 1
-      ProfType <- ifelse(is.na(CBHlow), 1.1, 1.2)
-    } else { # Type>=2
-      if (is.na(LadderBot)) { # no ladder fuel
-        ProfType <- 2
-      } else if (LadderBot <= (zval_1mplus + 0.001)) { # connected ladderfuel
-        ProfType <- 3
-      } else { # disconnected ladder fuel
-        ProfType <- 4
-      }
-    }
-    c(ProfType = ProfType)
-  }
-  ProfType_list <- lapply(thresholds, .profType_for_threshold)
-  ProfTypes <- unlist(ProfType_list, use.names = FALSE)
-  names(ProfTypes) <- as.vector(rbind(paste0("ProfType_", suf)))
 
-
-  # compute ladder metrics ladderFuel0.02
+  # 9. compute default ladder metrics for median threshold ladderFuel0.02
   suf <- gsub("\\.", "p", sprintf("%0.3f", median(LadderFuelBDthresholds)))
-  LadderTop <- ladders[paste0("LadderTop_", suf)]
-  LadderBot <- ladders[paste0("LadderBot_", suf)]
-  if (is.na(LadderTop)) {
-    LFL <- 0
-    SFLeq0 <- 0
-    SFLeq_int <- 0
-    #    k = which(zval>1)
-    CFL <- sum(CBDval[zval > zlow]) * dz # Canopy fuel load kg/m2 (everything above 1m)
-  } else {
-    k <- which(zval > zlow & zval <= LadderTop) # between zlow=1m and LadderTop
-    # }
-    #  if (any(k)) {
-    # kmax=k[length(k)]
-    LFL <- sum(CBDval[k]) * dz # LadderFuelLoad in kg/m2
-    if (!is.na(CBH2)) { # uncommented 31/03/2026
-      # ladder fuel equivalent in terms of surface fuel for crowning
-      SFLeq0 <- M * LFL * CBH2 / (CBH2 - 0.5 * LadderTop) # basic formulae as in Perrakis 2025
-      SFLeq_int <- M * sum(CBDval[k] * CBH2 / (CBH2 - zval[k])) * dz # integrated formulae
-    }
-    # SFLeq0 = M * LFL * CBH2/(CBH2-0.5*zval[kmax]) # basic formulae as in Perrakis 2025
-    # SFLeq_int = M * sum(CBDval[k]*CBH2/(CBH2-zval[k]))*dz   # integrated formulae
-    CFL <- sum(CBDval[zval > LadderTop]) * dz # Canopy fuel load kg/m2 (everything above ladder top)  = TL2-LadderLoad0p020
-    # } else {
-    #  LFL=0;SFLeq0=0; SFLeq_int=0
-    #  if (!is.na(CBH2)) {
-    #    CFL = sum(CBDval[zval > CBH2])*dz
-    #  } else  {CFL =0 }
-  }
-
-
-  # if (is.na(LadderTop)) {
-  #    LFLlow = 0
-  #  } else {
-  #    k = which(zval>zlow & zval<=LadderBot)
-  #    LFLlow = sum(CBDval[k])*dz #LadderFuelLoad in kg/m2
-  #  }
+  # LadderTop <- ladders[paste0("LadderTop_", suf)]
+  # LadderBot <- ladders[paste0("LadderBot_", suf)]
+  LFL <- ladders[[paste0("LadderLoad_", suf)]] # default ladder fuel load
+  CFL <- ladders[[paste0("CFL_", suf)]] #
+  FSG <- ladders[[paste0("FSG_", suf)]] #
+  ProfType <- ladders[[paste0("ProfType_", suf)]]
+  # CFL <- sum(CBDval[zval > LadderTop]) * dz # Canopy fuel load kg/m2 (everything above ladder top)  = TL2-LadderLoad0p020
 
 
   # tibble(!!!as.list(ladder_named),#LadderBot = LadderBot, LadderTop = LadderTop,
   out <- c(
-    TFL2 = TFL2, FL_k1 = FL_k1, FL_k2 = FL_k2,
-    ladders, ProfTypes, CTHs, CDH = CDH, CBH = CBH, CBH2 = CBH2, CBHlow = CBHlow,
+    CLFL = CLFL, FL_k1 = FL_k1, FL_k2 = FL_k2,
+    ladders, CTHs, CDH = CDH, CBH = CBH, CBH2 = CBH2, FSG = FSG, CBHlow = CBHlow,
     CanBDmax = CanBDmax, CanBDmin = CanBDmin, CanBDlowmax = CanBDlowmax, CanBDlowmin = CanBDlowmin,
     CBDcan = CBDcan, CBD_cbh = CBD_cbh, CBD_cbh2 = CBD_cbh2, CBD_cbhlow = CBD_cbhlow,
-    LFL = LFL, CFL = CFL
+    LFL = LFL, CFL = CFL, ProfType = ProfType
   ) # SFLeq0 = SFLeq0, SFLeq_int = SFLeq_intLFLlow=LFLlow, )
-  if (asTibble) {
+  if (as_tibble) {
     return(tibble::as_tibble_row(as.list(out)))
   } else {
     out
@@ -325,6 +294,7 @@ ffuelmetrics2 <- function(
 ffuelmetrics2Rast <- function(
   PAD_rast = NULL, # PAD values in m2/m3; either PAD or CBD should be provided
   CBD_rast = NULL, # CBD values in kg/m3
+  smooth_pad = FALSE, # default is false
   FMAcan_rast = NULL, # fuel mass area in kg/m2 for canopy
   FMAshrub_rast = NULL, # fuel mass area in kg/m2 for shrub
   zval, # height values in m
@@ -347,7 +317,7 @@ ffuelmetrics2Rast <- function(
     # print(global(is.na(PAD_rast), sum))
   }
   PAD_FMA <- c(PAD_rast, FMAcan_rast, FMAshrub_rast) # on empile les FMA à PAD pour utiliser terra:app
-  nPAD <- nlyr(PAD_rast)
+  nPAD <- terra::nlyr(PAD_rast)
   # calcul des metrics2 avec terra::app
   metrics2 <- terra::app(
     PAD_FMA,
