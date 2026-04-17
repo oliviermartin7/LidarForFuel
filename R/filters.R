@@ -82,6 +82,12 @@ datetime_to_gpstime <- function(datetime, gpstime_ref = "2011-09-14 01:46:40") {
 #' @param datetime POSIXct vector of datetime
 #' @param months numeric vector of months defining the expected season
 #' @return logical vector with TRUE for points within the season
+#' @examples \dontrun{
+#' library(lidR)
+#' filter_poi(las, is_in_season(gpstime_to_datetime(gpstime), months = 5:9))
+#' # same as
+#' filter_poi(las, filter_gpstime(months = 5:9))
+#' }
 #' @export
 is_in_season <- function(datetime, months = 1:12) {
   if (identical(sort(months), 1:12)) {
@@ -103,6 +109,12 @@ is_in_season <- function(datetime, months = 1:12) {
 #' @param datetime POSIXct vector of datetime
 #' @param deviation_days numeric. the number of days defining the valid range around the date mode
 #' @return logical vector with TRUE for points within the date mode +- deviation_days
+#' @examples \dontrun{
+#' library(lidR)
+#' filter_poi(las, is_in_date_mode(gpstime_to_datetime(gpstime), deviation_days = 14))
+#' # same as
+#' filter_poi(las, filter_gpstime(deviation_days = 14))
+#' }
 #' @export
 is_in_date_mode <- function(datetime, deviation_days = Inf) {
   if (is.infinite(deviation_days)) {
@@ -116,12 +128,35 @@ is_in_date_mode <- function(datetime, deviation_days = Inf) {
 
 
 #' test if points are in the season and around a date mode
-filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf) {
+#'
+#' This function returns TRUE when points are in the season and around the date mode,
+#' the date mode being computed on points within the season.
+#' @param gpstime numeric. vector of gps time in seconds
+#' @param months numeric vector of months defining the expected season
+#' @param deviation_days numeric. the number of days defining the valid range around the date mode
+#' @param gpstime_ref character. Default = "2011-09-14 01:46:40". The datetime corresponding to gpstime=0, in order to retrieve the real datetime of points.
+#' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
+#' plus 1e9 seconds, as defined in LAS 1.4 specifications.
+#'
+#' @return logical vector with TRUE for points within the season and date mode +- deviation_days.
+#' @examples \dontrun{
+#' library(lidR)
+#' filter_poi(las, filter_gpstime(gpstime, months = 5:9, deviation_days = 14))
+#' # same as
+#' filter_poi(las, filter_gpstime(months = 5:9)) |>
+#'   filter_poi(filter_gpstime(deviation_days = 14))
+#' # but different from
+#' filter_poi(las, filter_gpstime(deviation_days = 14)) |>
+#'   filter_poi(filter_gpstime(months = 5:9))
+#' }
+#' @export
+filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40") {
   datetime <- gpsptime_to_datetime(gpstime)
   # filter seasons
-  valid_points <- is_in_season(datetime, months = months)
+  season_points <- is_in_season(datetime, months = months)
   # filter deviation days on season points
-  valid_points[valid_points] <- is_in_date_mode(datetime[valid_points], deviation_days)
+  valid_points <- rep(FALSE, length(datetime))
+  valid_points[season_points] <- is_in_date_mode(datetime[season_points], deviation_days)
   return(valid_points)
 }
 
@@ -153,7 +188,6 @@ filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf) {
 #' range(gpsptime_to_datetime(las$gpstime))
 #' range(gpsptime_to_datetime(las1$gpstime))
 #' }
-#' @import rlang
 #' @export
 pixel_filter <- function(las, res, start = c(0, 0), filter) {
   lidR:::stopifnotlas(las)

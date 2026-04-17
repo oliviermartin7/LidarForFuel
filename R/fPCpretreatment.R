@@ -10,8 +10,8 @@
 # @param season_filter numeric. A vector of integer for months to keep (e.g: filter_season = 5:10 keep retunrs between may and october)
 # @param deviation_days numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default
 #' @param exclude_classes numeric. Default = NULL. A vector of integer for classes to filter out of the point cloud. If NULL, all classes are kept.
-#' @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
-#' @param gpstime_ref character. Default = "2011-09-14 01:46:40". The datetime corresponding to gpstime=0, in order to retrieve the real datetime of points.
+# @param plot_hist_days logical. Should the histogram of dates of acquisition be displayed. Default =FALSE
+# @param gpstime_ref character. Default = "2011-09-14 01:46:40". The datetime corresponding to gpstime=0, in order to retrieve the real datetime of points.
 #' It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 #' plus 1e9 seconds, as defined in LAS 1.4 specifications.
 #' @param traj sf object. Trajectory covering the LAS chunk. The sf object is expected to have a column gpstime and Point Z geometries.
@@ -39,8 +39,8 @@ fPCpretreatment <- function(
   # season_filter = 1:12,
   # deviation_days = Inf,
   exclude_classes = NULL,
-  plot_hist_days = FALSE,
-  gpstime_ref = "2011-09-14 01:46:40",
+  # plot_hist_days = FALSE,
+  # gpstime_ref = "2011-09-14 01:46:40",
   traj = NULL,
   dtm = NULL
 ) {
@@ -51,7 +51,6 @@ fPCpretreatment <- function(
   } else {
     las <- lidR::readLAS(chunk)
   }
-  raster_template <- lidR:::raster_layout(las, res = 20, start = c(0, 0))
   # las <- filter_seasons(las, months = season_filter, gpstime_ref = gpstime_ref, plot_hist_days = plot_hist_days)
   # las <- filter_date_mode(las, deviation_days, gpstime_ref = gpstime_ref, plot_hist_days = plot_hist_days)
 
@@ -76,8 +75,6 @@ fPCpretreatment <- function(
   if (!is.null(exclude_classes)) {
     las <- lidR::filter_poi(las, !(Classification %in% exclude_classes))
   }
-
-  lidR:::template_metrics.LAS()()()()
 
   # if (norm_ground == TRUE){
   #   # Filter ground points
