@@ -1,58 +1,3 @@
-filter_seasons <- function(las, months = 1:12, gpstime_ref = "2011-09-14 01:46:40", plot = FALSE) {
-  if ((identical(sort(months), 1:12)) || lidR::is.empty(las)) {
-    return(las)
-  }
-
-  datetime <- gpsptime_to_datetime(las@data$gpstime, gpstime_ref = gpstime_ref)
-
-  # test la saison
-  pts_summer <- is_in_season(datetime, months = months)
-  las <- lidR::filter_poi(las, pts_summer)
-  proportions_of_winter_point <- (1 - nrow(las@data) / length(pts_summer)) * 100
-  if (proportions_of_winter_point > 0) {
-    if (plot) {
-      graphics::hist(
-        datetime,
-        breaks = "day",
-        main = "Histogram of acquisition date",
-        xlab = "Date of acquisition"
-      )
-    }
-    warning(
-      paste0(
-        "Careful ", round(proportions_of_winter_point),
-        " % of the returns were excluded because they were sampled outside of",
-        " the chosen season (Month: ",
-        paste0(lubridate::month(months, label = TRUE), collapse = " "), ")"
-      )
-    )
-  }
-
-  return(las)
-}
-
-
-filter_date_mode <- function(las, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40", plot = FALSE) {
-  # filter the points that are not in the same day as the statistical data mode and +- deviation days
-
-  if (is.infinite(deviation_days)) {
-    return(las)
-  }
-
-  datetime <- gpsptime_to_datetime(las@data$gpstime, gpstime_ref = gpstime_ref)
-  valid_points <- is_in_date_mode(datetime, deviation_days)
-  if (plot) {
-    graphics::hist(
-      datetime,
-      breaks = "day",
-      main = "Histogram of acquisition date",
-      xlab = "Date of acquisition"
-    )
-  }
-
-  las1 <- lidR::filter_poi(las, valid_points)
-  return(las1)
-}
 
 
 #' convert gps time to POSIXct datetime
@@ -111,12 +56,12 @@ is_in_season <- function(datetime, months = 1:12) {
 #' @return logical vector with TRUE for points within the date mode +- deviation_days
 #' @examples \dontrun{
 #' library(lidR)
-#' filter_poi(las, is_in_date_mode(gpstime_to_datetime(gpstime), deviation_days = 14))
+#' filter_poi(las, is_near_date_mode(gpstime_to_datetime(gpstime), deviation_days = 14))
 #' # same as
 #' filter_poi(las, filter_gpstime(deviation_days = 14))
 #' }
 #' @export
-is_in_date_mode <- function(datetime, deviation_days = Inf) {
+is_near_date_mode <- function(datetime, deviation_days = Inf) {
   if (is.infinite(deviation_days)) {
     return(rep(TRUE, length(datetime)))
   }
@@ -156,7 +101,7 @@ filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime
   season_points <- is_in_season(datetime, months = months)
   # filter deviation days on season points
   valid_points <- rep(FALSE, length(datetime))
-  valid_points[season_points] <- is_in_date_mode(datetime[season_points], deviation_days)
+  valid_points[season_points] <- is_near_date_mode(datetime[season_points], deviation_days)
   return(valid_points)
 }
 

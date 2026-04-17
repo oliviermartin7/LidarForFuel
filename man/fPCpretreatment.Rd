@@ -8,7 +8,6 @@ fPCpretreatment(
   chunk,
   classify = FALSE,
   exclude_classes = NULL,
-  gpstime_ref = "2011-09-14 01:46:40",
   traj = NULL,
   dtm = NULL
 )
@@ -19,9 +18,7 @@ Can be apply to a catalog see lidR::catalog_apply # nolint: line_length_linter.}
 
 \item{classify}{logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified}
 
-\item{exclude_classes}{numeric. Default = NULL. A vector of integer for classes to filter out of the point cloud. If NULL, all classes are kept.}
-
-\item{gpstime_ref}{character. Default = "2011-09-14 01:46:40". The datetime corresponding to gpstime=0, in order to retrieve the real datetime of points.
+\item{exclude_classes}{numeric. Default = NULL. A vector of integer for classes to filter out of the point cloud. If NULL, all classes are kept.
 It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 
