@@ -1,5 +1,5 @@
 is_raster <- function(raster) {
-  is(raster, "stars") || is(raster, "SpatRaster")
+  inherits(raster, c("stars", "SpatRaster"))
 }
 
 raster_bbox <- function(raster) {
@@ -10,10 +10,10 @@ raster_bbox <- function(raster) {
 }
 
 raster_res <- function(raster) {
-  if (is(raster, "stars")) {
+  if (inherits(raster, "stars")) {
     return(stars::st_res(raster)["x"])
   }
-  if (is(raster, "SpatRaster")) {
+  if (inherits(raster, "SpatRaster")) {
     return(terra::res(raster)[1])
   }
   stop("Argument raster should be a stars or SpatRaster object")

@@ -18,10 +18,13 @@ test_that("raster_res", {
 })
 
 test_that("adjust_start", {
-  expect_equal(adjust_start(start = 0, xmin = 0, res = 1), 0)
-  expect_equal(adjust_start(start = 1, xmin = 0, res = 1), 0)
-  expect_equal(adjust_start(start = -1, xmin = 0, res = 1), 0)
-  expect_equal(adjust_start(start = 0, xmin = 0.5, res = 1), 0)
-  expect_equal(adjust_start(start = 0.5, xmin = 0.5, res = 1), 0.5)
-  expect_equal(adjust_start(start = 0.5, xmin = 0, res = 1), -0.5)
+  for (start in c(-10, -1, 0, 0.5, 10)) {
+    for (xmin in c(-10, -1, 0, 0.5, 10)) {
+      for (res in c(0.5, 1, 10)) {
+        new_start <- adjust_start(start = start, xmin = xmin, res = res)
+        expect_true(new_start <= xmin)
+        expect_true(((xmin - new_start) <= res))
+      }
+    }
+  }
 })
