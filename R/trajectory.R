@@ -43,7 +43,7 @@ get_traj <- function(
   renum = TRUE,
   multi_pulse = TRUE
 ) {
-
+  gpstime <- NULL
   if (thin > 0) {
     # thinning pulses before rmdup
     # reduces considerably the computation time

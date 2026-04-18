@@ -38,7 +38,7 @@
 #'   \item Cover_h_pad as the cover metric used for the PAD computation above `height_cover`.
 #'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
 #'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
-#'   \item PAD layers from `z0` to `z0 + nlayers * dz`, named as `PAD_\{dz\}_\{zi\}` with zi the bottom edge of layer i.
+#'   \item PAD layers from `z0` to `z0 + nlayers * dz`, named as `PAD_{dz}_{zi}` with zi the bottom edge of layer i.
 #' }
 #'
 #' If keep_N = TRUE, the list also contains Ni and N layers at same heights than PAD layers.
@@ -88,7 +88,8 @@ pad_metrics <- function(
 }
 
 #' @rdname pad_metrics
-#'
+#' @param gpstime,X,Y,Z,Zref,ReturnNumber,Classification,Easting,Northing,Elevation
+#' numeric vectors. Attributes of the lidar point cloud.
 #' @export
 .pad_metrics <- function(
   gpstime, X, Y, Z, Zref, ReturnNumber, Classification,
@@ -238,11 +239,11 @@ pad_metrics <- function(
 
 #' Parse dz and z_bottom from PAD names
 #'
-#' @param pad_names A vector of PAD names of type "PAD_\{dz\}_\{z_bottom\}".
+#' @param pad_names A vector of PAD names of type `PAD_{dz}_{z_bottom}".
 #'
-#' @return A data frame with columns "index", "dz", and "z_bottom",
-#' where "index" is the index of the PAD layer in the pad_names vector,
-#' "dz" is the layer thickness in meters, and "z_bottom" is the
+#' @return A data frame with columns `index`, `dz` and `z_bottom`,
+#' where `index` is the index of the PAD layer in the pad_names vector,
+#' `dz` is the layer thickness in meters, and `z_bottom` is the
 #' bottom height of the layer in meters.
 #'
 #' @examples \dontrun{
@@ -259,5 +260,5 @@ parse_pad_heights <- function(pad_names) {
     as.numeric() |>
     matrix(ncol = 2, byrow = TRUE)
   pad_heights <- as.data.frame(cbind(idx, pad_heights)) |>
-    setNames(c("idx", "dz", "z_bottom"))
+    stats::setNames(c("idx", "dz", "z_bottom"))
 }
