@@ -2,15 +2,14 @@
 % Please edit documentation in R/ffuelmetrics2.R
 \name{ffuelmetrics2}
 \alias{ffuelmetrics2}
-\alias{ffuelmetrics2Rast}
 \title{Fuel metrics from PAD profiles or bulk density profiles}
 \usage{
 ffuelmetrics2(
   PADval = NULL,
   CBDval = NULL,
+  FMAcan = 1,
+  FMAshrub = 1,
   smooth_pad = FALSE,
-  FMAcan = NULL,
-  FMAshrub = NULL,
   zval,
   dz,
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
@@ -22,36 +21,18 @@ ffuelmetrics2(
   M = 2.5,
   as_tibble = FALSE
 )
-
-ffuelmetrics2Rast(
-  PAD_rast = NULL,
-  CBD_rast = NULL,
-  smooth_pad = FALSE,
-  FMAcan_rast = NULL,
-  FMAshrub_rast = NULL,
-  zval,
-  dz,
-  LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
-  CanopyHeightThreshold = 1,
-  CanopyBDTreshFrac = 0.1,
-  CanopyTopBDThresholds = c(0.0012, 0.01),
-  CBHThresholdRatio = 1/5,
-  bdmax = 1,
-  M = 2.5,
-  asTibble = FALSE
-)
 }
 \arguments{
-\item{PADval}{numeric vector. PAD values in m2/m3. Set to NULL to input directly CBDval.}
+\item{PADval}{numeric vector or SpatRaster. PAD values in m2/m3. Set to NULL to input directly CBDval.}
 
-\item{CBDval}{numeric vector. CBD values in kg/m3, only used if PADval is NULL.}
+\item{CBDval}{numeric vector or SpatRaster. CBD values in kg/m3, only used if PADval is NULL.}
+
+\item{FMAcan}{numeric or SpatRaster. Fuel mass area in kg/m2 for canopy}
+
+\item{FMAshrub}{numeric or SpatRaster. Fuel mass area in kg/m2 for shrub}
 
 \item{smooth_pad}{boolean. If true PADval is smoothed by a moving average with a window of 3.
 Recommended for dz=0.5 or if point number is limited}
-
-\item{FMAcan}{numeric. Fuel mass area in kg/m2 for canopy}
-
-\item{FMAshrub}{numeric. Fuel mass area in kg/m2 for shrub}
 
 \item{zval}{numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.}
 
@@ -71,7 +52,10 @@ Recommended for dz=0.5 or if point number is limited}
 
 \item{M}{numeric. M factor from Perrakis 2025}
 
-\item{as_tibble}{logical. If TRUE, returns a tibble.}
+\item{as_tibble}{logical. If TRUE, returns a tibble. Not used in the raster case.}
+}
+\value{
+a data frame, a tibble or a SpatRaster.
 }
 \description{
 Fuel metrics from PAD profiles or bulk density profiles

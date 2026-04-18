@@ -33,10 +33,12 @@ Imports:
     rgl,
     sf,
     slider,
+    stars,
     stats,
     stringr,
     svMisc,
     terra,
+    tibble,
     utils,
     VoxR,
 Collate: 
