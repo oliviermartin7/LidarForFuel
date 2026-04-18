@@ -48,5 +48,6 @@ Collate:
   ffuelmetrics2.R
   class_metrics.R
   filters.R
+  utils.R
   
   

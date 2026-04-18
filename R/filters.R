@@ -1,5 +1,3 @@
-
-
 #' convert gps time to POSIXct datetime
 #'
 #' @param gpstime numeric. vector of gps time
@@ -135,22 +133,43 @@ filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime
 #' }
 #' @export
 pixel_filter <- function(las, res, start = c(0, 0), filter) {
-  lidR:::stopifnotlas(las)
+  if (!inherits(las, "LAS")) {
+    stop("Argument is not a LAS object", call. = FALSE)
+  }
+
 
   # conditions <- lazyeval::f_capture(cond)
   # formula <- tryCatch(lazyeval::is_formula(func), error = function(e) FALSE)
   # if (!formula) func <- lazyeval::f_capture(cond)
   # func   <- lazyeval::f_interp(func)
   # call   <- lazyeval::as_call(func)
-  template <- lidR:::raster_layout(las, res, start)
+  if (is_raster(res)) {
+    bbox <- raster_bbox(res)
+    start <- c(bbox["xmin"], bbox["ymin"])
+    res <- raster_res(res)
+  }
+
+  # get cell number same as pixel_metrics
+  bbox_las <- sf::st_bbox(las)
+  xmin <- adjust_start(start[1], bbox_las["xmin"], res)
+  ymin <- adjust_start(start[2], bbox_las["ymin"], res)
+  # pixel_metrics is starting from ymax to define row
+  col <- .bincode(las$X, seq(xmin, bbox_las["xmax"] + res, res), right = FALSE, include.lowest = TRUE)
+  row <- .bincode(las$Y, seq(ymin, bbox_las["ymax"] + res, res), right = TRUE, include.lowest = TRUE)
+  col <- col - min(col)
+  row <- row - min(row)
+
+  # to check equality with pixel_metrics
+  # cell <- col + (max(col) + 1) * row + 1
+  # template <- lidR:::raster_layout(las, res, start)
+  # cell1 <- lidR:::get_group.raster_template(template, las)
+  # col1 <- (cell1 - 1) %% template$ncol
+  # row1 <- template$nrow - (cell1 - col1 - 1) / template$ncol - 1
+  # cell1 <- col1 + (max(col) + 1) * row1 + 1
+  # all(cell == cell1)
+
   data <- las@data
-  data[["cell"]] <- lidR:::get_group.raster_template(template, las)
-  las@data <- data
-  # las@data[["new"]] <- las$gpstime==0
-  # # lidR:::plot.LAS(las, color="cell", pal = lidR::random.colors)
-  # lidR:::plot.LAS(las, color="new")
-  # p <- rgl::rglwidget()
-  # print(p)
+  data[["cell"]] <- col + (max(col) + 1) * row + 1
   filter <- deparse(substitute(filter))
   text <- paste0("data[,.(valid=", filter, "), by = 'cell']")
   keep <- eval(parse(text = text))
