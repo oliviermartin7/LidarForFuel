@@ -239,7 +239,7 @@ pad_metrics <- function(
 
 #' Parse dz and z_bottom from PAD names
 #'
-#' @param pad_names A vector of PAD names of type `PAD_{dz}_{z_bottom}".
+#' @param pad_names A vector of PAD names of type `PAD_{dz}_{z_bottom}`.
 #'
 #' @return A data frame with columns `index`, `dz` and `z_bottom`,
 #' where `index` is the index of the PAD layer in the pad_names vector,
