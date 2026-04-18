@@ -43,7 +43,7 @@ Collate:
   fCBDprofile_fuelmetrics.R
   fPCpretreatment.R
   ffuelmetrics.R
-  pad.R
+  pad_metrics.R
   trajectory.R
   ffuelmetrics2.R
   class_metrics.R
