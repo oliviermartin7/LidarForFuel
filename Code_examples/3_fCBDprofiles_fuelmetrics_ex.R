@@ -29,7 +29,7 @@ opt_output_files(catalog_pretreated) <- "~/path_to_the_output_folder/{ID}" # che
 # If a custom grid is needed
 
 mygrid <- rast("~/path_to_the_raster_ofthecustomgrid.tif")
-mygrid <- st_as_stars(mygrid)
+mygrid <- stars::st_as_stars(mygrid)
 
 # Run BD profile on the catalog to get the rasters => example of parameters
 pixel_metrics(
