@@ -7,7 +7,7 @@
 parse_pad_heights(pad_names)
 }
 \arguments{
-\item{pad_names}{A vector of PAD names of type "PAD_{dz}_{z_bottom}".}
+\item{pad_names}{A vector of PAD names of type "PAD_\{dz\}_\{z_bottom\}".}
 }
 \value{
 A data frame with columns "index", "dz", and "z_bottom",

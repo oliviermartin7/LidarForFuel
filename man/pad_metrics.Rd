@@ -95,7 +95,7 @@ The list of PAD metrics includes:
 \item Cover_h_pad as the cover metric used for the PAD computation above \code{height_cover}.
 \item cos_theta which is the average scan zenith angle used in the computation of PAD.
 If \code{scanning_angle = FALSE}, \code{cos_theta} is set to 1, i.e. pulses are considered vertical.
-\item PAD layers from \code{z0} to \code{z0 + nlayers * dz}, named as \verb{PAD_\{dz\}_\{zi\}} with zi the bottom edge of layer i.
+\item PAD layers from \code{z0} to \code{z0 + nlayers * dz}, named as \verb{PAD_\\\{dz\\\}_\\\{zi\\\}} with zi the bottom edge of layer i.
 }
 
 If keep_N = TRUE, the list also contains Ni and N layers at same heights than PAD layers.
