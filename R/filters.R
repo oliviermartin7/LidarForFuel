@@ -4,7 +4,7 @@
 #' @param gpstime_ref character. reference datetime
 #' @return POSIXct datetime
 #' @export
-gpsptime_to_datetime <- function(gpstime, gpstime_ref = "2011-09-14 01:46:40") {
+gpstime_to_datetime <- function(gpstime, gpstime_ref = "2011-09-14 01:46:40") {
   datetime <- as.POSIXct(gpstime_ref, tz = "UTC") + gpstime
   return(datetime)
 }
@@ -101,7 +101,7 @@ is_near_date_mode <- function(datetime, deviation_days = Inf) {
 #' }
 #' @export
 filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40") {
-  datetime <- gpsptime_to_datetime(gpstime)
+  datetime <- gpstime_to_datetime(gpstime)
   # filter seasons
   season_points <- is_in_season(datetime, months = months)
   # filter deviation days on season points
@@ -199,3 +199,66 @@ pixel_filter <- function(las, res, start = c(0, 0), filter) {
   las1 <- lidR::filter_poi(las, keep$valid)
   return(las1)
 }
+
+
+
+# pixel_filter2 <- function(las, res, start = c(0, 0), filter) {
+#   if (!inherits(las, "LAS")) {
+#     stop("Argument is not a LAS object", call. = FALSE)
+#   }
+#   # cond1 <- rlang::enquo(filter)
+#   # rlang::eval_tidy(cond1)
+#   cond <- lazyeval::f_capture(filter)
+#   cond1 <- lazyeval::f_unwrap(cond)
+#   # func <- lazyeval::f_interp(cond)
+#   # call <- lazyeval::as_call(func)
+  
+#   # conditions <- lazyeval::f_capture(cond)
+#   # formula <- tryCatch(lazyeval::is_formula(func), error = function(e) FALSE)
+#   # if (!formula) func <- lazyeval::f_capture(cond)
+#   # func   <- lazyeval::f_interp(func)
+#   # call   <- lazyeval::as_call(func)
+#   if (is_raster(res)) {
+#     bbox <- raster_bbox(res)
+#     start <- c(bbox["xmin"], bbox["ymin"])
+#     res <- raster_res(res)
+#   }
+
+#   # get cell number same as pixel_metrics
+#   bbox_las <- sf::st_bbox(las)
+#   xmin <- adjust_start(start[1], bbox_las["xmin"], res)
+#   ymin <- adjust_start(start[2], bbox_las["ymin"], res)
+#   # pixel_metrics is starting from ymax to define row
+#   col <- .bincode(las$X, seq(xmin, bbox_las["xmax"] + res, res), right = FALSE, include.lowest = TRUE)
+#   row <- .bincode(las$Y, seq(ymin, bbox_las["ymax"] + res, res), right = TRUE, include.lowest = TRUE)
+#   col <- col - min(col)
+#   row <- row - min(row)
+
+#   # to check equality with pixel_metrics
+#   # cell <- col + (max(col) + 1) * row + 1
+#   # template <- lidR:::raster_layout(las, res, start)
+#   # cell1 <- lidR:::get_group.raster_template(template, las)
+#   # col1 <- (cell1 - 1) %% template$ncol
+#   # row1 <- template$nrow - (cell1 - col1 - 1) / template$ncol - 1
+#   # cell1 <- col1 + (max(col) + 1) * row1 + 1
+#   # all(cell == cell1)
+
+#   data <- las@data
+#   data[["cell"]] <- col + (max(col) + 1) * row + 1
+#   text_filter <- paste0(deparse(cond1), collapse = "")
+#   text_filter <- sub("^~", "", text_filter)
+#   text <- paste0("data[, .(valid=", text_filter, "), by = 'cell']")
+#   keep <- eval(parse(text = text))
+
+#   # keep <- data[, .(valid = rlang::eval_tidy(cond1, data=.SD)), by = "cell"]$valid
+#   # keep <- data[, .(valid = lazyeval::f_eval(cond, data=.SD)), by = "cell"]$valid
+#   las1 <- lidR::filter_poi(las, keep$valid)
+
+#   # free memory
+#   rm(data)
+#   gc()
+#   # keep <- las@data[,.(valid={cond}), by="cell"]
+
+
+#   return(las1)
+# }

@@ -10,7 +10,7 @@ test_that("pixel_filter", {
   ref <- stars::read_stars(system.file("extdata", "raster_template.tif", package = "lidarforfuel"))
   # make first point to be in month 9
   las@data$gpstime[1] <- 0 # 2021-09-14 01:46:40
-  months <- lubridate::month(gpsptime_to_datetime(las$gpstime)) |> unique()
+  months <- lubridate::month(gpstime_to_datetime(las$gpstime)) |> unique()
   expect_true(any(months == 9))
 
   # # test with variables
@@ -18,10 +18,12 @@ test_that("pixel_filter", {
   las1 <- lidR::filter_poi(las = las, filter_gpstime(gpstime, months = months))
   # test with variables
   months = 5:8
-  las1 <- pixel_filter(las = las, res = ref, filter = ~is_in_season(gpsptime_to_datetime(gpstime), months = 5:8))
+  las1 <- pixel_filter(las = las, res = ref, filter = ~is_in_season(gpstime_to_datetime(gpstime), months = 5:8))
   las1 <- pixel_filter(las = las, res = ref, filter = .filter_gpstime(months = months))
+  # las1 <- pixel_filter2(las = las, res = ref, 
+  #   filter = filter_gpstime(gpstime, months = months, deviation_days = 14, gpstime_ref = "2011-09-14 01:46:40"))
 
-  new_months <- lubridate::month(gpsptime_to_datetime(las1$gpstime))
+  new_months <- lubridate::month(gpstime_to_datetime(las1$gpstime))
   expect_true(!any(new_months == 9))
 
   # test deviation_days
