@@ -39,10 +39,16 @@ test_that("get and add traj", {
   )
 
   # what happens if any gpstime=0
-  las2 <- path2laz |> lidR::readLAS()
+  las2 <- lidR::readLAS(path2laz)
   las2@data <- las2@data[gpstime %in% unique(las2@data$gpstime)[1:1e4], gpstime := 0][]
   # no error
-  traj2 <- get_traj(las2)
+  expect_warning(
+    {
+      traj2 <- get_traj(las2)
+    },
+    "Only one sensor position was found for PointSourceID 49",
+    fixed = TRUE
+  )
   expect_true(all(traj2$gpstime != 0))
 
 
