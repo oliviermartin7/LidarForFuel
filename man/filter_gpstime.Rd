@@ -2,10 +2,17 @@
 % Please edit documentation in R/filters.R
 \name{filter_gpstime}
 \alias{filter_gpstime}
+\alias{.filter_gpstime}
 \title{test if points are in the season and around a date mode}
 \usage{
 filter_gpstime(
   gpstime,
+  months = 1:12,
+  deviation_days = Inf,
+  gpstime_ref = "2011-09-14 01:46:40"
+)
+
+.filter_gpstime(
   months = 1:12,
   deviation_days = Inf,
   gpstime_ref = "2011-09-14 01:46:40"
@@ -26,8 +33,13 @@ plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 logical vector with TRUE for points within the season and date mode +- deviation_days.
 }
 \description{
-This function returns TRUE when points are in the season and around the date mode,
+These functions return TRUE when points are in the season and around the date mode,
 the date mode being computed on points within the season.
+
+\itemize{
+\item \code{filter_gpstime} applies to \code{\link[lidR]{filter_poi}}
+\item \code{.filter_gpstime} returns a formula for \code{\link[lidarforfuel]{pixel_filter}}
+}
 }
 \examples{
 \dontrun{

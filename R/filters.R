@@ -72,8 +72,15 @@ is_near_date_mode <- function(datetime, deviation_days = Inf) {
 
 #' test if points are in the season and around a date mode
 #'
-#' This function returns TRUE when points are in the season and around the date mode,
+#' @description
+#' These functions return TRUE when points are in the season and around the date mode,
 #' the date mode being computed on points within the season.
+#' 
+#' \itemize{
+#'   \item `filter_gpstime` applies to \code{\link[lidR]{filter_poi}}
+#'   \item `.filter_gpstime` returns a formula for \code{\link[lidarforfuel]{pixel_filter}}
+#' }
+#' 
 #' @param gpstime numeric. vector of gps time in seconds
 #' @param months numeric vector of months defining the expected season
 #' @param deviation_days numeric. the number of days defining the valid range around the date mode
@@ -103,6 +110,15 @@ filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime
   return(valid_points)
 }
 
+#' @rdname filter_gpstime
+#' @export
+.filter_gpstime <- function(months = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40") {
+  fun <- substitute(
+    ~ filter_gpstime(gpstime, months = months, deviation_days = deviation_days, gpstime_ref = gpstime_ref),
+    list(months = months, deviation_days = deviation_days, gpstime_ref = gpstime_ref)
+  )
+  return(fun)
+}
 
 #' Filter by pixel
 #'
@@ -110,7 +126,7 @@ filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime
 #' @param res numeric. The resolution of the output. Can optionally be raster of type stars or SpatRaster.
 #' In that case the raster is used as the template.
 #' @param start vector of x and y coordinates for the reference raster. Default is (0,0) meaning that the grid aligns on (0,0). Not considered if res is a raster.
-#' @param filter Logical predicate. Multiple conditions are combined with '&' or '|'.
+#' @param filter formula for logical predicate. Multiple conditions are combined with '&' or '|'.
 #'
 #' @return A \code{\link[lidR]{LAS}} object with the filtered data.
 #'
@@ -127,7 +143,7 @@ filter_gpstime <- function(gpstime, months = 1:12, deviation_days = Inf, gpstime
 #'     gpstime = as.numeric(seq_len(nrow(grid))) * 3600 * 24 * 365 / nrow(grid)
 #'   )
 #' )
-#' las1 <- pixel_filter(las = las, res = 10, filter = filter_gpstime(gpstime, months = 5:8))
+#' las1 <- pixel_filter(las = las, res = 10, filter = ~ filter_gpstime(gpstime, months = 5:8))
 #' range(gpsptime_to_datetime(las$gpstime))
 #' range(gpsptime_to_datetime(las1$gpstime))
 #' }
@@ -170,8 +186,10 @@ pixel_filter <- function(las, res, start = c(0, 0), filter) {
 
   data <- las@data
   data[["cell"]] <- col + (max(col) + 1) * row + 1
-  filter <- deparse(substitute(filter))
-  text <- paste0("data[,.(valid=", filter, "), by = 'cell']")
+  # filter <- deparse(substitute(filter))
+  text_filter <- paste0(deparse(filter), collapse = "")
+  text_filter <- sub("^~", "", text_filter)
+  text <- paste0("data[, .(valid=", text_filter, "), by = 'cell']")
   keep <- eval(parse(text = text))
   # free memory
   rm(data)

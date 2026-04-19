@@ -12,7 +12,15 @@ test_that("pixel_filter", {
   las@data$gpstime[1] <- 0 # 2021-09-14 01:46:40
   months <- lubridate::month(gpsptime_to_datetime(las$gpstime)) |> unique()
   expect_true(any(months == 9))
-  las1 <- pixel_filter(las = las, res = ref, filter = filter_gpstime(gpstime, months = 5:8))
+
+  # # test with variables
+  months = 5:8
+  las1 <- lidR::filter_poi(las = las, filter_gpstime(gpstime, months = months))
+  # test with variables
+  months = 5:8
+  las1 <- pixel_filter(las = las, res = ref, filter = ~is_in_season(gpsptime_to_datetime(gpstime), months = 5:8))
+  las1 <- pixel_filter(las = las, res = ref, filter = .filter_gpstime(months = months))
+
   new_months <- lubridate::month(gpsptime_to_datetime(las1$gpstime))
   expect_true(!any(new_months == 9))
 
@@ -29,14 +37,14 @@ test_that("pixel_filter", {
   pixel <- sf::st_as_sfc(bbox) |> sf::st_as_sf()
   # filter out points inside pixel
   las_wo_pix <- lidR::filter_poi(las, !(X %between% bbox[c("xmin", "xmax")] & Y %between% bbox[c("ymin", "ymax")]))
-
+  deviation_days <- 14
   for (ratio in c(0.25, 0.5, 0.75)) {
     pix_las <- las[pixel]
     npoints <- floor(ratio * nrow(pix_las))
     pix_las@data$gpstime[1:npoints] <- 0
     las1 <- rbind(las_wo_pix, pix_las)
     # expect_true(nrow(las1) == nrow(las) + 2 * nrow(pixel_points))
-    las1 <- pixel_filter(las = las1, res = ref, filter = filter_gpstime(gpstime, deviation_days = 14))
+    las1 <- pixel_filter(las = las1, res = ref, filter = .filter_gpstime(deviation_days = deviation_days))
     pix_las1 <- las1[pixel]
     if (ratio <= 0.5) {
       expect_true(nrow(pix_las1) == (nrow(pix_las) - npoints))

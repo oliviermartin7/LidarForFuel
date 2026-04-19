@@ -14,7 +14,7 @@ In that case the raster is used as the template.}
 
 \item{start}{vector of x and y coordinates for the reference raster. Default is (0,0) meaning that the grid aligns on (0,0). Not considered if res is a raster.}
 
-\item{filter}{Logical predicate. Multiple conditions are combined with '&' or '|'.}
+\item{filter}{formula for logical predicate. Multiple conditions are combined with '&' or '|'.}
 }
 \value{
 A \code{\link[lidR]{LAS}} object with the filtered data.
@@ -36,7 +36,7 @@ las <- lidR::LAS(
     gpstime = as.numeric(seq_len(nrow(grid))) * 3600 * 24 * 365 / nrow(grid)
   )
 )
-las1 <- pixel_filter(las = las, res = 10, filter = filter_gpstime(gpstime, months = 5:8))
+las1 <- pixel_filter(las = las, res = 10, filter = ~ filter_gpstime(gpstime, months = 5:8))
 range(gpsptime_to_datetime(las$gpstime))
 range(gpsptime_to_datetime(las1$gpstime))
 }
