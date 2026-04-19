@@ -4,7 +4,12 @@
 \alias{class_metrics}
 \title{Class counts}
 \usage{
-class_metrics(classes = c(1:6, 9, 17, 18, 64, 66, 67))
+class_metrics(
+  classes = c(1:6, 9, 17, 18, 64, 66, 67),
+  season_filter = 1:12,
+  deviation_days = Inf,
+  gpstime_ref = "2011-09-14 01:46:40"
+)
 }
 \arguments{
 \item{classes}{Vector of classes to count

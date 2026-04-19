@@ -18,7 +18,10 @@ pad_metrics(
   use_cover = TRUE,
   limit_N_points = 0,
   limit_flight_agl = 800,
-  keep_N = FALSE
+  keep_N = FALSE,
+  season_filter = 1:12,
+  deviation_days = Inf,
+  gpstime_ref = "2011-09-14 01:46:40"
 )
 
 .pad_metrics(
@@ -44,7 +47,10 @@ pad_metrics(
   use_cover = TRUE,
   limit_N_points = 0,
   limit_flight_agl = 800,
-  keep_N = FALSE
+  keep_N = FALSE,
+  season_filter = 1:12,
+  deviation_days = Inf,
+  gpstime_ref = "2011-09-14 01:46:40"
 )
 }
 \arguments{

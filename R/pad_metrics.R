@@ -62,7 +62,8 @@ pad_metrics <- function(
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
-  limit_N_points = 0, limit_flight_agl = 800, keep_N = FALSE
+  limit_N_points = 0, limit_flight_agl = 800, keep_N = FALSE,
+  season_filter=1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
   fun <- substitute(
     ~ .pad_metrics(
@@ -73,14 +74,16 @@ pad_metrics <- function(
       scanning_angle = scanning_angle,
       cover_type = cover_type, height_cover = height_cover, use_cover = use_cover,
       limit_N_points = limit_N_points, limit_flight_agl = limit_flight_agl,
-      keep_N = keep_N
+      keep_N = keep_N,
+      season_filter = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref
     ), list(
       z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,
       G = G, omega = omega,
       scanning_angle = scanning_angle,
       cover_type = cover_type, height_cover = height_cover, use_cover = use_cover,
       limit_N_points = limit_N_points, limit_flight_agl = limit_flight_agl,
-      keep_N = keep_N
+      keep_N = keep_N,
+      season_filter = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref
     )
   ) |> stats::as.formula()
 
@@ -99,8 +102,21 @@ pad_metrics <- function(
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
   limit_N_points = 0, limit_flight_agl = 800,
-  keep_N = FALSE
+  keep_N = FALSE,
+  season_filter=1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
+  valid_points <- filter_gpstime(gpstime, months = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref)
+  gpstime <- gpstime[valid_points]
+  X <- X[valid_points]
+  Y <- Y[valid_points]
+  Z <- Z[valid_points]
+  Zref <- Zref[valid_points]
+  ReturnNumber <- ReturnNumber[valid_points]
+  Classification <- Classification[valid_points]
+  Easting <- Easting[valid_points]
+  Northing <- Northing[valid_points]
+  Elevation <- Elevation[valid_points]
+
   if (length(Z) < limit_N_points) {
     warning("NULL return: the number of points < limit_N_points. Check the point cloud.")
     return(NULL)
