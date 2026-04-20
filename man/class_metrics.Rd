@@ -2,9 +2,19 @@
 % Please edit documentation in R/class_metrics.R
 \name{class_metrics}
 \alias{class_metrics}
+\alias{.class_metrics}
 \title{Class counts}
 \usage{
 class_metrics(
+  classes = c(1:6, 9, 17, 18, 64, 66, 67),
+  season_filter = 1:12,
+  deviation_days = Inf,
+  gpstime_ref = "2011-09-14 01:46:40"
+)
+
+.class_metrics(
+  gpstime,
+  Classification,
   classes = c(1:6, 9, 17, 18, 64, 66, 67),
   season_filter = 1:12,
   deviation_days = Inf,
@@ -14,6 +24,8 @@ class_metrics(
 \arguments{
 \item{classes}{Vector of classes to count
 Default class specs are from https://data.geopf.fr/annexes/ressources/documentation/DC_LiDAR_HD_1-0.pdf.}
+
+\item{gpstime, Classification}{numeric vectors. Attributes of the lidar point cloud.}
 }
 \value{
 Formula for lidR::xxx_metrics
