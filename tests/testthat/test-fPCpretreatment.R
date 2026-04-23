@@ -73,6 +73,15 @@ test_that("fPCpretreatment", {
     "Easting", "Northing", "Elevation", "Time", "Zref"
   )
   expect_contains(names(m30_font_blanche_pretreated), expected_names)
+
+  # write and read to check that the attributes are still there
+  outdir <- withr::local_tempdir(pattern = "lidarforfuel") # , .local_envir = globalenv()
+  expect_true(file.exists(outdir))
+  tmpfile <- file.path(outdir, "m30_font_blanche_pretreated.laz")
+  lidR::writeLAS(m30_font_blanche_pretreated, tmpfile)
+  m30_font_blanche_pretreated_read <- lidR::readLAS(tmpfile)
+  expect_contains(names(m30_font_blanche_pretreated_read), expected_names)
+
 })
 
 

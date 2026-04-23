@@ -115,13 +115,14 @@ fPCpretreatment <- function(
   # Normalize height
   las <- lidR::normalize_height(las = las, algorithm = lidR::tin(), dtm = dtm)
   las <- lidR::classify_noise(las, lidR::sor(5, 10))
-
+  las <- lidR::add_lasattribute(las, name = "Zref", desc = "original Z")
+  
   # las@data[Z <= H_strata_bush]$LMA <- LMA_bush
   # las@data[Z <= H_strata_bush]$WD <- WD_bush
   # # add names to laz
   # las <- lidR::add_lasattribute(las, name = "LMA", desc = "leaf mass area")
   # las <- lidR::add_lasattribute(las, name = "WD", desc = "Wood density")
-  # las <- lidR::add_lasattribute(las, name = "Zref", desc = "original Z")
+  
   # if (norm_ground == T){
   #   las=lidR::add_lasattribute(las,name="Nx",desc="normal")
   #   las=lidR::add_lasattribute(las,name="Ny",desc="normal")
