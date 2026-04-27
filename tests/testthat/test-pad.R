@@ -23,7 +23,7 @@ test_that("pad", {
   # test without using cover
   pad <- lidR::cloud_metrics(nlas, pad_metrics(use_cover = FALSE)) |>
     unlist()
-  expect_length(pad, 120 + 5)
+  expect_length(pad, 60 + 6)
 
   pad <- lidR::cloud_metrics(nlas, pad_metrics(z0 = 0, dz = dz, nlayers = 2)) |>
     unlist()

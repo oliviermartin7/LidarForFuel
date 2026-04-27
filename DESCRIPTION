@@ -33,19 +33,24 @@ Imports:
     rgl,
     sf,
     slider,
+    stars,
     stats,
     stringr,
     svMisc,
     terra,
+    tibble,
     utils,
     VoxR,
 Collate: 
-  fCBDprofile_fuelmetrics.R
-  fPCpretreatment.R
-  ffuelmetrics.R
-  pad.R
-  trajectory.R
-  ffuelmetrics2.R
   class_metrics.R
+  fCBDprofile_fuelmetrics.R
+  ffuelmetrics.R
+  ffuelmetrics2.R
+  filters.R
+  fPCpretreatment.R
+  fuel_mass_area.R
+  pad_metrics.R
+  trajectory.R
+  utils.R
   
   

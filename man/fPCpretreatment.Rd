@@ -7,12 +7,9 @@
 fPCpretreatment(
   chunk,
   classify = FALSE,
-  Height_filter = 60,
-  start_date = "2011-09-14 01:46:40",
-  season_filter = 1:12,
-  deviation_days = Inf,
-  plot_hist_days = FALSE,
-  traj = NULL
+  exclude_classes = NULL,
+  traj = NULL,
+  dtm = NULL
 )
 }
 \arguments{
@@ -21,20 +18,15 @@ Can be apply to a catalog see lidR::catalog_apply # nolint: line_length_linter.}
 
 \item{classify}{logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified}
 
-\item{Height_filter}{numeric. Default = 80. Height limit to remove noise point}
-
-\item{start_date}{date. The reference datetime to retrieve datetime from relative gpstime of the laz.
+\item{exclude_classes}{numeric. Default = NULL. A vector of integer for classes to filter out of the point cloud. If NULL, all classes are kept.
 It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 
-\item{season_filter}{numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)}
-
-\item{deviation_days}{numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default}
-
-\item{plot_hist_days}{logical. Should the histogram of dates of acquisition be displayed. Default =FALSE}
-
 \item{traj}{sf object. Trajectory covering the LAS chunk. The sf object is expected to have a column gpstime and Point Z geometries.
 If NULL, the function will try to compute it.}
+
+\item{dtm}{rast or stars object. Digital terrain model (DTM) to use for height normalisation. It should be larger than the area of interest.
+If provided, the DTM is tinned to interpolate at each point location. If NULL, the normalisation function is using the tin of ground points.}
 }
 \value{
 LAS object. A normalized point cloud (.laz) with several new attributes needed to run fCBDprofile_fuelmetrics, see details.

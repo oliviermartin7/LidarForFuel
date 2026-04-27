@@ -44,13 +44,12 @@
 
 
 #' Fuel metrics from PAD profiles or bulk density profiles
-#'
-#' @param PADval numeric vector. PAD values in m2/m3. Set to NULL to input directly CBDval.
-#' @param CBDval numeric vector. CBD values in kg/m3, only used if PADval is NULL.
+#' @param PADval numeric vector or SpatRaster. PAD values in m2/m3. Set to NULL to input directly CBDval.
+#' @param CBDval numeric vector or SpatRaster. CBD values in kg/m3, only used if PADval is NULL.
+#' @param FMAcan numeric or SpatRaster. Fuel mass area in kg/m2 for canopy
+#' @param FMAshrub numeric or SpatRaster. Fuel mass area in kg/m2 for shrub
 #' @param smooth_pad boolean. If true PADval is smoothed by a moving average with a window of 3.
 #' Recommended for dz=0.5 or if point number is limited
-#' @param FMAcan numeric. Fuel mass area in kg/m2 for canopy
-#' @param FMAshrub numeric. Fuel mass area in kg/m2 for shrub
 #' @param zval numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.
 #' @param dz numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.
 #' @param LadderFuelBDthresholds numeric vector. Minimal bulk density thresholds for Ladder fuels (kg/m3)
@@ -60,16 +59,16 @@
 #' @param CBHThresholdRatio numeric. Ratio of total height above which we look for CBH
 #' @param bdmax numeric. Max value of bulk density kg/m3 for canopy (above CanopyHeightThreshold=1 m only)
 #' @param M numeric. M factor from Perrakis 2025
-#' @param as_tibble logical. If TRUE, returns a tibble.
-#'
+#' @param as_tibble logical. If TRUE, returns a tibble. Not used in the raster case.
+#' @return a data frame, a tibble or a SpatRaster.
 #' @name ffuelmetrics2
 #' @export
 ffuelmetrics2 <- function(
   PADval = NULL,
   CBDval = NULL,
+  FMAcan = 1,
+  FMAshrub = 1,
   smooth_pad = FALSE, # default is false
-  FMAcan = NULL,
-  FMAshrub = NULL,
   zval,
   dz,
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05), # CBD thresholds for ladder fuels
@@ -81,6 +80,26 @@ ffuelmetrics2 <- function(
   M = 2.5, # M factor perrakis
   as_tibble = FALSE
 ) { # two different output formats depending on the need (plots or raster)
+
+  if (inherits(PADval, "SpatRaster") || inherits(CBDval, "SpatRaster")) {
+    result <- ffuelmetrics2Rast(
+      PADval = PADval,
+      CBDval = CBDval,
+      FMAcan = FMAcan,
+      FMAshrub = FMAshrub,
+      smooth_pad = smooth_pad,
+      zval = zval,
+      dz = dz,
+      LadderFuelBDthresholds = LadderFuelBDthresholds,
+      CanopyHeightThreshold = CanopyHeightThreshold,
+      CanopyBDTreshFrac = CanopyBDTreshFrac,
+      CanopyTopBDThresholds = CanopyTopBDThresholds,
+      CBHThresholdRatio = CBHThresholdRatio,
+      bdmax = bdmax,
+      M = M
+    )
+    return(result)
+  }
 
   # convert zval to center height of strata
   zval <- zval + 0.5 * dz
@@ -131,7 +150,7 @@ ffuelmetrics2 <- function(
   # 2. --- Canopy top from CanopyTopBDThresholds CTH ---
   # CTHs for 0.0012 and 0.01 kg/m3 threshold
   suf <- gsub("\\.", "p", sprintf("%0.4f", CanopyTopBDThresholds))
-  CTHs <- setNames(numeric(length(CanopyTopBDThresholds)), paste0("CTH_", suf))
+  CTHs <- stats::setNames(numeric(length(CanopyTopBDThresholds)), paste0("CTH_", suf))
   for (i in c(1:length(CanopyTopBDThresholds))) {
     above_CTH <- (CBDval >= CanopyTopBDThresholds[i]) & !is.na(CBDval)
     CTHs[[i]] <- if (any(above_CTH)) max(zval[above_CTH]) else NA_real_ # max height with CBD>0.012kg/m3
@@ -210,7 +229,7 @@ ffuelmetrics2 <- function(
   # 6. CBDcan
   height <- min(CDH, CTH)
   inCan <- (!is.na(CBH2) & zval >= CBH2 & zval <= height)
-  CBDcan <- if (any(inCan)) sum(CBDval[inCan]) else 0
+  CBDcan <- ifelse(any(inCan), sum(CBDval[inCan]), 0)
 
   # 7. no treshold for CBDval in cell k1 and k2, but a treatment will be applied afterwards (to correct bias - quantile mapping)
   CLFL <- sum(CBDval[zval > zlow]) * dz # canopy + ladderfuel
@@ -263,7 +282,7 @@ ffuelmetrics2 <- function(
 
 
   # 9. compute default ladder metrics for median threshold ladderFuel0.02
-  suf <- gsub("\\.", "p", sprintf("%0.3f", median(LadderFuelBDthresholds)))
+  suf <- gsub("\\.", "p", sprintf("%0.3f", stats::median(LadderFuelBDthresholds)))
   # LadderTop <- ladders[paste0("LadderTop_", suf)]
   # LadderBot <- ladders[paste0("LadderBot_", suf)]
   LFL <- ladders[[paste0("LadderLoad_", suf)]] # default ladder fuel load
@@ -289,14 +308,12 @@ ffuelmetrics2 <- function(
 }
 
 
-#' @rdname ffuelmetrics2
-#' @export
 ffuelmetrics2Rast <- function(
-  PAD_rast = NULL, # PAD values in m2/m3; either PAD or CBD should be provided
-  CBD_rast = NULL, # CBD values in kg/m3
+  PADval = NULL, # PAD values in m2/m3; either PAD or CBD should be provided
+  CBDval = NULL, # CBD values in kg/m3
+  FMAcan = 1, # fuel mass area in kg/m2 for canopy
+  FMAshrub = 1, # fuel mass area in kg/m2 for shrub
   smooth_pad = FALSE, # default is false
-  FMAcan_rast = NULL, # fuel mass area in kg/m2 for canopy
-  FMAshrub_rast = NULL, # fuel mass area in kg/m2 for shrub
   zval, # height values in m
   dz, # FP remove the default to avoid errors =0.5, # vertical resolution of the CBDval in m
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05), # minimal bulk density thresholds for Understorey and Ladder fuels (kg/m3)
@@ -306,18 +323,24 @@ ffuelmetrics2Rast <- function(
   CBHThresholdRatio = 1 / 5, # ratio of total height above which we look for CBH
   bdmax = 1.00, # max value of bulk density kg/m3 for canopy (above 1 m only)
   M = 2.5, # M factor from Perrakis 2025
-  asTibble = FALSE
+  as_tibble = FALSE
 ) {
   # préparation du PAD_rast
-  if (is.null(PAD_rast)) {
-    PAD_rast <- CBD_rast / FMAcan_rast # recomputation of PAD profile assuming a constant FMA has been applied to the whole profile
+  if (is.null(PADval)) {
+    PADval <- CBDval / FMAcan # recomputation of PAD profile assuming a constant FMA has been applied to the whole profile
     # print(global(is.na(FMAcan_rast), sum))
     # print(global(!is.finite(FMAcan_rast), sum))
     # print(global(FMAcan_rast == 0, sum))
     # print(global(is.na(PAD_rast), sum))
   }
-  PAD_FMA <- c(PAD_rast, FMAcan_rast, FMAshrub_rast) # on empile les FMA à PAD pour utiliser terra:app
-  nPAD <- terra::nlyr(PAD_rast)
+  if (inherits(FMAcan, "numeric")) {
+    FMAcan <- terra::rast(PADval, nlyrs = 1, names = "FMAcan", vals = FMAcan)
+  }
+  if (inherits(FMAshrub, "numeric")) {
+    FMAshrub <- terra::rast(PADval, nlyrs = 1, names = "FMAshrub", vals = FMAshrub)
+  }
+  PAD_FMA <- c(PADval, FMAcan, FMAshrub) # on empile les FMA à PAD pour utiliser terra:app
+  nPAD <- terra::nlyr(PADval)
   # calcul des metrics2 avec terra::app
   metrics2 <- terra::app(
     PAD_FMA,
@@ -326,13 +349,19 @@ ffuelmetrics2Rast <- function(
         PADval = v[1:nPAD], # profil PAD du pixel,
         FMAcan = v[nPAD + 1], # FMAcan
         FMAshrub = v[nPAD + 2], # FMAshrub
-        zval = zval, dz = dz, LadderFuelBDthresholds = LadderFuelBDthresholds, CanopyHeightThreshold = CanopyHeightThreshold, CanopyBDTreshFrac = CanopyBDTreshFrac,
-        CanopyTopBDThresholds = CanopyTopBDThresholds, bdmax = bdmax, M = M, asTibble = asTibble
+        zval = zval, dz = dz,
+        LadderFuelBDthresholds = LadderFuelBDthresholds,
+        CanopyHeightThreshold = CanopyHeightThreshold,
+        CanopyBDTreshFrac = CanopyBDTreshFrac,
+        CanopyTopBDThresholds = CanopyTopBDThresholds,
+        bdmax = bdmax,
+        M = M,
+        as_tibble = FALSE
       )
     }
   )
   # just to get names of outputs, because terra::app does not keep names
-  name_template <- names(ffuelmetrics2(CBDval = rep(0, length(zval)), FMAcan = 1, FMAshrub = 1, zval = zval))
+  name_template <- names(ffuelmetrics2(CBDval = rep(0, length(zval)), FMAcan = 1, FMAshrub = 1, zval = zval, dz = dz, as_tibble = FALSE))
   names(metrics2) <- name_template
   return(metrics2)
 }

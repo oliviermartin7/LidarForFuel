@@ -30,16 +30,39 @@ test_that("get and add traj", {
   # when not enough pulses to reconstruct
   las1 <- lidR::LAS(las)
   las1@data <- las1@data[1:50, ]
-  expect_error({
-    traj1 <- get_traj(las1)
-  },
-  regexp = "Computed trajectory is empty",
-  fixed = TRUE
+  expect_error(
+    {
+      traj1 <- get_traj(las1)
+    },
+    regexp = "Computed trajectory is empty",
+    fixed = TRUE
   )
+
+  # what happens if any gpstime=0
+  las2 <- lidR::readLAS(path2laz)
+  las2@data <- las2@data[gpstime %in% unique(las2@data$gpstime)[1:1e4], gpstime := 0][]
+  # no error
+  expect_warning(
+    {
+      traj2 <- get_traj(las2)
+    },
+    "Only one sensor position was found for PointSourceID 49",
+    fixed = TRUE
+  )
+  expect_true(all(traj2$gpstime != 0))
+
+
+  # },
+  # regexp = "Computed trajectory is empty",
+  # fixed = TRUE
+  # )
+
+
   # expect_true(nrow(traj1) > 0)
   # TODO: test multi_pulse
 
   # add trajectory
+  las <- path2laz |> lidR::readLAS()
   las2 <- add_traj_to_las(las, traj)
   expect_contains(names(las2@data), c("Easting", "Northing", "Elevation", "Time"))
 })

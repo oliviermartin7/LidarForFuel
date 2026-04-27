@@ -1,5 +1,4 @@
 test_that("filter_season", {
-  plot_hist_days <- FALSE
   ref <- as.POSIXct("2011-09-14 01:46:40", tz = "UTC")
   gpstime <- seq.Date(as.Date("2023-07-01"), as.Date("2023-08-31"), by = "days")
   gpstime <- as.POSIXct(gpstime) - ref
@@ -11,21 +10,18 @@ test_that("filter_season", {
 
   # here returned las should be full
   months <- 5:10
-  las1 <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
+  las1 <- lidR::filter_poi(las, filter_gpstime(gpstime, months = months))
   expect_true(nrow(las1@data) == nrow(las@data))
 
   # returned las should be half size
   months <- 7
-  expect_warning({
-    las1 <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
-    expect_true(nrow(las1@data) == nrow(las@data) / 2)
-  })
+
+  las1 <- lidR::filter_poi(las, filter_gpstime(gpstime, months = months))
+  expect_true(nrow(las1@data) == nrow(las@data) / 2)
 
   # returned las should be half empty
   months <- 1:5
-  expect_warning({
-    las1 <- filter_seasons(las, months, plot_hist_days = plot_hist_days)
-  })
+  las1 <- lidR::filter_poi(las, filter_gpstime(gpstime, months = months))
   expect_true(nrow(las1@data) == 0)
 })
 
@@ -41,24 +37,25 @@ test_that("filter_date_mode", {
 
   deviation_days <- 2
 
-  expect_warning({
-    las <- filter_date_mode(
-      las,
+  las1 <- lidR::filter_poi(
+    las,
+    filter_gpstime(
+      gpstime,
       deviation_days = deviation_days,
-      gpstime_ref = "2023-01-01 00:00:00",
-      plot_hist_days = FALSE
+      gpstime_ref = "2023-01-01 00:00:00"
     )
-  })
-  expect_true(nrow(las@data) == deviation_days * 2 + N + 1)
+  )
+  expect_true(nrow(las1@data) == deviation_days * 2 + N + 1)
 
   # test where only one date is present, should not filter any point
   data[["gpstime"]] <- runif(nrow(data)) * 3600 * 24
   las <- lidR::LAS(data)
-  las <- filter_date_mode(
+  las <- lidR::filter_poi(
     las,
-    deviation_days = deviation_days,
-    gpstime_ref = "2023-01-01 00:00:00",
-    plot_hist_days = FALSE
+    filter_gpstime(
+      gpstime, deviation_days = deviation_days,
+      gpstime_ref = "2023-01-01 00:00:00"
+    )
   )
   expect_true(nrow(las@data) == nrow(data))
 })
@@ -76,8 +73,16 @@ test_that("fPCpretreatment", {
     "Easting", "Northing", "Elevation", "Time", "Zref"
   )
   expect_contains(names(m30_font_blanche_pretreated), expected_names)
-})
 
+  # write and read to check that the attributes are still there
+  outdir <- withr::local_tempdir(pattern = "lidarforfuel") # , .local_envir = globalenv()
+  expect_true(file.exists(outdir))
+  tmpfile <- file.path(outdir, "m30_font_blanche_pretreated.laz")
+  lidR::writeLAS(m30_font_blanche_pretreated, tmpfile)
+  m30_font_blanche_pretreated_read <- lidR::readLAS(tmpfile)
+  expect_contains(names(m30_font_blanche_pretreated_read), expected_names)
+
+})
 
 
 # test_that("fPCpretreatment-full-tile", {

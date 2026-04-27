@@ -10,8 +10,8 @@ test_that("class_metrics", {
     sort()
   counts <- lidR::cloud_metrics(nlas, class_metrics(classes = classes)) |>
     unlist()
-
-  expect_length(counts, length(classes))
+  # one added for total
+  expect_length(counts, length(classes) + 1)
 
   counts <- lidR::pixel_metrics(nlas, class_metrics(classes = classes), res = 10)
   expect_warning(
