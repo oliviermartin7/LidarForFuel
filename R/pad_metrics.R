@@ -122,7 +122,7 @@ pad_metrics <- function(
     return(NULL)
   }
 
-  veg_gnd_points <- (Classification >= 5 | Classification == 9)
+  veg_gnd_points <- (Classification <= 5 | Classification == 9)
   Z_veg_gnd <- Z[veg_gnd_points]
 
   if (scanning_angle) {
@@ -153,7 +153,7 @@ pad_metrics <- function(
   breaks[breaks == 0] <- breaks[breaks == 0] + ground_margin
 
   ## get number of returns intercepted in each strata
-  Ni <- cut(Z[veg_gnd_points], breaks = breaks) |>
+  Ni <- cut(Z[veg_gnd_points], breaks = breaks,right=T) |>
     table() |>
     c()
 
