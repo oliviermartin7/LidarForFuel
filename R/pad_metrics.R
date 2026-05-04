@@ -153,12 +153,12 @@ pad_metrics <- function(
   breaks[breaks == 0] <- breaks[breaks == 0] + ground_margin
 
   ## get number of returns intercepted in each strata
-  Ni <- cut(Z[veg_gnd_points], breaks = breaks,right=T) |>
+  Ni <- cut(Z[veg_gnd_points], breaks = breaks, right = TRUE) |>
     table() |>
     c()
 
   # get number of "pulses" entering each strata
-  N <- cut(Z, breaks = breaks) |>
+  N <- cut(Z, breaks = breaks, right = TRUE) |>
     table() |>
     c() |>
     cumsum()
