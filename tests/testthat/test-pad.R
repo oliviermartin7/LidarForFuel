@@ -33,14 +33,16 @@ test_that("pad", {
   pad <- lidR::cloud_metrics(nlas, pad_metrics(use_cover = FALSE)) |>
     unlist()
   expect_all_true(sup_layers %in% names(pad))
+  # Cover_h_pad should be NA
+  expect_true(is.na(pad["Cover_h_pad"]))
 
   # test null cover
   nlas1 <- nlas
-  nlas1@data = nlas1@data[Z < 2]
+  nlas1@data <- nlas1@data[Z < 2]
   pad <- lidR::cloud_metrics(nlas1, pad_metrics(z0 = 0, dz = dz, nlayers = 2)) |>
     unlist()
-  expect_true(pad["Cover_2"]==0)
-  nlas1@data = nlas1@data[1:90, ]
+  expect_true(pad["Cover_2"] == 0)
+  nlas1@data <- nlas1@data[1:90, ]
   expect_warning(
     {
       pad <- lidR::cloud_metrics(nlas1, pad_metrics(z0 = 0, dz = dz, nlayers = 2, limit_N_points = 100)) |>
