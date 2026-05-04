@@ -203,7 +203,7 @@ pad_metrics <- function(
     stop("cover_type must be 'all' or 'first'")
   }
 
-  if (use_cover) {
+  if (!use_cover) {
     PAD <- -log(Gf) * cos_theta / (G * omega * dz)
   } else {
     if (height_cover >= max(Z)) {
