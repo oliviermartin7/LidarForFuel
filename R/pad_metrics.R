@@ -35,7 +35,7 @@
 #' \itemize{
 #'   \item date as the mean gpstime
 #'   \item Cover layers at 2m, 4m and 6m
-#'   \item Cover_h_pad as the cover metric used for the PAD computation above `height_cover`.
+#'   \item Cover_h_pad as the cover metric used for the PAD computation above `height_cover`. If `use_cover = FALSE`, `Cover_h_pad` is set to NA.
 #'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
 #'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
 #'   \item PAD layers from `z0` to `z0 + nlayers * dz`, named as `PAD_{dz}_{zi}` with zi the bottom edge of layer i.
