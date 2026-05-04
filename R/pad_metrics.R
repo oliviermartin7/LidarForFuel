@@ -63,7 +63,7 @@ pad_metrics <- function(
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
   limit_N_points = 0, limit_flight_agl = 800, keep_N = FALSE,
-  season_filter=1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
+  season_filter = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
   fun <- substitute(
     ~ .pad_metrics(
@@ -103,7 +103,7 @@ pad_metrics <- function(
   cover_type = "all", height_cover = 2, use_cover = TRUE,
   limit_N_points = 0, limit_flight_agl = 800,
   keep_N = FALSE,
-  season_filter=1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
+  season_filter = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
   valid_points <- filter_gpstime(gpstime, months = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref)
   gpstime <- gpstime[valid_points]
@@ -184,18 +184,23 @@ pad_metrics <- function(
   cos_theta <- mean(abs(Nz_U[veg_gnd_points]))
 
   ## Plant area density calculation (actually FAD --> fuel area density: leaves + twigs) ----
+  cover_h_pad <- NA
   if (cover_type == "first") {
     # first returns covers
     first_returns <- ReturnNumber == 1
     fr_veg_gnd <- first_returns[veg_gnd_points]
     N_f <- sum(first_returns)
-    cover_h_pad <- sum(fr_veg_gnd[Z_veg_gnd > height_cover]) / N_f
+    if (use_cover) {
+      cover_h_pad <- sum(fr_veg_gnd[Z_veg_gnd > height_cover]) / N_f
+    }
     cover_2 <- sum(fr_veg_gnd[Z_veg_gnd > 2]) / N_f
     cover_4 <- sum(fr_veg_gnd[Z_veg_gnd > 4]) / N_f
     cover_6 <- sum(fr_veg_gnd[Z_veg_gnd > 6]) / N_f
   } else if (cover_type == "all") {
     # compute "NRD" cover, i.e. all returns above height_cover
-    cover_h_pad <- sum(Z_veg_gnd > height_cover) / length(Z)
+    if (use_cover) {
+      cover_h_pad <- sum(Z_veg_gnd > height_cover) / length(Z)
+    }
     cover_2 <- sum(Z_veg_gnd > 2) / length(Z)
     cover_4 <- sum(Z_veg_gnd > 4) / length(Z)
     cover_6 <- sum(Z_veg_gnd > 6) / length(Z)
@@ -203,20 +208,20 @@ pad_metrics <- function(
     stop("cover_type must be 'all' or 'first'")
   }
 
-  if (!use_cover) {
-    PAD <- -log(Gf) * cos_theta / (G * omega * dz)
-  } else {
+  if (use_cover) {
     if (height_cover >= max(Z)) {
       warning(paste0("height_cover > maximum vegetation height"))
     }
     if (cover_h_pad == 0) {
       PAD <- -log(Gf) * cos_theta / (G * omega * dz)
-      warning(paste0("Cover method was not use as Cover = 0"))
+      warning(paste0("Cover method not used in PAD computation as Cover_h_pad = 0"))
     } else {
       cover_h_pad_v <- rep(cover_h_pad, length(min_layer))
       cover_h_pad_v[min_layer < height_cover] <- 1
       PAD <- -log(1 - NRD / cover_h_pad) * cover_h_pad * cos_theta / (G * omega * dz)
     }
+  } else {
+    PAD <- -log(Gf) * cos_theta / (G * omega * dz)
   }
 
   if (ground_margin > 0) {
