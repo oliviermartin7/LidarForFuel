@@ -218,7 +218,7 @@ pad_metrics <- function(
     } else {
       cover_h_pad_v <- rep(cover_h_pad, length(min_layer))
       cover_h_pad_v[min_layer < height_cover] <- 1
-      PAD <- -log(1 - NRD / cover_h_pad) * cover_h_pad * cos_theta / (G * omega * dz)
+      PAD <- -log(1 - NRD / cover_h_pad_v) * cover_h_pad_v * cos_theta / (G * omega * dz)
     }
   } else {
     PAD <- -log(Gf) * cos_theta / (G * omega * dz)
