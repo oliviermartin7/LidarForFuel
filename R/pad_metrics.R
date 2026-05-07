@@ -209,16 +209,28 @@ pad_metrics <- function(
   }
 
   if (use_cover) {
+    # notes: considering height_cover > 0
+    #   - cover_h_pad >= NRD is always true for NRD[z >= height_cover]:
+    #     Ni[2,3]/Ni[0,3] * Ni[0,Zmax]/Ni[2,Zmax] = (Ni[2,3] * (Ni[0,3] + Ni[3,Zmax])) / (Ni[0,3] * (Ni[2,3] + Ni[3,Zmax])) = 
+    #       (Ni[2,3] * Ni[0,3] + Ni[2,3] * Ni[3,Zmax]) / (Ni[2,3] * Ni[0,3] + Ni[0,3] * Ni[3,Zmax]) = 
+    #       (Ni[2,3] * Ni[0,3] + Ni[2,3] * Ni[3,Zmax]) / (Ni[2,3] * Ni[0,3] + (Ni[2,3] + Ni[0,2]) * Ni[3,Zmax])
+    #     thus equal for the cases Ni[3,Zmax] == 0 or Ni[0,2] == 0 (the second case is corrected)
+    #   - NRD[z == height_cover] == cover_h_pad can happen, although the probability is very low:
+    #     - if NRD[z < height_cover] == 0 : this would mean that NRD[z == height_cover] == 1 --> corrected before
+    #     - if NRD[z > height_cover] = 0 : in that case we cannot use cover method (that would return NA values)
     if (height_cover >= max(Z)) {
       warning(paste0("height_cover > maximum vegetation height"))
     }
     if (cover_h_pad == 0) {
-      PAD <- -log(Gf) * cos_theta / (G * omega * dz)
       warning(paste0("Cover method not used in PAD computation as Cover_h_pad = 0"))
+      PAD <- -log(Gf) * cos_theta / (G * omega * dz)
+    } else if (any(NRD[min_layer >= height_cover] == cover_h_pad)){
+      warning(paste0("Found NRD values equal to Cover_h_pad: not using Cover method."))
+      PAD <- -log(Gf) * cos_theta / (G * omega * dz)
     } else {
       cover_h_pad_v <- rep(cover_h_pad, length(min_layer))
       cover_h_pad_v[min_layer < height_cover] <- 1
-      PAD <- -log(1 - NRD / cover_h_pad) * cover_h_pad * cos_theta / (G * omega * dz)
+      PAD <- -log(1 - NRD / cover_h_pad_v) * cover_h_pad_v * cos_theta / (G * omega * dz)
     }
   } else {
     PAD <- -log(Gf) * cos_theta / (G * omega * dz)
