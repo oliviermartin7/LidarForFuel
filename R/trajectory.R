@@ -27,8 +27,8 @@ lasrmdup <- function(las, multi_pulse = FALSE) {
 #' @param las LAS object
 #' @param thin LAS data thinning in seconds, see lidR::track_sensor
 #' @param interval LAS data thinning in seconds, see lidR::track_sensor
-#' @param rmdup remove duplicated points in ReturnNumber
-#' @param renum renumber points in ReturnNumber
+#' @param rmdup If TRUE, removes duplicated points in ReturnNumber
+#' @param renum If TRUE, renumbers points in ReturnNumber
 #' @param multi_pulse If TRUE the pulse index is defined by (gpstime, UserData).
 #' If FALSE the pulse index is defined by gpstime.
 #'
@@ -40,7 +40,7 @@ get_traj <- function(
   thin = 0.0001,
   interval = .2,
   rmdup = TRUE,
-  renum = TRUE,
+  renum = FALSE,
   multi_pulse = TRUE
 ) {
   gpstime <- NULL

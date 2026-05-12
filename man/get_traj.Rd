@@ -9,7 +9,7 @@ get_traj(
   thin = 1e-04,
   interval = 0.2,
   rmdup = TRUE,
-  renum = TRUE,
+  renum = FALSE,
   multi_pulse = TRUE
 )
 }
@@ -20,9 +20,9 @@ get_traj(
 
 \item{interval}{LAS data thinning in seconds, see lidR::track_sensor}
 
-\item{rmdup}{remove duplicated points in ReturnNumber}
+\item{rmdup}{If TRUE, removes duplicated points in ReturnNumber}
 
-\item{renum}{renumber points in ReturnNumber}
+\item{renum}{If TRUE, renumbers points in ReturnNumber}
 
 \item{multi_pulse}{If TRUE the pulse index is defined by (gpstime, UserData).
 If FALSE the pulse index is defined by gpstime.}
