@@ -41,7 +41,7 @@
 # modification 15/01/2026 : default CanopyBDTreshFrac = 0.1 et dz=1.0
 # modification 31/03/2026 : -0.5*dz bottom and top of lader fuel + SFLeq that were overwritten => v1
 # modification 08/04/2026 : -0.5*dz CBHlow
-# modification 12/05/2026 : default CanopyBDTreshFrac = 0.3
+# modification 12/05/2026 : default CanopyBDTreshFrac = 0.3, CBH to the bottom of layer for constency with CBH2, above_CBH formula for the case where CBDmin is just one cell below CBDmax (to avoid CBDmin to be NA)
 
 
 #' Fuel metrics from PAD profiles or bulk density profiles
@@ -173,9 +173,9 @@ ffuelmetrics2 <- function(
       if (!is.na(CanBDmin) && !is.na(CanBDmax) && CanBDmin < CanBDmax) { # normal configuration with a minimum below CanBDmax
         idmin <- idx_true2[which(CBDval[idx_true2] == CanBDmin)[1]] # lower id of CBDmin
         CanBDTresh <- CanBDmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDmax # Threshold is a fraction of CanBDmax between CanBDmin and max
-        above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
+        above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval <= zval[idmax]
         if (any(above_CBH)) {
-          CBH <- min(zval[above_CBH])
+          CBH <- min(zval[above_CBH]) - 0.5 * dz
           CBD_cbh <- CBDval[zval == CBH][1]
           for (k in rev(seq.int(idmin + 1, idmax))) { # on part du max et on descend (CBH2>CBH)
             if (CBDval[k - 1] < CanBDTresh) {
@@ -198,7 +198,7 @@ ffuelmetrics2 <- function(
       CanBDlowmin <- min(CBDval[idx_true2])
       idmin <- idx_true2[which(CBDval[idx_true2] == CanBDlowmin)[1]] # lower id of CBDmin
       CanBDTresh <- CanBDlowmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDlowmax # Threshold is a fraction of CanBDlowmax between CanBDlowmin and max
-      above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
+      above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval <= zval[idmax]
       if (any(above_CBH)) {
         CBHlow <- min(zval[above_CBH]) - 0.5 * dz # added by fp for consistency with CBH2 7/04/2026
         CBD_cbhlow <- CBDval[zval == CBHlow][1]
