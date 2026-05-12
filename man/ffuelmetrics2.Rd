@@ -14,7 +14,7 @@ ffuelmetrics2(
   dz,
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
   CanopyHeightThreshold = 1,
-  CanopyBDTreshFrac = 0.1,
+  CanopyBDTreshFrac = 0.3,
   CanopyTopBDThresholds = c(0.0012, 0.01),
   CBHThresholdRatio = 1/3,
   bdmax = 1,

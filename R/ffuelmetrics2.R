@@ -9,7 +9,7 @@
 #     - Representative of the dominant canopy : located above CanopyHeightThreshold (typically =1 to 3m), derived from a maximum of CBD (CanBDmax) measured in [min(CanopyHeightThreshold, CTH*CBHThresholdRatio), CTH] and a minimum
 # CBD(CanBDmin) measured in in [min(CanopyHeightThreshold, CTH*CBHThresholdRatio). For determination of CBH2, we use a threshold of CBD corresponding to a weighted average of CBDmin and CBDmax
 # (CanopyBDTreshFrac),   fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.1 is closer to CBDmin)). Moreover CBD is > CanBDThresh continuously between[CBH2,height of CBHmax]
-# Default parameters are CanopyHeightThreshold = 1m; CTH*CBHThresholdRatio = CTH/3; CanopyBDTreshFrac = 0.1
+# Default parameters are CanopyHeightThreshold = 1m; CTH*CBHThresholdRatio = CTH/3; CanopyBDTreshFrac = 0.3
 #     - When no obvious CBH exists in the upper part of the canopy (ie CBD is decreasing above CTH * CBHThresholdRatio), CBDmax is looked for in [CanopyHeightThreshold, CTH*CBHThresholdRatio] (called CBHlow in the code)
 #     - When none of the above exists, CBH2 = CanopyHeightThreshold (default it 1m)
 # • CBDcan, in kg/m3 corresponding to sum(CBDval)/(CH-CBH2)
@@ -41,6 +41,7 @@
 # modification 15/01/2026 : default CanopyBDTreshFrac = 0.1 et dz=1.0
 # modification 31/03/2026 : -0.5*dz bottom and top of lader fuel + SFLeq that were overwritten => v1
 # modification 08/04/2026 : -0.5*dz CBHlow
+# modification 12/05/2026 : default CanopyBDTreshFrac = 0.3
 
 
 #' Fuel metrics from PAD profiles or bulk density profiles
@@ -73,7 +74,7 @@ ffuelmetrics2 <- function(
   dz,
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05), # CBD thresholds for ladder fuels
   CanopyHeightThreshold = 1, # height threshold for considering canopy/ladder versus surface fuel
-  CanopyBDTreshFrac = 0.1, # fraction between CBHmin and CBHmax
+  CanopyBDTreshFrac = 0.3, # fraction between CBHmin and CBHmax
   CanopyTopBDThresholds = c(0.0012, 0.01), # CBD threshold to look for canopy top
   CBHThresholdRatio = 1 / 3, # fraction of canopy top to look for CBHmax in dominant canopy
   bdmax = 1.00, # CBD bound
