@@ -9,7 +9,7 @@
 #     - Representative of the dominant canopy : located above CanopyHeightThreshold (typically =1 to 3m), derived from a maximum of CBD (CanBDmax) measured in [min(CanopyHeightThreshold, CTH*CBHThresholdRatio), CTH] and a minimum
 # CBD(CanBDmin) measured in in [min(CanopyHeightThreshold, CTH*CBHThresholdRatio). For determination of CBH2, we use a threshold of CBD corresponding to a weighted average of CBDmin and CBDmax
 # (CanopyBDTreshFrac),   fraction threshold to combine CBDmin and CBDmax to look for CBH (0.5 is average, 0.1 is closer to CBDmin)). Moreover CBD is > CanBDThresh continuously between[CBH2,height of CBHmax]
-# Default parameters are CanopyHeightThreshold = 1m; CTH*CBHThresholdRatio = CTH/3; CanopyBDTreshFrac = 0.1
+# Default parameters are CanopyHeightThreshold = 1m; CTH*CBHThresholdRatio = CTH/3; CanopyBDTreshFrac = 0.3
 #     - When no obvious CBH exists in the upper part of the canopy (ie CBD is decreasing above CTH * CBHThresholdRatio), CBDmax is looked for in [CanopyHeightThreshold, CTH*CBHThresholdRatio] (called CBHlow in the code)
 #     - When none of the above exists, CBH2 = CanopyHeightThreshold (default it 1m)
 # • CBDcan, in kg/m3 corresponding to sum(CBDval)/(CH-CBH2)
@@ -41,6 +41,7 @@
 # modification 15/01/2026 : default CanopyBDTreshFrac = 0.1 et dz=1.0
 # modification 31/03/2026 : -0.5*dz bottom and top of lader fuel + SFLeq that were overwritten => v1
 # modification 08/04/2026 : -0.5*dz CBHlow
+# modification 12/05/2026 : default CanopyBDTreshFrac = 0.3, CBH to the bottom of layer for constency with CBH2, above_CBH formula for the case where CBDmin is just one cell below CBDmax (to avoid CBDmin to be NA)
 
 
 #' Fuel metrics from PAD profiles or bulk density profiles
@@ -73,7 +74,7 @@ ffuelmetrics2 <- function(
   dz,
   LadderFuelBDthresholds = c(0.01, 0.02, 0.05), # CBD thresholds for ladder fuels
   CanopyHeightThreshold = 1, # height threshold for considering canopy/ladder versus surface fuel
-  CanopyBDTreshFrac = 0.1, # fraction between CBHmin and CBHmax
+  CanopyBDTreshFrac = 0.3, # fraction between CBHmin and CBHmax
   CanopyTopBDThresholds = c(0.0012, 0.01), # CBD threshold to look for canopy top
   CBHThresholdRatio = 1 / 3, # fraction of canopy top to look for CBHmax in dominant canopy
   bdmax = 1.00, # CBD bound
@@ -172,9 +173,9 @@ ffuelmetrics2 <- function(
       if (!is.na(CanBDmin) && !is.na(CanBDmax) && CanBDmin < CanBDmax) { # normal configuration with a minimum below CanBDmax
         idmin <- idx_true2[which(CBDval[idx_true2] == CanBDmin)[1]] # lower id of CBDmin
         CanBDTresh <- CanBDmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDmax # Threshold is a fraction of CanBDmax between CanBDmin and max
-        above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
+        above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval <= zval[idmax]
         if (any(above_CBH)) {
-          CBH <- min(zval[above_CBH])
+          CBH <- min(zval[above_CBH]) - 0.5 * dz
           CBD_cbh <- CBDval[zval == CBH][1]
           for (k in rev(seq.int(idmin + 1, idmax))) { # on part du max et on descend (CBH2>CBH)
             if (CBDval[k - 1] < CanBDTresh) {
@@ -197,7 +198,7 @@ ffuelmetrics2 <- function(
       CanBDlowmin <- min(CBDval[idx_true2])
       idmin <- idx_true2[which(CBDval[idx_true2] == CanBDlowmin)[1]] # lower id of CBDmin
       CanBDTresh <- CanBDlowmin * (1 - CanopyBDTreshFrac) + CanopyBDTreshFrac * CanBDlowmax # Threshold is a fraction of CanBDlowmax between CanBDlowmin and max
-      above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval < zval[idmax]
+      above_CBH <- CBDval >= CanBDTresh & zval > max(CanopyHeightThreshold, zval[idmin]) & zval <= zval[idmax]
       if (any(above_CBH)) {
         CBHlow <- min(zval[above_CBH]) - 0.5 * dz # added by fp for consistency with CBH2 7/04/2026
         CBD_cbhlow <- CBDval[zval == CBHlow][1]
