@@ -1,3 +1,11 @@
+#' Renumber returns by height
+#'
+#' @param las LAS object
+#' @param multi_pulse If TRUE the pulse index is defined by (gpstime, UserData).
+#' If FALSE the pulse index is defined by gpstime.
+#'
+#' @return LAS
+#' @export
 lasrenumber <- function(las, multi_pulse = FALSE) {
   .N <- Z <- gpstime <- ReturnNumber <- NULL
   by <- "gpstime"
@@ -10,15 +18,35 @@ lasrenumber <- function(las, multi_pulse = FALSE) {
   las
 }
 
+#' Remove duplicated pulses or returns
+#'
+#' Removes in this order:
+#' 1. duplicated pulses that have the different number of returns
+#' 2. pulses with more returns than NumberOfReturns
+#' 3. pulses with duplicated returns
+#'
+#' If using both lasrdup and lasrenumber, lasrmdup should used before lasrenumber.
+#' @param las LAS object
+#' @param multi_pulse If TRUE the pulse index is defined by (gpstime, UserData).
+#' If FALSE the pulse index is defined by gpstime.
+#'
+#' @return LAS
+#' @export
 lasrmdup <- function(las, multi_pulse = FALSE) {
   by <- "gpstime"
   if (multi_pulse) {
     by <- c("gpstime", "UserData")
   }
-  ReturnNumber <- dup <- NULL
-  dup <- las@data[, list(any(duplicated(ReturnNumber))), by = by]
-  dup <- dup[dup$V1 == FALSE, ]
-  las@data <- las@data[dup, on = by]
+
+  ReturnNumber <- NumberOfReturns <- valid <- NULL
+  # remove duplicated pulses that have the different number of returns
+  # we cannot detect
+  dup <- las@data[, list(valid = length(unique(NumberOfReturns)) == 1 && .N <= NumberOfReturns[1]), by = by]
+  las@data <- las@data[dup[valid == TRUE], on = by]
+
+  # remove duplicated points
+  dup <- las@data[, list(valid = !any(duplicated(ReturnNumber))), by = by]
+  las@data <- las@data[dup[valid == TRUE], on = by][, valid := NULL][]
   las
 }
 
