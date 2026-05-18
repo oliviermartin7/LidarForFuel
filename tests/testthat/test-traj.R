@@ -1,10 +1,31 @@
 test_that("lasrmdup", {
   las_file <- system.file("extdata", "example.laz", package = "rlas")
   las <- lidR::readLAS(las_file)
-  las@data$ReturnNumber <- 1 # make duplicates
+  # with duplicate returns
+  las@data$ReturnNumber <- 1
   las1 <- lasrmdup(las)
-
   expect_true(nrow(las) > nrow(las1))
+
+  # with duplicated pulses
+  las <- lidR::readLAS(las_file)
+  # make a fake duplicated pulse, using different ReturnNumber to make sure it is not the duplicate returns filter
+  # that removes points
+  las@data <- las@data[1:3, `:=`(ReturnNumber = 1:3, NumberOfReturns = 3, UserData = 0, gpstime = las$gpstime[1])]
+  las@data <- las@data[4:6, `:=`(ReturnNumber = 4:6, NumberOfReturns = 6, UserData = 0, gpstime = las$gpstime[1])]
+  las1 <- lasrmdup(las)
+  expect_true(nrow(las) == nrow(las1) + 6)
+
+  # with more returns then NumberOfReturns
+  las@data <- las@data[1:6, `:=`(ReturnNumber = c(1:5, 5), NumberOfReturns = 5, UserData = 0, gpstime = las$gpstime[1])]
+  las1 <- lasrmdup(las)
+  expect_true(nrow(las) == nrow(las1) + 6)
+
+  # However, in case of the same number of returns by pulse,
+  # we cannot detect it
+  las@data <- las@data[1:3, `:=`(ReturnNumber = 1:3, NumberOfReturns = 6, UserData = 0, gpstime = las$gpstime[1])]
+  las@data <- las@data[4:6, `:=`(ReturnNumber = 4:6, NumberOfReturns = 6, UserData = 0, gpstime = las$gpstime[1])]
+  las1 <- lasrmdup(las)
+  expect_false(nrow(las) == nrow(las1) + 6)
 })
 
 test_that("lasrenumber", {
