@@ -1,7 +1,7 @@
 Package: lidarforfuel
 Type: Package
 Title: Compute fuel metrics from ALS
-Version: 1.0.0.9008
+Version: 1.0.0.9009
 Authors@R: c(
     person("Olivier", "Martin", email = "oli.martin@ntymail.com", role = c("aut", "cre", "cph")),
     person("François", "Pimont", email = "", role = c("aut", "cph")),

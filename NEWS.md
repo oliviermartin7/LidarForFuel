@@ -7,6 +7,7 @@
   to each point of LAS object.
 * new arg `traj` for `fPCpretreatment`: trajectory should be computed
   separately with buffer.
+* add functions `lasrmdup` and `lasrenumber` associated to `get_traj` compuation.
 * add tests
 * add seaprate functions for PAD compuation:
   * `pad_metrics` (PR #17) : changes default from `limit_N_points=400` to `limit_N_points=0`
