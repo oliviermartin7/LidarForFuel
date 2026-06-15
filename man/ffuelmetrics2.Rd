@@ -7,8 +7,8 @@
 ffuelmetrics2(
   PADval = NULL,
   CBDval = NULL,
-  FMAcan = 1,
-  FMAshrub = 1,
+  FMAcan = 0.25,
+  FMAshrub = 0.25,
   smooth_pad = FALSE,
   zval,
   dz,

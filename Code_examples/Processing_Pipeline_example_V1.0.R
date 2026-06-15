@@ -15,14 +15,15 @@ library(here)
 library(ggplot2)
 
 
-# If using LiDAR HD French national campaign you can download LiDAR tiles with lidarHD package 
+# If using LiDAR HD French national campaign you can download LiDAR HD tiles of interest with Jean-Mathieu Monnet lidarHD package 
+# https://lidar.pages-forge.inrae.fr/lidarHD/
 
 
 # get PAD at plot or stand (raster) scale ----
 
 ## Portugal plot ----
 
-# First we need trajectographies either you have  or you can generate them with get_traj
+# First we need trajectographies either you have or you can generate them with get_traj
 # Careful we recommend a 500m buffer around the area of interest to generate trajectographies
 
 plot_i=readLAS(here::here("inst/extdata/2_bas_lig.laz"))
@@ -102,3 +103,4 @@ plot(rast_i_metrics)
 
 # Very large scale (multi-laz) mapping ----
 
+# Work in progress

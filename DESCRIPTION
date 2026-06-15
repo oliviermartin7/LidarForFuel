@@ -43,7 +43,6 @@ Imports:
     VoxR,
 Collate: 
   class_metrics.R
-  fCBDprofile_fuelmetrics.R
   ffuelmetrics.R
   ffuelmetrics2.R
   filters.R
@@ -51,6 +50,7 @@ Collate:
   fuel_mass_area.R
   pad_metrics.R
   trajectory.R
+  plot_profile.R
   utils.R
   
   
