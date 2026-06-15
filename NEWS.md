@@ -1,7 +1,7 @@
 # lidarforfuel (development version)
 
 ## Add
-
+* function `plot_profile` to plot profile with strata limits
 * function `get_traj` to compute trajectory from point cloud
 * function `add_traj_to_las` to add sensor coordinates
   to each point of LAS object.
