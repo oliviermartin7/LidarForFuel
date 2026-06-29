@@ -1,6 +1,6 @@
 # lidarForFuel
 
-This README aims to describe how to use a set of tools to implement the method outlined in the paper [Unlocking the potential of Airborne LiDAR for direct assessment of fuel bulk density and load distributions for wildfire hazard mapping](https://www.sciencedirect.com/science/article/pii/S0168192324004544). This approach has evolved since the paper and much more validation have been done as well as new mthod for deriving fuel metrics. Contact the authors for more information.
+This README aims to describe how to use a set of tools to implement the method outlined in the paper [Unlocking the potential of Airborne LiDAR for direct assessment of fuel bulk density and load distributions for wildfire hazard mapping](https://www.sciencedirect.com/science/article/pii/S0168192324004544). This approach has evolved since the paper and much more validation have been done as well as new methods for deriving fuel metrics. Contact the authors for more information.
 
 ## Install LidarForFuel
 
@@ -24,6 +24,13 @@ lidarforfuel aims to compute fuel metrics from airborne LiDAR data and map them 
 
 ![Illustration summarising the global approach!](img/general_V1.png)
 
+## fPCpretreatment
+
+```{r}
+?fPCpretreatment
+```
+
+Function for pretreating the laz file before applying the rest of the approach. It consist in filtering some points, normalyzing the point cloud and add trajectories of the sensor to the laz.  
 
 ## pad_metrics
 
