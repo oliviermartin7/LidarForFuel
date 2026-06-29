@@ -45,7 +45,7 @@ Function for computing a PAD vertical profile as well as cover estimation at 2, 
 Function for deriving a bulk density (BD) profile from the PAD profile (pad_metrics function) and finally fuel metrics useful to assess fire behavior through (e.g canopy fuel load, surface fuel load, canopy base height, fuel strata gap : https://fireresearch.ca/conifer-pyrometrics/...). For large scale analysis it is particularly relevant to use this function with lidR::pixel_metrics function. However it is also possible to use it directly with a laz point cloud of a specific forest plot or area. More details :
 
 ```{r}
-?ffuelmetrics
+?ffuelmetrics2
 ```
 
 ![Illustration of the metrics extracted from the vertical BD profile  the global approach!](img/Fuel_metrics.png)
