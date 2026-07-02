@@ -122,7 +122,7 @@ pad_metrics <- function(
     return(NULL)
   }
 
-  veg_gnd_points <- (Classification <= 5 | Classification == 9)
+  veg_gnd_points <- (Classification %in% c(2, 3, 4, 5, 9))
   Z_veg_gnd <- Z[veg_gnd_points]
 
   if (scanning_angle) {
@@ -138,6 +138,7 @@ pad_metrics <- function(
     Nz_U <- flight_agl / norm_U
   } else {
     Nz_U <- 1
+    cos_theta <- 1
   }
 
   ## Create a sequence to make strata  ----
