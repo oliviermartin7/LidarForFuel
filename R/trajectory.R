@@ -1,3 +1,11 @@
+#' Renumber returns by height
+#'
+#' @param las LAS object
+#' @param multi_pulse If TRUE the pulse index is defined by (gpstime, UserData).
+#' If FALSE the pulse index is defined by gpstime.
+#'
+#' @return LAS
+#' @export
 lasrenumber <- function(las, multi_pulse = FALSE) {
   .N <- Z <- gpstime <- ReturnNumber <- NULL
   by <- "gpstime"
@@ -10,15 +18,35 @@ lasrenumber <- function(las, multi_pulse = FALSE) {
   las
 }
 
+#' Remove duplicated pulses or returns
+#'
+#' Removes in this order:
+#' 1. duplicated pulses that have the different number of returns
+#' 2. pulses with more returns than NumberOfReturns
+#' 3. pulses with duplicated returns
+#'
+#' If using both lasrdup and lasrenumber, lasrmdup should used before lasrenumber.
+#' @param las LAS object
+#' @param multi_pulse If TRUE the pulse index is defined by (gpstime, UserData).
+#' If FALSE the pulse index is defined by gpstime.
+#'
+#' @return LAS
+#' @export
 lasrmdup <- function(las, multi_pulse = FALSE) {
   by <- "gpstime"
   if (multi_pulse) {
     by <- c("gpstime", "UserData")
   }
-  ReturnNumber <- dup <- NULL
-  dup <- las@data[, list(any(duplicated(ReturnNumber))), by = by]
-  dup <- dup[dup$V1 == FALSE, ]
-  las@data <- las@data[dup, on = by]
+
+  ReturnNumber <- NumberOfReturns <- valid <- NULL
+  # remove duplicated pulses that have the different number of returns
+  # we cannot detect
+  dup <- las@data[, list(valid = length(unique(NumberOfReturns)) == 1 && .N <= NumberOfReturns[1]), by = by]
+  las@data <- las@data[dup[valid == TRUE], on = by]
+
+  # remove duplicated points
+  dup <- las@data[, list(valid = !any(duplicated(ReturnNumber))), by = by]
+  las@data <- las@data[dup[valid == TRUE], on = by][, valid := NULL][]
   las
 }
 
@@ -27,8 +55,8 @@ lasrmdup <- function(las, multi_pulse = FALSE) {
 #' @param las LAS object
 #' @param thin LAS data thinning in seconds, see lidR::track_sensor
 #' @param interval LAS data thinning in seconds, see lidR::track_sensor
-#' @param rmdup remove duplicated points in ReturnNumber
-#' @param renum renumber points in ReturnNumber
+#' @param rmdup If TRUE, removes duplicated points in ReturnNumber
+#' @param renum If TRUE, renumbers points in ReturnNumber
 #' @param multi_pulse If TRUE the pulse index is defined by (gpstime, UserData).
 #' If FALSE the pulse index is defined by gpstime.
 #'
@@ -40,11 +68,10 @@ get_traj <- function(
   thin = 0.0001,
   interval = .2,
   rmdup = TRUE,
-  renum = TRUE,
-  multi_pulse = FALSE
+  renum = FALSE,
+  multi_pulse = TRUE
 ) {
-  X <- Y <- Z <- gpstime <- PointSourceID <- NULL
-
+  gpstime <- NULL
   if (thin > 0) {
     # thinning pulses before rmdup
     # reduces considerably the computation time
@@ -53,6 +80,10 @@ get_traj <- function(
     times <- data[, first(gpstime), by = ftime]$V1
     data <- data[gpstime %in% times]
     las@data <- data
+  }
+
+  if (!"UserData" %in% names(las@data)) {
+    multi_pulse <- FALSE
   }
 
   if (rmdup) {
@@ -65,41 +96,15 @@ get_traj <- function(
     las <- lasrenumber(las, multi_pulse = multi_pulse)
   }
 
-  traj <- try(
-    {
-      traj <- lidR::track_sensor(
-        las,
-        algorithm = lidR::Roussel2020(interval = interval),
-        thin_pulse_with_time = 0,
-        multi_pulse = multi_pulse
-      )
-    },
-    silent = TRUE
+  traj <- lidR::track_sensor(
+    las,
+    algorithm = lidR::Roussel2020(interval = interval),
+    thin_pulse_with_time = 0,
+    multi_pulse = multi_pulse
   )
 
-  try_default_traj <- FALSE
-  if (inherits(traj, "try-error")) {
-    warning("Failed to compute trajectory with lidR::track_sensor.")
-    try_default_traj <- TRUE
-  }
   if (nrow(traj) == 0) {
-    warning("Trajectory computed with lidR::track_sensor is empty.")
-    try_default_traj <- TRUE
-  }
-
-  if (try_default_traj) {
-    warning("Setting default trajectory to 1400m above of the ground points.")
-    traj <- lidR::filter_ground(las)@data[, list(gpstime, X, Y, Z, PointSourceID)]
-    if (nrow(traj) == 0) {
-      warning("No ground point found, cannot set default trajectory.")
-      return(NULL)
-    }
-    traj <- traj[, list(
-      X = mean(X), Y = mean(Y), Z = mean(Z) + 1400,
-      PointSourceID = PointSourceID[1],
-      SCORE = 0
-    ), by = "gpstime"]
-    traj <- traj |> sf::st_as_sf(coords = c("X", "Y", "Z"), crs = sf::st_crs(las))
+    stop("Computed trajectory is empty: maybe not enough points to compute (expects 50 points by interval).")
   }
 
   return(traj)

@@ -1,7 +1,7 @@
 Package: lidarforfuel
 Type: Package
 Title: Compute fuel metrics from ALS
-Version: 1.0.0.9001
+Version: 1.0.0.9010
 Authors@R: c(
     person("Olivier", "Martin", email = "oli.martin@ntymail.com", role = c("aut", "cre", "cph")),
     person("François", "Pimont", email = "", role = c("aut", "cph")),
@@ -10,6 +10,7 @@ Description: This package provides a set of tools to compute fuel metrics. The m
 License: CeCILL
 Encoding: UTF-8
 URL: https://www.sciencedirect.com/science/article/pii/S0168192324004544
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
     circular,
@@ -31,14 +32,25 @@ Imports:
     Rfast,
     rgl,
     sf,
+    slider,
+    stars,
     stats,
     stringr,
     svMisc,
     terra,
+    tibble,
     utils,
     VoxR,
 Collate: 
-  fCBDprofile_fuelmetrics.R
-  fPCpretreatment.R
+  class_metrics.R
   ffuelmetrics.R
+  ffuelmetrics2.R
+  filters.R
+  fPCpretreatment.R
+  fuel_mass_area.R
+  pad_metrics.R
   trajectory.R
+  plot_profile.R
+  utils.R
+  
+  
