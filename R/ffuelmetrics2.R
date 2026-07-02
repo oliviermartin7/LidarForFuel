@@ -230,7 +230,7 @@ ffuelmetrics2 <- function(
   # 6. CBDcan
   height <- min(CDH, CTH)
   inCan <- (!is.na(CBH2) & zval >= CBH2 & zval <= height)
-  CBDcan <- ifelse(any(inCan), sum(CBDval[inCan],na.rm=TRUE)/(height-CBH2), 0)
+  CBDcan <- ifelse(any(inCan), mean(CBDval[inCan],na.rm=TRUE), 0)
 
   # 7. no treshold for CBDval in cell k1 and k2, but a treatment will be applied afterwards (to correct bias - quantile mapping)
   CLFL <- sum(CBDval[zval > zlow]) * dz # canopy + ladderfuel
