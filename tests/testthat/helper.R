@@ -9,10 +9,3 @@ small_laz_file <- function() {
     package = "lidarforfuel"
   )
 }
-
-raster_file <- function() {
-  system.file(
-    "extdata", "raster_template.tif",
-    package = "lidarforfuel"
-  )
-}

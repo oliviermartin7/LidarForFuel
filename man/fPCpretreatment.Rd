@@ -7,9 +7,17 @@
 fPCpretreatment(
   chunk,
   classify = FALSE,
-  exclude_classes = NULL,
-  traj = NULL,
-  dtm = NULL
+  LMA = 140,
+  WD = 591,
+  WD_bush = 591,
+  LMA_bush = 140,
+  H_strata_bush = 2,
+  Height_filter = 60,
+  start_date = "2011-09-14 01:46:40",
+  season_filter = 1:12,
+  deviation_days = Inf,
+  plot_hist_days = FALSE,
+  traj = NULL
 )
 }
 \arguments{
@@ -18,15 +26,30 @@ Can be apply to a catalog see lidR::catalog_apply # nolint: line_length_linter.}
 
 \item{classify}{logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified}
 
-\item{exclude_classes}{numeric. Default = NULL. A vector of integer for classes to filter out of the point cloud. If NULL, all classes are kept.
+\item{LMA}{character or numeric. Default = 140. If available path to a LMA map (.tif) of the area if available or a single LMA value in g.m² (e.g 140. cf: Martin-Ducup et al. 2024)}
+
+\item{WD}{character or numeric. Default = 591. If available, path to a WD map (.tif) of the area if available or a single WD value in kg.m3 (e.g 591 cf: Martin-Ducup et al. 2024).}
+
+\item{WD_bush}{character or numeric. Default = 591. similar to WD but for the understorey strata (see H_strata_bush)}
+
+\item{LMA_bush}{character or numeric.Default = 140. similar to LMA but for the understorey strata (see H_strata_bush)}
+
+\item{H_strata_bush}{numeric. Default = 2. Height of the strata to consider for separating LMA and WD between canopy and bush.}
+
+\item{Height_filter}{numeric. Default = 80. Height limit to remove noise point}
+
+\item{start_date}{date. The reference datetime to retrieve datetime from relative gpstime of the laz.
 It is expected to be in timezone UTC. Default is "2011-09-14 01:46:40" which is the standard GPS Time (1980-01-06 00:00:00)
 plus 1e9 seconds, as defined in LAS 1.4 specifications.}
 
+\item{season_filter}{numeric. A vector of integer for months to keep (e.g: 5:10 keep retunrs between may and october)}
+
+\item{deviation_days}{numeric. Maximum number of days tolerated between the acquisition in a given point cloud (a tile or plot). Deactivated by default}
+
+\item{plot_hist_days}{logical. Should the histogram of dates of acquisition be displayed. Default =FALSE}
+
 \item{traj}{sf object. Trajectory covering the LAS chunk. The sf object is expected to have a column gpstime and Point Z geometries.
 If NULL, the function will try to compute it.}
-
-\item{dtm}{rast or stars object. Digital terrain model (DTM) to use for height normalisation. It should be larger than the area of interest.
-If provided, the DTM is tinned to interpolate at each point location. If NULL, the normalisation function is using the tin of ground points.}
 }
 \value{
 LAS object. A normalized point cloud (.laz) with several new attributes needed to run fCBDprofile_fuelmetrics, see details.
@@ -36,16 +59,16 @@ Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. T
 }
 \details{
 The attributes added to the laz are:
-\itemize{
-\item Zref : Z value before normalization, i.e. altitude of the point
-\item Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
-and the its GPStime for each point (obtained from lidR::track_sensor()).
-}
+- LMA : LMA value of each point
+- Zref :original Z
+- Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
+  and the its GPStime for each point (obtained from lidR::track_sensor()).
 }
 \examples{
 \donttest{
 path2laz <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
-M30_FontBlanche_pretreated <- fPCpretreatment(path2laz)
+# LMA value selected = 120.6 that is the LMA for Pinus halepensis, the dominant species of the plot
+M30_FontBlanche_pretreated <- fPCpretreatment(path2laz, LMA = 120.6)
 # displaying the new attributes in the las
 names(M30_FontBlanche_pretreated)
 }
