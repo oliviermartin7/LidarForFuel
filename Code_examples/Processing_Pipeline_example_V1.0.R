@@ -91,14 +91,14 @@ plot_i=readLAS(here::here("inst/extdata/2_bas_lig.laz"))
 
 ## rasterize the pad profile ---- 
 
-pad_rast <- lidR::pixel_metrics(las_i, pad_metrics(z0 = 0, dz = 1, nlayers = 60,ground_margin = 0.1,use_cover =T ,deviation_days = 14  ), res = 10)
+pad_rast <- lidR::pixel_metrics(las_i, pad_metrics(z0 = 0, dz = 1, nlayers = 60,ground_margin = 0.1,use_cover =T ,deviation_days = 14,omega = 0.926  ), res = 10)
 
 ## make a table for input in ffuel metrics from output of pad_metrics (the positions of the PAD values from the pad_metrics output; vertical reolution; heights of the pad layers) ----
 tab_4_input_fuelmetrics=parse_pad_heights(names(pad_rast))
 
 
 ## estimate fuel metrics from the raster and return the results in a raster ----
-rast_i_metrics=ffuelmetrics2(PADval = pad_rast[[tab_4_input_fuelmetrics$idx]],zval = tab_4_input_fuelmetrics$z_bottom,dz=1,FMAcan = 1,FMAshrub = 1)
+rast_i_metrics=ffuelmetrics2(PADval = pad_rast[[tab_4_input_fuelmetrics$idx]],zval = tab_4_input_fuelmetrics$z_bottom,dz=1,FMAcan = 0.2543576,FMAshrub = 2543576)
 plot(rast_i_metrics)
 
 # Very large scale (multi-laz) mapping ----
