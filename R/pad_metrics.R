@@ -138,6 +138,7 @@ pad_metrics <- function(
     Nz_U <- flight_agl / norm_U
   } else {
     Nz_U <- 1
+    cos_theta <- 1
   }
 
   ## Create a sequence to make strata  ----
