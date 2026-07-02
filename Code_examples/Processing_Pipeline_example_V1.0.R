@@ -13,11 +13,15 @@ library(data.table)
 library(lidarHD)
 library(here)
 library(ggplot2)
-
+library(yaml)
 
 # If using LiDAR HD French national campaign you can download LiDAR HD tiles of interest with Jean-Mathieu Monnet lidarHD package 
 # https://lidar.pages-forge.inrae.fr/lidarHD/
 
+# Load configuration from YAML. If you don't use a YAML you can replace the values in pad_params and ffuel_params with your own values below.
+config <- yaml::read_yaml("path_to_yaml_config_file") # Pour cartoNat il se trouve dans le git fuels/PADProductions
+pad_params <- config$pad_metrics
+ffuel_params <- config$ffuelmetrics2
 
 # get PAD at plot or stand (raster) scale ----
 
@@ -52,7 +56,7 @@ las_i=fPCpretreatment(
 
 ## Plot scale ----
 
-pad <- lidR::cloud_metrics(las_i, pad_metrics(z0 = 0, dz = 1, nlayers = 60,ground_margin = 0.1,use_cover =T ,deviation_days = 14  ))
+pad <- lidR::cloud_metrics(las_i, do.call(pad_metrics, c(list(z0 = 0), pad_params)))
 
 ## Make a table for input in ffuel metrics from output of pad_metrics (the positions of the PAD values from the pad_metrics output; vertical reolution; heights of the pad layers) ----
 
@@ -62,7 +66,7 @@ tab_4_input_fuelmetrics=parse_pad_heights(names(pad))
 # Step 3: estimate fuel metrics ----
 
 # below the FMA values are 0.25 for canopy and shrub corresponding to average values of the species in MArtin-Ducup et al 2025, but it can be changed according to the shrub and canopy species
-plot_i_metrics=ffuelmetrics2(PADval = unlist(pad[tab_4_input_fuelmetrics$idx]),zval = tab_4_input_fuelmetrics$z_bottom,dz=1,FMAcan = 0.25,FMAshrub = 0.25)
+plot_i_metrics=do.call(ffuelmetrics2, c(list(PADval = unlist(pad[tab_4_input_fuelmetrics$idx]), zval = tab_4_input_fuelmetrics$z_bottom), ffuel_params))
 
 # Graphic representation of the vertical profile and the boundaries identified
 plot_profile(PADval =unlist(pad[tab_4_input_fuelmetrics$idx]),Fuel_metrics = plot_i_metrics,plotname="My_forestplot",zval= tab_4_input_fuelmetrics$z_bottom)
@@ -79,9 +83,9 @@ center_x=ext(plot_i)[1]+50
 center_y=ext(plot_i)[3]+50
 plot_i=clip_rectangle(plot_i,xleft = center_x-10,ybottom = center_y-10,xright = center_x+10,ytop = center_y+10)
 las_i=fPCpretreatment(plot_i, traj = traj_i)
-pad <- lidR::cloud_metrics(las_i, pad_metrics(z0 = 0, dz = 1, nlayers = 60,ground_margin = 0.1,use_cover =T ,deviation_days = 14  ))
+pad <- lidR::cloud_metrics(las_i, do.call(pad_metrics, c(list(z0 = 0), pad_params)))
 tab_4_input_fuelmetrics=parse_pad_heights(names(pad))
-plot_i_metrics=ffuelmetrics2(PADval = unlist(pad[tab_4_input_fuelmetrics$idx]),zval = tab_4_input_fuelmetrics$z_bottom,dz=1,FMAcan = 0.25,FMAshrub = 0.25)
+plot_i_metrics=do.call(ffuelmetrics2, c(list(PADval = unlist(pad[tab_4_input_fuelmetrics$idx]), zval = tab_4_input_fuelmetrics$z_bottom), ffuel_params))
 tab_metrics=rbind(tab_metrics,data.table(cbind(plotName=i,t(plot_i_metrics))),fill=TRUE)
 plot_profile(PADval =unlist(pad[tab_4_input_fuelmetrics$idx]),Fuel_metrics = plot_i_metrics,plotname="My_forestplot",zval= tab_4_input_fuelmetrics$z_bottom)
 }
@@ -91,14 +95,14 @@ plot_i=readLAS(here::here("inst/extdata/2_bas_lig.laz"))
 
 ## rasterize the pad profile ---- 
 
-pad_rast <- lidR::pixel_metrics(las_i, pad_metrics(z0 = 0, dz = 1, nlayers = 60,ground_margin = 0.1,use_cover =T ,deviation_days = 14,omega = 0.926  ), res = 10)
+pad_rast <- lidR::pixel_metrics(las_i, do.call(pad_metrics, c(list(z0 = 0), pad_params)), res = 10)
 
 ## make a table for input in ffuel metrics from output of pad_metrics (the positions of the PAD values from the pad_metrics output; vertical reolution; heights of the pad layers) ----
 tab_4_input_fuelmetrics=parse_pad_heights(names(pad_rast))
 
 
 ## estimate fuel metrics from the raster and return the results in a raster ----
-rast_i_metrics=ffuelmetrics2(PADval = pad_rast[[tab_4_input_fuelmetrics$idx]],zval = tab_4_input_fuelmetrics$z_bottom,dz=1,FMAcan = 0.2543576,FMAshrub = 2543576)
+rast_i_metrics=do.call(ffuelmetrics2, c(list(PADval = pad_rast[[tab_4_input_fuelmetrics$idx]], zval = tab_4_input_fuelmetrics$z_bottom), ffuel_params))
 plot(rast_i_metrics)
 
 # Very large scale (multi-laz) mapping ----
