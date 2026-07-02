@@ -8,7 +8,7 @@ The latest version from Github (in development).
 
 ```{r}
 install.packages("remotes") 
-rremotes::install_github('oliviermartin7/lidarforfuel', ref = 'dev')
+remotes::install_github('oliviermartin7/lidarforfuel', ref = 'Dev')
 ```
 
 To use it :
