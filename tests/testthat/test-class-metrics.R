@@ -16,7 +16,7 @@ test_that("class_metrics", {
   counts <- lidR::pixel_metrics(nlas, class_metrics(classes = classes), res = 10)
   expect_warning(
     {
-      counts <- lidR::pixel_metrics(nlas, class_metrics(), res = 10)
+      counts <- lidR::pixel_metrics(nlas, class_metrics(classes = classes[2:length(classes)]), res = 10)
     },
     regexp = "Unexpected classes are excluded",
     fixed = TRUE
