@@ -1,19 +1,22 @@
 test_that("is_raster", {
-  expect_true(is_raster(stars::read_stars(raster_file())))
-  expect_true(is_raster(terra::rast(raster_file())))
+  x <- raster_template()
+  expect_true(is_raster(stars::st_as_stars(x)))
+  expect_true(is_raster(x))
 })
 
 test_that("raster_bbox", {
-  ref <- stars::read_stars(raster_file())
+  x <- raster_template()
+  ref <- stars::st_as_stars(x)
   expect_equal(raster_bbox(ref), sf::st_bbox(ref))
-  ref <- terra::rast(raster_file())
+  ref <- x
   expect_equal(raster_bbox(ref), sf::st_bbox(ref))
 })
 
 test_that("raster_res", {
-  ref <- stars::read_stars(raster_file())
+  x <- raster_template()
+  ref <- stars::st_as_stars(x)
   expect_equal(raster_res(ref), stars::st_res(ref)["x"])
-  ref <- terra::rast(raster_file())
+  ref <- x
   expect_equal(raster_res(ref), terra::res(ref)[1])
 })
 

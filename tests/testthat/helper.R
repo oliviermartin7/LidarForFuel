@@ -10,9 +10,16 @@ small_laz_file <- function() {
   )
 }
 
-raster_file <- function() {
-  system.file(
-    "extdata", "raster_template.tif",
-    package = "lidarforfuel"
+raster_template <- function() {
+  xoff <- yoff <- pi + 100
+  N <- res <- 10
+  data <- matrix(0, nrow = N, ncol = N)
+  extent <- c(
+    xmin = xoff,
+    xmax = N * res + xoff,
+    ymin = yoff,
+    ymax = N * res + yoff
   )
+  x <- terra::rast(data, extent = extent, crs = "epsg:32631")
+  return(x)
 }
