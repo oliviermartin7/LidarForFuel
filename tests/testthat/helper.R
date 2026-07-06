@@ -5,7 +5,7 @@ logger::log_layout(test_log_layout)
 
 small_laz_file <- function() {
   system.file(
-    "extdata", "M30_FontBlanche.laz",
+    "extdata", "0_42.laz",
     package = "lidarforfuel"
   )
 }

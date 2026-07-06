@@ -13,7 +13,7 @@ test_that("pad", {
     unlist()
   expect_length(pad, 120 + 6)
   expect_true(names(pad[length(pad)]) == glue("PAD_{dz}_59.5"))
-  expect_true(pad[glue("PAD_{dz}_17")] == 0)
+  expect_true(pad[glue("PAD_{dz}_24.5")] == 0)
   expect_all_true(sup_layers %in% names(pad))
   # test parse_pad_heights
   pad_heights <- parse_pad_heights(names(pad))
@@ -39,8 +39,11 @@ test_that("pad", {
   # test null cover
   nlas1 <- nlas
   nlas1@data <- nlas1@data[Z < 2]
-  pad <- lidR::cloud_metrics(nlas1, pad_metrics(z0 = 0, dz = dz, nlayers = 2)) |>
-    unlist()
+  expect_warning({
+    pad <- lidR::cloud_metrics(nlas1, pad_metrics(z0 = 0, dz = dz, nlayers = 2)) |>
+      unlist()
+  })
+
   expect_true(pad["Cover_2"] == 0)
   nlas1@data <- nlas1@data[1:90, ]
   expect_warning(
