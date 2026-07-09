@@ -136,6 +136,8 @@ pad_metrics <- function(
       return(NULL)
     }
     Nz_U <- flight_agl / norm_U
+    ### cos theta take into account scanning angle
+    cos_theta <- mean(abs(Nz_U[veg_gnd_points]))
   } else {
     Nz_U <- 1
     cos_theta <- 1
@@ -179,10 +181,6 @@ pad_metrics <- function(
 
   ## Gap fraction estimation ----
   Gf <- 1 - NRD
-
-
-  ### cos theta take into account scanning angle
-  cos_theta <- mean(abs(Nz_U[veg_gnd_points]))
 
   ## Plant area density calculation (actually FAD --> fuel area density: leaves + twigs) ----
   cover_h_pad <- NA
