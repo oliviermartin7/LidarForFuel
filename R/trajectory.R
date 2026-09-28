@@ -64,13 +64,25 @@ lasrmdup <- function(las, multi_pulse = FALSE) {
 #'
 #' @export
 get_traj <- function(
-  las,
+  chunk,
   thin = 0.0001,
   interval = .2,
   rmdup = TRUE,
   renum = FALSE,
   multi_pulse = TRUE
-) {
+)
+
+  {
+
+  if (inherits(chunk, "LAS")) {
+    las <- chunk
+  } else {
+    las <- lidR::readLAS(chunk)
+  }
+  if (lidR::is.empty(las)) {
+    return(NULL)
+  }
+
   gpstime <- NULL
   if (thin > 0) {
     # thinning pulses before rmdup
