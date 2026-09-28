@@ -1,0 +1,55 @@
+# @package _global_
+
+class_metrics:
+  classes: [1, 2, 3, 4, 5, 6, 9, 17, 18, 64, 67]
+  deviation_days: 14
+  season_filter: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  gpstime_ref: "2011-09-14 01:46:40"
+  
+pad_metrics_1m:
+  dz: 1
+  nlayers: 60
+  ground_margin: 0.1  # Discussion interne INRAE le 11/06/2026
+  G: 0.5
+  omega: 0.87  # last result (02/07/2026) from report in fuels/PAD_analysis
+  scanning_angle: true
+  cover_type: "all"  # Discussion interne INRAE le 11/06/2026
+  height_cover: 4  # Discussion interne INRAE le 11/06/2026
+  use_cover: true
+  limit_N_points: 0
+  limit_flight_agl: 800
+  keep_N: false
+  season_filter: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  deviation_days: 14
+  gpstime_ref: "2011-09-14 01:46:40"
+
+pad_metrics_05m:
+  dz: 0.5
+  nlayers: 4
+  ground_margin: 0.1  # Discussion interne INRAE le 11/06/2026
+  G: 0.5
+  omega: 0.87  # last result (02/07/2026) from report in fuels/PAD_analysis
+  scanning_angle: true
+  cover_type: "all"  # Discussion interne INRAE le 11/06/2026
+  height_cover: 4  # Discussion interne INRAE le 11/06/2026
+  use_cover: true
+  limit_N_points: 0
+  limit_flight_agl: 800
+  keep_N: false
+  season_filter: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  deviation_days: 14
+  gpstime_ref: "2011-09-14 01:46:40"
+
+ffuelmetrics2:
+  FMAcan: 0.2543576
+  FMAshrub: 0.2543576
+  smooth_pad: false
+  dz: 1
+  LadderFuelBDthresholds: [0.01, 0.02, 0.05]
+  CanopyHeightThreshold: 1
+  CanopyBDTreshFrac: 0.3
+  CanopyTopBDThresholds: [0.0012, 0.01]
+  CBHThresholdRatio: 0.333
+  bdmax: 1
+  M: 2.5
+  as_tibble: false
