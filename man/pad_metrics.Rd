@@ -19,6 +19,7 @@ pad_metrics(
   limit_N_points = 0,
   limit_flight_agl = 800,
   keep_N = FALSE,
+  veg_classes = c(2, 3, 4, 5, 9),
   season_filter = 1:12,
   deviation_days = Inf,
   gpstime_ref = "2011-09-14 01:46:40"
@@ -48,6 +49,7 @@ pad_metrics(
   limit_N_points = 0,
   limit_flight_agl = 800,
   keep_N = FALSE,
+  veg_classes = c(2, 3, 4, 5, 9),
   season_filter = 1:12,
   deviation_days = Inf,
   gpstime_ref = "2011-09-14 01:46:40"
@@ -88,6 +90,8 @@ This limit serves as a safeguard to eliminate cases where the trajectory reconst
 
 \item{keep_N}{logical. Default = FALSE. Keep the number of entering rays (N) and the number of hits (Ni) in each layer.}
 
+\item{veg_classes}{numeric vector. Point classes taken into account when summing the hits for the PAD computation.}
+
 \item{gpstime, X, Y, Z, Zref, ReturnNumber, Classification, Easting, Northing, Elevation}{numeric vectors. Attributes of the lidar point cloud.}
 }
 \value{
@@ -115,7 +119,7 @@ The expected LAS attributes are: \code{gpstime}, \code{X}, \code{Y}, \code{Z}, \
 }
 \examples{
 \dontrun{
-las_file <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
 las <- lidR::readLAS(las_file)
 # In real life, traj should be computed separately with buffer to avoid border effects
 traj <- get_traj(las)

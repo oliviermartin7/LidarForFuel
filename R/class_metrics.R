@@ -6,7 +6,7 @@
 #' @return Formula for lidR::xxx_metrics
 #' @examples
 #' \dontrun{
-#' las_file <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+#' las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
 #' las <- lidR::readLAS(las_file)
 #' # as cloud metrics
 #' class_count <- lidR::cloud_metrics(las, class_metrics())

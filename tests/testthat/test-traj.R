@@ -66,7 +66,7 @@ test_that("get and add traj", {
   # no error, just loosing traj points
   traj2 <- get_traj(las2)
   expect_true(nrow(traj2) > 0)
-  
+
   # TODO: test multi_pulse
 
   # add trajectory

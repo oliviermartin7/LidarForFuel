@@ -6,18 +6,6 @@
 #' @return a list of two elements: 1) a named vector with all fuel metrics 2) a data.table with the PAD and CBD profile value plus additional columns if BD not provided (i.e BD_rollmean, LMA, WD, WMA FMA if BD not provided) (three columns: H, PAD and CBD),
 #' @details
 #' In addition to fuel metrics, this function also estimates structural metrics such as total height, plant area index above 1 meter (PAI_tot), and vertical complexity index (VCI) based on the plant area density profile.
-#' @examples
-#' \donttest{
-#' path2profile <- system.file("extdata", "BD_profile.txt", package = "lidarforfuel")
-#'
-#' # read a table
-#' Profile <- data.table::fread(path2profile)
-#'
-#' # Run the function with a relative threshold
-#' Fuel_metrics <- ffuelmetrics(profile_table = Profile, threshold = "10%")
-#' # Run the function with an absolute threshold
-#' Fuel_metrics <- ffuelmetrics(profile_table = Profile, threshold = 0.02)
-#' }
 #' @export
 ffuelmetrics <- function(profile_table, threshold, H_PAI = 0) {
   if (any(stringr::str_detect(names(profile_table), "BD")) == F) {

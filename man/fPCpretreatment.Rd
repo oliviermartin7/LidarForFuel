@@ -44,9 +44,9 @@ and the its GPStime for each point (obtained from lidR::track_sensor()).
 }
 \examples{
 \donttest{
-path2laz <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
-M30_FontBlanche_pretreated <- fPCpretreatment(path2laz)
+las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
+las_preproc <- fPCpretreatment(las_file)
 # displaying the new attributes in the las
-names(M30_FontBlanche_pretreated)
+names(las_preproc)
 }
 }
