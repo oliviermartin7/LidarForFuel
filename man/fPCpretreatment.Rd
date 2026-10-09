@@ -32,13 +32,13 @@ If provided, the DTM is tinned to interpolate at each point location. If NULL, t
 LAS object. A normalized point cloud (.laz) with several new attributes needed to run fCBDprofile_fuelmetrics, see details.
 }
 \description{
-Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
+Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (X_sensor, Y_sensor, Z_sensor), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
 }
 \details{
 The attributes added to the laz are:
 \itemize{
 \item Zref : Z value before normalization, i.e. altitude of the point
-\item Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
+\item X_sensor, Y_sensor, Z_sensor, Time that are the X,Y,Z coordinates of the sensor
 and the its GPStime for each point (obtained from lidR::track_sensor()).
 }
 }

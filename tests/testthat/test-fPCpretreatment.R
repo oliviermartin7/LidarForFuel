@@ -70,7 +70,7 @@ test_that("fPCpretreatment", {
   )
   # displaying the new attributes in the las
   expected_names <- c(
-    "Easting", "Northing", "Elevation", "Time", "Zref"
+    "X_sensor", "Y_sensor", "Z_sensor", "Time", "Zref"
   )
   expect_contains(names(m30_font_blanche_pretreated), expected_names)
 
@@ -96,7 +96,7 @@ test_that("fPCpretreatment", {
 #   toc()
 #   # displaying the new attributes in the las
 #   expected_names <- c(
-#     "Easting", "Northing", "Elevation", "Time", "LMA", "WD", "Zref"
+#     "X_sensor", "Y_sensor", "Z_sensor", "Time", "LMA", "WD", "Zref"
 #   )
 #   expect_contains(names(m30_font_blanche_pretreated), expected_names)
 # })

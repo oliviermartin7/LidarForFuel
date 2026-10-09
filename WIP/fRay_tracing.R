@@ -29,10 +29,10 @@ Vertical_strata_Ray_tracing=function(las,G=0.5,d=0.5,xplotmin,xplotmax,yplotmin,
   if(firstreturn==T){las=filter_first(las)}
 
   # get the norm of every hit using hit coordinates and trajecto
-las@data$norm_U=sqrt((las@data$X-las@data$Easting)^2+(las@data$Y-las@data$Northing)^2+(las@data$Zref-las@data$Elevation)^2)
-las@data$Ux=(las@data$Easting-las@data$X)/las@data$norm_U
-las@data$Uy=(las@data$Northing-las@data$Y)/las@data$norm_U
-las@data$Uz=(las@data$Elevation-las@data$Zref)/las@data$norm_U
+las@data$norm_U=sqrt((las@data$X-las@data$X_sensor)^2+(las@data$Y-las@data$Y_sensor)^2+(las@data$Zref-las@data$Z_sensor)^2)
+las@data$Ux=(las@data$X_sensor-las@data$X)/las@data$norm_U
+las@data$Uy=(las@data$Y_sensor-las@data$Y)/las@data$norm_U
+las@data$Uz=(las@data$Z_sensor-las@data$Zref)/las@data$norm_U
 
 # Transform points underground to have them at DTM height ----
 # get point underground

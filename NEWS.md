@@ -21,6 +21,7 @@
 * reformat package R files for readability
 * change default reference datetime for gpstime from
   "2011-09-14 00:00:00" to "2011-09-14 01:46:40"
+* renamed trajectory attributes `Esating`, `Northing`, `Elevation` to `X_sensor`, `Y_sensor`, `Z_sensor`
 * `fPCpretreatment`
   * modularized internal functions
   * removed args `LMA`, `WD`, `LMA_bush`, `WD_bush`, `H_strata_bush`.

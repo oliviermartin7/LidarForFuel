@@ -33,9 +33,9 @@ pad_metrics(
   Zref,
   ReturnNumber,
   Classification,
-  Easting,
-  Northing,
-  Elevation,
+  X_sensor,
+  Y_sensor,
+  Z_sensor,
   z0 = 0,
   dz = 1,
   nlayers = 60,
@@ -85,14 +85,14 @@ Accepted values are be "all" or "first".}
 \item{limit_N_points}{numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.}
 
 \item{limit_flight_agl}{numeric. Default = 800. Limit flight height above ground in m. If the distance between the flight height and the ground
-and (Elevation - Zref) is lower than \code{limit_flight_agl}, NULL is returned.
+and (Z_sensor - Zref) is lower than \code{limit_flight_agl}, NULL is returned.
 This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.}
 
 \item{keep_N}{logical. Default = FALSE. Keep the number of entering rays (N) and the number of hits (Ni) in each layer.}
 
 \item{veg_classes}{numeric vector. Point classes taken into account when summing the hits for the PAD computation.}
 
-\item{gpstime, X, Y, Z, Zref, ReturnNumber, Classification, Easting, Northing, Elevation}{numeric vectors. Attributes of the lidar point cloud.}
+\item{gpstime, X, Y, Z, Zref, ReturnNumber, Classification, X_sensor, Y_sensor, Z_sensor}{numeric vectors. Attributes of the lidar point cloud.}
 }
 \value{
 \itemize{
@@ -114,8 +114,8 @@ If keep_N = TRUE, the list also contains Ni and N layers at same heights than PA
 }
 \description{
 This function computes PAD metrics from a lidar point cloud preprocessed output.
-The expected LAS attributes are: \code{gpstime}, \code{X}, \code{Y}, \code{Z}, \code{Zref}, \code{ReturnNumber}, \code{Easting},
-\code{Northing}, \code{Elevation}.
+The expected LAS attributes are: \code{gpstime}, \code{X}, \code{Y}, \code{Z}, \code{Zref}, \code{ReturnNumber}, \code{X_sensor},
+\code{Y_sensor}, \code{Z_sensor}.
 }
 \examples{
 \dontrun{

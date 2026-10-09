@@ -3,7 +3,7 @@
 
 #' Point cloud pre-treatment for using fCBDprofile_fuelmetrics in pixels
 #'
-#' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (easting, northing, elevation), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
+#' @description Function for preprocessing las (laz) files for use in fCBDprofile_fuelmetrics. This can be used in the catalog_apply lidR function. The pretreatment consists of normalizing the point cloud and adding various attributes: Plane position for each point (X_sensor, Y_sensor, Z_sensor), LMA (leaf mass area) and wood density (WD) by intersecting the point cloud with an LMA and WD map or by providing LMA and WD values.
 #' @param chunk LAS object, LAScluster chunk or character. If character, the path to a las (laz) file is expected.
 #' Can be apply to a catalog see lidR::catalog_apply # nolint: line_length_linter.
 #' @param classify logical (default is FALSE). Make a ground classification. Only if the original point cloud is not classified
@@ -22,7 +22,7 @@
 #' @details
 #' The attributes added to the laz are:
 #' - Zref : Z value before normalization, i.e. altitude of the point
-#' - Easting, Northing, Elevation, Time that are the X,Y,Z coordinates of the sensor
+#' - X_sensor, Y_sensor, Z_sensor, Time that are the X,Y,Z coordinates of the sensor
 #'   and the its GPStime for each point (obtained from lidR::track_sensor()).
 #' @examples
 #' \donttest{
@@ -130,8 +130,8 @@ fPCpretreatment <- function(
   # }
   # las=remove_lasattribute(las, name="Reflectance")
   # las=remove_lasattribute(las, name="Deviation")
-  # las@data=las@data[,c("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")]
-  # las@header@VLR = list("X","Y","Z","LMA","Zref","Easting","Northing","Elevation","Nx","Ny","Nz","Time")
+  # las@data=las@data[,c("X","Y","Z","LMA","Zref","X_sensor","Y_sensor","Z_sensor","Nx","Ny","Nz","Time")]
+  # las@header@VLR = list("X","Y","Z","LMA","Zref","X_sensor","Y_sensor","Z_sensor","Nx","Ny","Nz","Time")
 
   return(las)
 }

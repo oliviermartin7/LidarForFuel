@@ -1,8 +1,8 @@
 #' Compute PAD metrics
 #'
 #' @description This function computes PAD metrics from a lidar point cloud preprocessed output.
-#' The expected LAS attributes are: `gpstime`, `X`, `Y`, `Z`, `Zref`, `ReturnNumber`, `Easting`,
-#' `Northing`, `Elevation`.
+#' The expected LAS attributes are: `gpstime`, `X`, `Y`, `Z`, `Zref`, `ReturnNumber`, `X_sensor`,
+#' `Y_sensor`, `Z_sensor`.
 #' @param z0 numeric. Default = 0. Minimum height of the first layer in meters.
 #' @param dz numeric. Default = 1. Height of a layer in meters.
 #' @param nlayers numeric. Default = 60. Number of layers.
@@ -21,7 +21,7 @@
 #' @param use_cover logical. Default = FALSE. Use cover for PAD estimates.
 #' @param limit_N_points numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.
 #' @param limit_flight_agl numeric. Default = 800. Limit flight height above ground in m. If the distance between the flight height and the ground
-#' and (Elevation - Zref) is lower than `limit_flight_agl`, NULL is returned.
+#' and (Z_sensor - Zref) is lower than `limit_flight_agl`, NULL is returned.
 #' This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param keep_N logical. Default = FALSE. Keep the number of entering rays (N) and the number of hits (Ni) in each layer.
 #' @param veg_classes numeric vector. Point classes taken into account when summing the hits for the PAD computation.
@@ -70,7 +70,7 @@ pad_metrics <- function(
   fun <- substitute(
     ~ .pad_metrics(
       gpstime, X, Y, Z, Zref, ReturnNumber, Classification,
-      Easting, Northing, Elevation,
+      X_sensor, Y_sensor, Z_sensor,
       z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,
       G = G, omega = omega,
       scanning_angle = scanning_angle,
@@ -95,12 +95,12 @@ pad_metrics <- function(
 }
 
 #' @rdname pad_metrics
-#' @param gpstime,X,Y,Z,Zref,ReturnNumber,Classification,Easting,Northing,Elevation
+#' @param gpstime,X,Y,Z,Zref,ReturnNumber,Classification,X_sensor,Y_sensor,Z_sensor
 #' numeric vectors. Attributes of the lidar point cloud.
 #' @export
 .pad_metrics <- function(
   gpstime, X, Y, Z, Zref, ReturnNumber, Classification,
-  Easting, Northing, Elevation,
+  X_sensor, Y_sensor, Z_sensor,
   z0 = 0, dz = 1, nlayers = 60, ground_margin = 0.1,
   G = 0.5, omega = 0.77,
   scanning_angle = TRUE,
@@ -123,9 +123,9 @@ pad_metrics <- function(
   Zref <- Zref[valid_points]
   ReturnNumber <- ReturnNumber[valid_points]
   Classification <- Classification[valid_points]
-  Easting <- Easting[valid_points]
-  Northing <- Northing[valid_points]
-  Elevation <- Elevation[valid_points]
+  X_sensor <- X_sensor[valid_points]
+  Y_sensor <- Y_sensor[valid_points]
+  Z_sensor <- Z_sensor[valid_points]
 
   if (length(Z) < limit_N_points) {
     warning("NULL return: the number of points < limit_N_points. Check the point cloud.")
@@ -138,8 +138,8 @@ pad_metrics <- function(
   if (scanning_angle) {
     ## calculates component of  vector U (plane -> point). To take into account scanning angle in PAD estimation ----
     # no abs as we don't want to have flight_agl < 0
-    flight_agl <- Elevation - Zref
-    norm_U <- sqrt((X - Easting)^2 + (Y - Northing)^2 + flight_agl^2)
+    flight_agl <- Z_sensor - Zref
+    norm_U <- sqrt((X - X_sensor)^2 + (Y - Y_sensor)^2 + flight_agl^2)
     ### Exception if the mean of norm_U < limit_flight_agl For LiDAr HD 1000m mean that plane flew lower than 1000m over the plot => unlikely for LiDAR HD => probably error in trajectory reconstruction
     if (mean(flight_agl, na.rm = TRUE) < limit_flight_agl) {
       warning("NULL return: limit_flight_agl below the threshold. Check your trajectory and avoid using scanning_angle mode if the trajectory is uncertain")

@@ -72,5 +72,5 @@ test_that("get and add traj", {
   # add trajectory
   las <- path2laz |> lidR::readLAS()
   las2 <- add_traj_to_las(las, traj)
-  expect_contains(names(las2@data), c("Easting", "Northing", "Elevation", "Time"))
+  expect_contains(names(las2@data), c("X_sensor", "Y_sensor", "Z_sensor", "Time"))
 })

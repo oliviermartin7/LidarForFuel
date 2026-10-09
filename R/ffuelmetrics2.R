@@ -1,4 +1,4 @@
-# The ffuelmetrics2 function computes from PADval  (vertical profiles) and zval (elevation of PADval, typically (0.25,0.75,...) or (0.5,1.5,...))
+# The ffuelmetrics2 function computes from PADval  (vertical profiles) and zval (Z_sensor of PADval, typically (0.25,0.75,...) or (0.5,1.5,...))
 # if PADval is not provided CBDval can be used (assuming a constant FMA has been used in the whole profile)
 # Typical usage of the fonction when applied to multiple tiles is shown just after the function (2s par tiles of 500m approximately)
 
