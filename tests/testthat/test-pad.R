@@ -64,8 +64,10 @@ test_that("cloud metrics", {
   # check arg veg_classes
   #########
   nlas@data$Classification <- 1
-  pad <- lidR::cloud_metrics(nlas, pad_metrics(veg_classes = 2)) |>
-    unlist()
+  expect_warning({
+    pad <- lidR::cloud_metrics(nlas, pad_metrics(veg_classes = 2)) |>
+      unlist()
+  })
   pad_layers <- grepl("^PAD", names(pad))
   expect_all_true(pad[pad_layers] == 0)
 })
