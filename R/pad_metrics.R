@@ -24,6 +24,7 @@
 #' and (Elevation - Zref) is lower than `limit_flight_agl`, NULL is returned.
 #' This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param keep_N logical. Default = FALSE. Keep the number of entering rays (N) and the number of hits (Ni) in each layer.
+#' @param veg_classes numeric vector. Point classes taken into account when summing the hits for the PAD computation.
 #'
 #' @return
 #' \itemize{
@@ -45,7 +46,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' las_file <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+#' las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
 #' las <- lidR::readLAS(las_file)
 #' # In real life, traj should be computed separately with buffer to avoid border effects
 #' traj <- get_traj(las)
@@ -63,6 +64,7 @@ pad_metrics <- function(
   scanning_angle = TRUE,
   cover_type = "all", height_cover = 2, use_cover = TRUE,
   limit_N_points = 0, limit_flight_agl = 800, keep_N = FALSE,
+  veg_classes = c(2, 3, 4, 5, 9),
   season_filter = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
   fun <- substitute(
@@ -75,6 +77,7 @@ pad_metrics <- function(
       cover_type = cover_type, height_cover = height_cover, use_cover = use_cover,
       limit_N_points = limit_N_points, limit_flight_agl = limit_flight_agl,
       keep_N = keep_N,
+      veg_classes = veg_classes,
       season_filter = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref
     ), list(
       z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,
@@ -83,6 +86,7 @@ pad_metrics <- function(
       cover_type = cover_type, height_cover = height_cover, use_cover = use_cover,
       limit_N_points = limit_N_points, limit_flight_agl = limit_flight_agl,
       keep_N = keep_N,
+      veg_classes = veg_classes,
       season_filter = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref
     )
   ) |> stats::as.formula()
@@ -103,9 +107,15 @@ pad_metrics <- function(
   cover_type = "all", height_cover = 2, use_cover = TRUE,
   limit_N_points = 0, limit_flight_agl = 800,
   keep_N = FALSE,
+  veg_classes = c(2, 3, 4, 5, 9),
   season_filter = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
-  valid_points <- filter_gpstime(gpstime, months = season_filter, deviation_days = deviation_days, gpstime_ref = gpstime_ref)
+  valid_points <- filter_gpstime(
+    gpstime,
+    months = season_filter,
+    deviation_days = deviation_days,
+    gpstime_ref = gpstime_ref
+  )
   gpstime <- gpstime[valid_points]
   X <- X[valid_points]
   Y <- Y[valid_points]
@@ -122,7 +132,7 @@ pad_metrics <- function(
     return(NULL)
   }
 
-  veg_gnd_points <- (Classification %in% c(2, 3, 4, 5, 9))
+  veg_gnd_points <- (Classification %in% veg_classes)
   Z_veg_gnd <- Z[veg_gnd_points]
 
   if (scanning_angle) {
@@ -210,8 +220,8 @@ pad_metrics <- function(
   if (use_cover) {
     # notes: considering height_cover > 0
     #   - cover_h_pad >= NRD is always true for NRD[z >= height_cover]:
-    #     Ni[2,3]/Ni[0,3] * Ni[0,Zmax]/Ni[2,Zmax] = (Ni[2,3] * (Ni[0,3] + Ni[3,Zmax])) / (Ni[0,3] * (Ni[2,3] + Ni[3,Zmax])) = 
-    #       (Ni[2,3] * Ni[0,3] + Ni[2,3] * Ni[3,Zmax]) / (Ni[2,3] * Ni[0,3] + Ni[0,3] * Ni[3,Zmax]) = 
+    #     Ni[2,3]/Ni[0,3] * Ni[0,Zmax]/Ni[2,Zmax] = (Ni[2,3] * (Ni[0,3] + Ni[3,Zmax])) / (Ni[0,3] * (Ni[2,3] + Ni[3,Zmax])) =
+    #       (Ni[2,3] * Ni[0,3] + Ni[2,3] * Ni[3,Zmax]) / (Ni[2,3] * Ni[0,3] + Ni[0,3] * Ni[3,Zmax]) =
     #       (Ni[2,3] * Ni[0,3] + Ni[2,3] * Ni[3,Zmax]) / (Ni[2,3] * Ni[0,3] + (Ni[2,3] + Ni[0,2]) * Ni[3,Zmax])
     #     thus equal for the cases Ni[3,Zmax] == 0 or Ni[0,2] == 0 (the second case is corrected)
     #   - NRD[z == height_cover] == cover_h_pad can happen, although the probability is very low:
@@ -223,7 +233,7 @@ pad_metrics <- function(
     if (cover_h_pad == 0) {
       warning(paste0("Cover method not used in PAD computation as Cover_h_pad = 0"))
       PAD <- -log(Gf) * cos_theta / (G * omega * dz)
-    } else if (any(NRD[min_layer >= height_cover] == cover_h_pad)){
+    } else if (any(NRD[min_layer >= height_cover] == cover_h_pad)) {
       warning(paste0("Found NRD values equal to Cover_h_pad: not using Cover method."))
       PAD <- -log(Gf) * cos_theta / (G * omega * dz)
     } else {

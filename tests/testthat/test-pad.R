@@ -1,20 +1,23 @@
 library(glue)
-test_that("pad", {
-  sup_layers <- c("date", "Cover_h_pad", "Cover_2", "Cover_4", "Cover_6", "cos_theta")
+test_that("cloud metrics", {
+  other_layers <- c("date", "Cover_h_pad", "Cover_2", "Cover_4", "Cover_6", "cos_theta")
 
   path2laz <- small_laz_file()
   las <- path2laz |> lidR::readLAS()
   traj <- get_traj(las)
   nlas <- fPCpretreatment(las, traj = traj)
 
+  ###############
   # cloud metrics
+  ###############
+
   dz <- 0.5
   pad <- lidR::cloud_metrics(nlas, pad_metrics(z0 = 0, dz = dz, nlayers = 120)) |>
     unlist()
   expect_length(pad, 120 + 6)
   expect_true(names(pad[length(pad)]) == glue("PAD_{dz}_59.5"))
   expect_true(pad[glue("PAD_{dz}_24.5")] == 0)
-  expect_all_true(sup_layers %in% names(pad))
+  expect_all_true(other_layers %in% names(pad))
   # test parse_pad_heights
   pad_heights <- parse_pad_heights(names(pad))
   expect_equal(pad_heights$dz, rep(dz, 120))
@@ -27,12 +30,12 @@ test_that("pad", {
 
   pad <- lidR::cloud_metrics(nlas, pad_metrics(z0 = 0, dz = dz, nlayers = 2)) |>
     unlist()
-  expect_all_true(names(pad) == c(sup_layers, glue("PAD_{dz}_0"), glue("PAD_{dz}_0.5")))
+  expect_all_true(names(pad) == c(other_layers, glue("PAD_{dz}_0"), glue("PAD_{dz}_0.5")))
 
 
   pad <- lidR::cloud_metrics(nlas, pad_metrics(use_cover = FALSE)) |>
     unlist()
-  expect_all_true(sup_layers %in% names(pad))
+  expect_all_true(other_layers %in% names(pad))
   # Cover_h_pad should be NA
   expect_true(is.na(pad["Cover_h_pad"]))
 
@@ -57,10 +60,30 @@ test_that("pad", {
   expect_true(is.null(pad))
   # expect_all_true(names(pad) == c("date", "Cover", "Cover_4", "Cover_6", "PAD_0_0.5", "PAD_0.5_1"))
 
+  #######
+  # check arg veg_classes
+  #########
+  nlas@data$Classification <- 1
+  pad <- lidR::cloud_metrics(nlas, pad_metrics(veg_classes = 2)) |>
+    unlist()
+  pad_layers <- grepl("^PAD", names(pad))
+  expect_all_true(pad[pad_layers] == 0)
+})
 
+test_that("pixel_metrics", {
+  path2laz <- small_laz_file()
+  las <- path2laz |> lidR::readLAS()
+  traj <- get_traj(las)
+  nlas <- fPCpretreatment(las, traj = traj)
+
+  res <- 10
+
+  ###############
   # pixel metrics
-  pad_rast <- lidR::pixel_metrics(nlas, pad_metrics(), res = 10)
-  expect_all_true(terra::res(pad_rast) == c(10, 10))
+  ###############
+
+  pad_rast <- lidR::pixel_metrics(nlas, pad_metrics(), res = res)
+  expect_all_true(terra::res(pad_rast) == c(res, res))
   expect_true(terra::nlyr(pad_rast) == (60 + 6))
   # test parse_pad_heights
   pad_heights <- parse_pad_heights(names(pad_rast))
@@ -68,7 +91,7 @@ test_that("pad", {
   expect_equal(pad_heights$z_bottom, seq(0, by = 1, length.out = 60))
 
   # test with Ni
-  pad_rast <- lidR::pixel_metrics(nlas, pad_metrics(keep_N = TRUE), res = 10)
+  pad_rast <- lidR::pixel_metrics(nlas, pad_metrics(keep_N = TRUE), res = res)
   expect_true(terra::nlyr(pad_rast) == (60 * 3 + 6))
 
   # check names are correctly written to file
