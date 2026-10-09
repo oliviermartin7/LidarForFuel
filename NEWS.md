@@ -10,8 +10,10 @@
   separately with buffer.
 * add functions `lasrmdup` and `lasrenumber` associated to `get_traj` compuation.
 * add tests
-* add seaprate functions for PAD compuation:
-  * `pad_metrics` (PR #17) : changes default from `limit_N_points=400` to `limit_N_points=0`
+* functions for PAD compuation:
+  * `pad_metrics` (PR #17) : 
+    * changes default from `limit_N_points=400` to `limit_N_points=0`
+    * changes angle correction factor from `1/mean(cos(theta))` to `pl_factor = mean(1/cos(theta))`
   * `parse_pad_heights` to get the strata heights from the PAD names.
 * add new metrics with function `ffuelmetrics2`
 
@@ -21,7 +23,7 @@
 * reformat package R files for readability
 * change default reference datetime for gpstime from
   "2011-09-14 00:00:00" to "2011-09-14 01:46:40"
-* renamed trajectory attributes `Esating`, `Northing`, `Elevation` to `X_sensor`, `Y_sensor`, `Z_sensor`
+* renamed trajectory attributes `Easting`, `Northing`, `Elevation` to `X_sensor`, `Y_sensor`, `Z_sensor`
 * `fPCpretreatment`
   * modularized internal functions
   * removed args `LMA`, `WD`, `LMA_bush`, `WD_bush`, `H_strata_bush`.
@@ -36,7 +38,7 @@
   * `limit_flightheight` --> `limit_flight_height`
   * `limit_vegetationheight` --> `limit_vegetation_height`
 
-* remove alternative trajectory when not enough multi-returns to compute: 
+* remove alternative trajectory when not enough multi-returns to compute:
   * before: the sensor location was set to the average of ground point plus 1400m
   * now: an error is returned
 

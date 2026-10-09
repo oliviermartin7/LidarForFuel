@@ -36,9 +36,9 @@
 #' \itemize{
 #'   \item date as the mean gpstime
 #'   \item Cover layers at 2m, 4m and 6m
-#'   \item Cover_h_pad as the cover metric used for the PAD computation above `height_cover`. If `use_cover = FALSE`, `Cover_h_pad` is set to NA.
-#'   \item cos_theta which is the average scan zenith angle used in the computation of PAD.
-#'         If `scanning_angle = FALSE`, `cos_theta` is set to 1, i.e. pulses are considered vertical.
+#'   \item `Cover_h_pad` as the cover metric used for the PAD computation above `height_cover`. If `use_cover = FALSE`, `Cover_h_pad` is set to NA.
+#'   \item `pl_factor` which is the average ray path length factor used in the computation of PAD.
+#'         If `scanning_angle = FALSE`, `pl_factor` is set to 1, i.e. pulses are considered vertical.
 #'   \item PAD layers from `z0` to `z0 + nlayers * dz`, named as `PAD_{dz}_{zi}` with zi the bottom edge of layer i.
 #' }
 #'
@@ -146,11 +146,11 @@ pad_metrics <- function(
       return(NULL)
     }
     Nz_U <- flight_agl / norm_U
-    ### cos theta take into account scanning angle
-    cos_theta <- mean(abs(Nz_U[veg_gnd_points]))
+    ### path length factor takes into account scanning angle
+    pl_factor <- mean(1 / abs(Nz_U[veg_gnd_points]))
   } else {
     Nz_U <- 1
-    cos_theta <- 1
+    pl_factor <- 1
   }
 
   ## Create a sequence to make strata  ----
@@ -232,17 +232,17 @@ pad_metrics <- function(
     }
     if (cover_h_pad == 0) {
       warning(paste0("Cover method not used in PAD computation as Cover_h_pad = 0"))
-      PAD <- -log(Gf) * cos_theta / (G * omega * dz)
+      PAD <- -log(Gf) / (G * omega * dz * pl_factor)
     } else if (any(NRD[min_layer >= height_cover] == cover_h_pad)) {
       warning(paste0("Found NRD values equal to Cover_h_pad: not using Cover method."))
-      PAD <- -log(Gf) * cos_theta / (G * omega * dz)
+      PAD <- -log(Gf) / (G * omega * dz * pl_factor)
     } else {
       cover_h_pad_v <- rep(cover_h_pad, length(min_layer))
       cover_h_pad_v[min_layer < height_cover] <- 1
-      PAD <- -log(1 - NRD / cover_h_pad_v) * cover_h_pad_v * cos_theta / (G * omega * dz)
+      PAD <- -log(1 - NRD / cover_h_pad_v) * cover_h_pad_v / (G * omega * dz * pl_factor)
     }
   } else {
-    PAD <- -log(Gf) * cos_theta / (G * omega * dz)
+    PAD <- -log(Gf) / (G * omega * dz * pl_factor)
   }
 
   if (ground_margin > 0) {
@@ -273,7 +273,7 @@ pad_metrics <- function(
   output <- c(
     list(date = date),
     list(Cover_h_pad = cover_h_pad, Cover_2 = cover_2, Cover_4 = cover_4, Cover_6 = cover_6),
-    list(cos_theta = cos_theta),
+    list(pl_factor = pl_factor),
     output
   )
   return(output)

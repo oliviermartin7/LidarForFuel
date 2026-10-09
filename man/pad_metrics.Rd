@@ -104,9 +104,9 @@ The list of PAD metrics includes:
 \itemize{
 \item date as the mean gpstime
 \item Cover layers at 2m, 4m and 6m
-\item Cover_h_pad as the cover metric used for the PAD computation above \code{height_cover}. If \code{use_cover = FALSE}, \code{Cover_h_pad} is set to NA.
-\item cos_theta which is the average scan zenith angle used in the computation of PAD.
-If \code{scanning_angle = FALSE}, \code{cos_theta} is set to 1, i.e. pulses are considered vertical.
+\item \code{Cover_h_pad} as the cover metric used for the PAD computation above \code{height_cover}. If \code{use_cover = FALSE}, \code{Cover_h_pad} is set to NA.
+\item \code{pl_factor} which is the average ray path length factor used in the computation of PAD.
+If \code{scanning_angle = FALSE}, \code{pl_factor} is set to 1, i.e. pulses are considered vertical.
 \item PAD layers from \code{z0} to \code{z0 + nlayers * dz}, named as \verb{PAD_\{dz\}_\{zi\}} with zi the bottom edge of layer i.
 }
 

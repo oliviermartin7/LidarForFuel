@@ -1,6 +1,6 @@
 library(glue)
 test_that("cloud metrics", {
-  other_layers <- c("date", "Cover_h_pad", "Cover_2", "Cover_4", "Cover_6", "cos_theta")
+  other_layers <- c("date", "Cover_h_pad", "Cover_2", "Cover_4", "Cover_6", "pl_factor")
 
   path2laz <- small_laz_file()
   las <- path2laz |> lidR::readLAS()
