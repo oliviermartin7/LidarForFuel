@@ -1,14 +1,13 @@
 test_that("pixel_filter", {
-  path2laz <- small_laz_file()
+  las_file <- small_laz_file()
 
   #######
   # datetime_filter
   #######
 
   # test season filter
-  las <- lidR::readLAS(path2laz)
-  ref_file <- system.file("extdata", "raster_template.tif", package = "lidarforfuel")
-  ref <- stars::read_stars(ref_file)
+  las <- lidR::readLAS(las_file)
+  ref <- raster_template()
   # make first point to be in month 9
   las@data$gpstime[1] <- 0 # 2021-09-14 01:46:40
   months <- lubridate::month(gpstime_to_datetime(las$gpstime)) |> unique()
@@ -44,7 +43,7 @@ test_that("pixel_filter", {
   data <- data.frame(gpstime = runif(N) + offset, X = runif(N) + res * 2, Y = runif(N), Z = 2)
   pix2_las <- lidR::LAS(data = data)
   expect_warning({las <- rbind(pix1_las, pix2_las)})
-  ref <- lidR::pixel_metrics(las, ~ length(Z), res = res, pkg = "stars")
+  ref <- lidR::pixel_metrics(las, ~ length(Z), res = res)
 
   # check that the filter works at the pixel scale
   for (ratio in c(0.25, 0.5, 0.75)) {
