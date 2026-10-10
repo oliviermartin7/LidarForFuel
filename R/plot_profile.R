@@ -1,6 +1,18 @@
 #' Plot profile & metrics
 #' @description Plot the bulk density profile and the corresponding fuel metrics
-#' @param see ffuelmetrics2()
+#' @param PADval numeric vector. PAD values in m2/m3.
+#' @param CBDval numeric vector. CBD values in kg/m3.
+#' @param zval numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.
+#' @param Fuel_metrics numeric vector. Fuel metrics
+#' @param plotname character. Name of the plot
+#' @param FMAcan numeric. Fuel mass area in kg/m2 for canopy
+#' @param FMAshrub numeric. Fuel mass area in kg/m2 for shrub
+#' @param CanopyHeightThreshold numeric. Default minimal value of height in m for canopy/ladder (versus surface fuel) to look for CBH and CTH, typically 1 to 3 m (default 1m)
+#' @param dz numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.
+#' @param smooth_pad boolean. If TRUE PADval is smoothed by a moving average with a window of 3.
+#' @param bdmax numeric. Max value of bulk density kg/m3 for canopy (above CanopyHeightThreshold=1 m only)
+#' @return ggplot2 object
+#' @seealso [ffuelmetrics2()]
 #' @export
 plot_profile <- function(
   PADval = NULL,

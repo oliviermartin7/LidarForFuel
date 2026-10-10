@@ -230,7 +230,7 @@ ffuelmetrics2 <- function(
   # 6. CBDcan
   height <- min(CDH, CTH)
   inCan <- (!is.na(CBH2) & zval >= CBH2 & zval <= height)
-  CBDcan <- ifelse(any(inCan), mean(CBDval[inCan],na.rm=TRUE), 0)
+  CBDcan <- ifelse(any(inCan), mean(CBDval[inCan], na.rm = TRUE), 0)
 
   # 7. no treshold for CBDval in cell k1 and k2, but a treatment will be applied afterwards (to correct bias - quantile mapping)
   CLFL <- sum(CBDval[zval > zlow]) * dz # canopy + ladderfuel
@@ -308,7 +308,8 @@ ffuelmetrics2 <- function(
   }
 }
 
-
+#' @rdname ffuelmetrics2
+#' @export
 ffuelmetrics2Rast <- function(
   PADval = NULL, # PAD values in m2/m3; either PAD or CBD should be provided
   CBDval = NULL, # CBD values in kg/m3
@@ -323,8 +324,7 @@ ffuelmetrics2Rast <- function(
   CanopyTopBDThresholds = c(0.0012, 0.01), # minimal bulkDensity to look for CTH (canopy height but in terms of fuel<Height)
   CBHThresholdRatio = 1 / 5, # ratio of total height above which we look for CBH
   bdmax = 1.00, # max value of bulk density kg/m3 for canopy (above 1 m only)
-  M = 2.5, # M factor from Perrakis 2025
-  as_tibble = FALSE
+  M = 2.5 # M factor from Perrakis 2025
 ) {
   # préparation du PAD_rast
   if (is.null(PADval)) {

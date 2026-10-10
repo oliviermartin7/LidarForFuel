@@ -11,6 +11,8 @@ small_laz_file <- function() {
 }
 
 raster_template <- function() {
+  # the raster is not aligned on (0,0) on purpose,
+  # to check that alignment occures as expected in tests
   xoff <- yoff <- pi + 100
   N <- res <- 10
   data <- matrix(0, nrow = N, ncol = N)

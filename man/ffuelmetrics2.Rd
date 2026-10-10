@@ -2,6 +2,7 @@
 % Please edit documentation in R/ffuelmetrics2.R
 \name{ffuelmetrics2}
 \alias{ffuelmetrics2}
+\alias{ffuelmetrics2Rast}
 \title{Fuel metrics from PAD profiles or bulk density profiles}
 \usage{
 ffuelmetrics2(
@@ -20,6 +21,23 @@ ffuelmetrics2(
   bdmax = 1,
   M = 2.5,
   as_tibble = FALSE
+)
+
+ffuelmetrics2Rast(
+  PADval = NULL,
+  CBDval = NULL,
+  FMAcan = 1,
+  FMAshrub = 1,
+  smooth_pad = FALSE,
+  zval,
+  dz,
+  LadderFuelBDthresholds = c(0.01, 0.02, 0.05),
+  CanopyHeightThreshold = 1,
+  CanopyBDTreshFrac = 0.1,
+  CanopyTopBDThresholds = c(0.0012, 0.01),
+  CBHThresholdRatio = 1/5,
+  bdmax = 1,
+  M = 2.5
 )
 }
 \arguments{

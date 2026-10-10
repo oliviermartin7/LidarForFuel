@@ -2,8 +2,15 @@
 #'
 #' @param classes Vector of classes to count
 #' Default class specs are from https://data.geopf.fr/annexes/ressources/documentation/DC_LiDAR_HD_1-0.pdf.
-#'
-#' @return Formula for lidR::xxx_metrics
+#' @param season_filter Vector of months to filter
+#' @param deviation_days Numeric. Number of days to filter
+#' @param gpstime_ref Character. Reference datetime for gpstime zero
+#' @return
+#' \itemize{
+#'   \item `class_metrics`: a formula for `lidR::xxx_metrics` functions
+#'   \item `.class_metrics`: the class counts as a list.
+#' }
+#' @seealso [filter_gpstime()]
 #' @examples
 #' \dontrun{
 #' las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
@@ -13,7 +20,7 @@
 #' # as pixel metrics, i.e. rasterized
 #' class_count <- lidR::pixel_metrics(las, class_metrics(), res = 10)
 #' }
-#'
+#' @name class_metrics
 #' @export
 class_metrics <- function(
   classes = c(1:6, 9, 17, 18, 64, 66, 67),

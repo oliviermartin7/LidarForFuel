@@ -92,11 +92,17 @@ This limit serves as a safeguard to eliminate cases where the trajectory reconst
 
 \item{veg_classes}{numeric vector. Point classes taken into account when summing the hits for the PAD computation.}
 
+\item{season_filter}{Vector of months to filter}
+
+\item{deviation_days}{Numeric. Number of days to filter}
+
+\item{gpstime_ref}{Character. Reference datetime for gpstime zero}
+
 \item{gpstime, X, Y, Z, Zref, ReturnNumber, Classification, X_sensor, Y_sensor, Z_sensor}{numeric vectors. Attributes of the lidar point cloud.}
 }
 \value{
 \itemize{
-\item \code{pad_metrics}: a formula for lidR::xxx_metrics functions
+\item \code{pad_metrics}: a formula for \code{lidR::xxx_metrics} functions
 \item \code{.pad_metrics}: a list of PAD metrics, see below.
 }
 

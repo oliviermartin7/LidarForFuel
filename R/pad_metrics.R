@@ -25,10 +25,13 @@
 #' This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.
 #' @param keep_N logical. Default = FALSE. Keep the number of entering rays (N) and the number of hits (Ni) in each layer.
 #' @param veg_classes numeric vector. Point classes taken into account when summing the hits for the PAD computation.
+#' @param season_filter Vector of months to filter
+#' @param deviation_days Numeric. Number of days to filter
+#' @param gpstime_ref Character. Reference datetime for gpstime zero
 #'
 #' @return
 #' \itemize{
-#'   \item `pad_metrics`: a formula for lidR::xxx_metrics functions
+#'   \item `pad_metrics`: a formula for `lidR::xxx_metrics` functions
 #'   \item `.pad_metrics`: a list of PAD metrics, see below.
 #' }
 #'
