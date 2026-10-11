@@ -41,6 +41,7 @@ Suggests:
   Rfast,
   rgl,
   svMisc,
+  testthat (>= 3.0.0),
   utils,
 Collate: 
   class_metrics.R
@@ -53,5 +54,6 @@ Collate:
   trajectory.R
   plot_profile.R
   utils.R
+Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
 Roxygen: list(markdown = TRUE)
