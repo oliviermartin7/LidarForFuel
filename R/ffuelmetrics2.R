@@ -283,7 +283,7 @@ ffuelmetrics2 <- function(
 
 
   # 9. compute default ladder metrics for median threshold ladderFuel0.02
-  suf <- gsub("\\.", "p", sprintf("%0.3f", stats::median(LadderFuelBDthresholds)))
+  suf <- gsub("\\.", "p", sprintf("%0.3f", LadderFuelBDthresholds[which.min(abs(LadderFuelBDthresholds - stats::median(LadderFuelBDthresholds)))]))
   # LadderTop <- ladders[paste0("LadderTop_", suf)]
   # LadderBot <- ladders[paste0("LadderBot_", suf)]
   LFL <- ladders[[paste0("LadderLoad_", suf)]] # default ladder fuel load
@@ -362,7 +362,7 @@ ffuelmetrics2Rast <- function(
     }
   )
   # just to get names of outputs, because terra::app does not keep names
-  name_template <- names(ffuelmetrics2(CBDval = rep(0, length(zval)), FMAcan = 1, FMAshrub = 1, zval = zval, dz = dz, as_tibble = FALSE))
+  name_template <- names(ffuelmetrics2(CBDval = rep(0, length(zval)), FMAcan = 1, FMAshrub = 1, zval = zval, LadderFuelBDthresholds = LadderFuelBDthresholds, CanopyTopBDThresholds = CanopyTopBDThresholds, dz = dz, as_tibble = FALSE))
   names(metrics2) <- name_template
   return(metrics2)
 }
