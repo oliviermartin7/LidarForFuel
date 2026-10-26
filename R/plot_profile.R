@@ -1,22 +1,33 @@
 #' Plot profile & metrics
-#' @description Plot the bulk density profile and the corresponding fuel metrics 
-#' @param see ffuelmetrics2()
+#' @description Plot the bulk density profile and the corresponding fuel metrics
+#' @param PADval numeric vector. PAD values in m2/m3.
+#' @param CBDval numeric vector. CBD values in kg/m3.
+#' @param zval numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.
+#' @param Fuel_metrics numeric vector. Fuel metrics
+#' @param plotname character. Name of the plot
+#' @param FMAcan numeric. Fuel mass area in kg/m2 for canopy
+#' @param FMAshrub numeric. Fuel mass area in kg/m2 for shrub
+#' @param CanopyHeightThreshold numeric. Default minimal value of height in m for canopy/ladder (versus surface fuel) to look for CBH and CTH, typically 1 to 3 m (default 1m)
+#' @param dz numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.
+#' @param smooth_pad boolean. If TRUE PADval is smoothed by a moving average with a window of 3.
+#' @param bdmax numeric. Max value of bulk density kg/m3 for canopy (above CanopyHeightThreshold=1 m only)
+#' @return ggplot2 object
+#' @seealso [ffuelmetrics2()]
 #' @export
-#' 
 plot_profile <- function(
-PADval=NULL,
-CBDval=NULL, 
-zval,
-Fuel_metrics,
-plotname,
-FMAcan = 0.25,
-FMAshrub = 0.25,
-CanopyHeightThreshold = 1,
-dz=1,
-smooth_pad=FALSE,
-bdmax=1) {
-
-
+  PADval = NULL,
+  CBDval = NULL,
+  zval,
+  Fuel_metrics,
+  plotname,
+  FMAcan = 0.25,
+  FMAshrub = 0.25,
+  CanopyHeightThreshold = 1,
+  dz = 1,
+  smooth_pad = FALSE,
+  bdmax = 1
+) {
+  BD_tot <- height_y <- y <- label <- NULL
   # convert zval to center height of strata
   zval <- zval + 0.5 * dz
 
@@ -52,44 +63,48 @@ bdmax=1) {
   # computation of CBDval from PAD with FMAcan and FMAshrub below heightThreshold and bdmax
   CBDval <- pmin(PADval * ifelse(zval > CanopyHeightThreshold, FMAcan, FMAshrub), bdmax) # max value at 1kg/m3
 
-tab_CBD=data.table(cbind(BD_tot=CBDval,height_y=zval))
-tab_CBD=tab_CBD[BD_tot>0]
+  tab_CBD <- data.table::data.table(cbind(BD_tot = CBDval, height_y = zval))
+  tab_CBD <- tab_CBD[BD_tot > 0]
 
-  CBH_lff=Fuel_metrics[["CBH2"]]
-  CDH_lff=Fuel_metrics[["CDH"]]
- # CBH_terrain=Metrics_lff_field_i$'field_lcbh (avg)_m'
- #  CDH_field=Metrics_lff_field_i$'field_heightOverstory (top3 avg)_m'
-  ladder_bot=Fuel_metrics[["LadderBot_0p050"]]
-  ladder_top=Fuel_metrics[["LadderTop_0p050"]]
+  CBH_lff <- Fuel_metrics[["CBH2"]]
+  CDH_lff <- Fuel_metrics[["CDH"]]
+  # CBH_terrain=Metrics_lff_field_i$'field_lcbh (avg)_m'
+  #  CDH_field=Metrics_lff_field_i$'field_heightOverstory (top3 avg)_m'
+  ladder_bot <- Fuel_metrics[["LadderBot_0p050"]]
+  ladder_top <- Fuel_metrics[["LadderTop_0p050"]]
 
   # Créer un data.frame pour les lignes horizontales
   lines_data <- data.frame(
-    y = c(CBH_lff, CDH_lff, ladder_bot, ladder_top,CanopyHeightThreshold),
-    label = c("CBH_lff", "CDH_lff","Ladder bottom", "Ladder top","Surface top"),
+    y = c(CBH_lff, CDH_lff, ladder_bot, ladder_top, CanopyHeightThreshold),
+    label = c("CBH_lff", "CDH_lff", "Ladder bottom", "Ladder top", "Surface top"),
     color = c("#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "grey")
   )
-  
-  myplot <- ggplot(tab_CBD, aes(x = BD_tot, y = height_y)) +
-    geom_path(lwd = 1) +
-    geom_hline(data = lines_data, 
-               aes(yintercept = y, color = label, linetype = label),
-               lwd = 0.8) +
-    scale_color_manual(
-      name = "Hauteurs",
-      values = setNames(lines_data$color, lines_data$label)
+
+  myplot <- ggplot2::ggplot(tab_CBD, ggplot2::aes(x = BD_tot, y = height_y)) +
+    ggplot2::geom_path(lwd = 1) +
+    ggplot2::geom_hline(
+      data = lines_data,
+      ggplot2::aes(yintercept = y, color = label, linetype = label),
+      lwd = 0.8
     ) +
-    scale_linetype_manual(
+    ggplot2::scale_color_manual(
       name = "Hauteurs",
-      values = c("CBH_lff" = "solid", 
-                # "CBH terrain" = "solid",
-                 "CDH_lff" = "solid",
-                # "CDH terrain" = "solid",
-                 "Ladder bottom" = "dashed", 
-                 "Ladder top" = "dashed",
-                 "Surface top"="dotted")
+      values = stats::setNames(lines_data$color, lines_data$label)
     ) +
-    ggtitle(plotname) +
-    theme_few() +
-    theme(legend.position = "right")
-    print(myplot)
+    ggplot2::scale_linetype_manual(
+      name = "Hauteurs",
+      values = c(
+        "CBH_lff" = "solid",
+        # "CBH terrain" = "solid",
+        "CDH_lff" = "solid",
+        # "CDH terrain" = "solid",
+        "Ladder bottom" = "dashed",
+        "Ladder top" = "dashed",
+        "Surface top" = "dotted"
+      )
+    ) +
+    ggplot2::ggtitle(plotname) +
+    ggthemes::theme_few() +
+    ggplot2::theme(legend.position = "right")
+  print(myplot)
 }

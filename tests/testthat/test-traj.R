@@ -66,11 +66,11 @@ test_that("get and add traj", {
   # no error, just loosing traj points
   traj2 <- get_traj(las2)
   expect_true(nrow(traj2) > 0)
-  
+
   # TODO: test multi_pulse
 
   # add trajectory
   las <- path2laz |> lidR::readLAS()
   las2 <- add_traj_to_las(las, traj)
-  expect_contains(names(las2@data), c("Easting", "Northing", "Elevation", "Time"))
+  expect_contains(names(las2@data), c("X_sensor", "Y_sensor", "Z_sensor", "Time"))
 })

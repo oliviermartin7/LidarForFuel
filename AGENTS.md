@@ -15,7 +15,7 @@ LidarForFuel implements a fixed two-stage pipeline:
 
 1. **[fPCpretreatment](R/fPCpretreatment.R)** — Normalize point cloud + inject attributes
    - Ground detection & height normalization
-   - Adds: sensor trajectory (Easting, Northing, Elevation), LMA (Leaf Mass Area), WD (Wood Density)
+   - Adds: sensor trajectory (X_sensor, Y_sensor, Z_sensor), LMA (Leaf Mass Area), WD (Wood Density)
    - Supports both individual LAS files and lidR catalog workflows
 
 2. **[fCBDprofile_fuelmetrics](R/fCBDprofile_fuelmetrics.R)** — Invert CBD profile + extract metrics
@@ -121,7 +121,7 @@ test_that("function does expected task", {
 
 **LiDAR Data:**
 - Input/Output: LAS/LAZ (via [lidR](https://cran.r-project.org/package=lidR)) — class `LAS` or `LAScatalog`
-- Point attributes: X, Y, Z, ReturnNumber, gpstime, Classification, Easting, Northing, Elevation (after preprocessing)
+- Point attributes: X, Y, Z, ReturnNumber, gpstime, Classification, X_sensor, Y_sensor, Z_sensor (after preprocessing)
 - Use `readLAS()` or `read.las()` from lidR
 
 **Rasters:**
@@ -240,7 +240,7 @@ raster_metrics <- lidR::pixel_metrics(
   las_pretreated,
   ~ fCBDprofile_fuelmetrics(
     X, Y, Z, Zref, gpstime, ReturnNumber, 
-    Easting, Northing, Elevation, LMA, threshold, WD, 
+    X_sensor, Y_sensor, Z_sensor, LMA, threshold, WD, 
     datatype = "Pixel"
   ),
   res = 10

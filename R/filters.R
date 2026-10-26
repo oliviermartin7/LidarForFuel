@@ -75,12 +75,12 @@ is_near_date_mode <- function(datetime, deviation_days = Inf) {
 #' @description
 #' These functions return TRUE when points are in the season and around the date mode,
 #' the date mode being computed on points within the season.
-#' 
+#'
 #' \itemize{
 #'   \item `filter_gpstime` applies to \code{\link[lidR]{filter_poi}}
 #'   \item `.filter_gpstime` returns a formula for \code{\link[lidarforfuel]{pixel_filter}}
 #' }
-#' 
+#'
 #' @param gpstime numeric. vector of gps time in seconds
 #' @param months numeric vector of months defining the expected season
 #' @param deviation_days numeric. the number of days defining the valid range around the date mode
@@ -201,7 +201,6 @@ pixel_filter <- function(las, res, start = c(0, 0), filter) {
 }
 
 
-
 # pixel_filter2 <- function(las, res, start = c(0, 0), filter) {
 #   if (!inherits(las, "LAS")) {
 #     stop("Argument is not a LAS object", call. = FALSE)
@@ -212,7 +211,7 @@ pixel_filter <- function(las, res, start = c(0, 0), filter) {
 #   cond1 <- lazyeval::f_unwrap(cond)
 #   # func <- lazyeval::f_interp(cond)
 #   # call <- lazyeval::as_call(func)
-  
+
 #   # conditions <- lazyeval::f_capture(cond)
 #   # formula <- tryCatch(lazyeval::is_formula(func), error = function(e) FALSE)
 #   # if (!formula) func <- lazyeval::f_capture(cond)

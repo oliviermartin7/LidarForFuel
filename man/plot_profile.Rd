@@ -19,8 +19,34 @@ plot_profile(
 )
 }
 \arguments{
-\item{see}{ffuelmetrics2()}
+\item{PADval}{numeric vector. PAD values in m2/m3.}
+
+\item{CBDval}{numeric vector. CBD values in kg/m3.}
+
+\item{zval}{numeric vector. Bottom height of the PAD layers in m, e.g. for PAD_1_10, zval should be 10.5.}
+
+\item{Fuel_metrics}{numeric vector. Fuel metrics}
+
+\item{plotname}{character. Name of the plot}
+
+\item{FMAcan}{numeric. Fuel mass area in kg/m2 for canopy}
+
+\item{FMAshrub}{numeric. Fuel mass area in kg/m2 for shrub}
+
+\item{CanopyHeightThreshold}{numeric. Default minimal value of height in m for canopy/ladder (versus surface fuel) to look for CBH and CTH, typically 1 to 3 m (default 1m)}
+
+\item{dz}{numeric. Vertical resolution of the PADval or CBDval in m, e.g. for PAD_1_10, dz should be 1.}
+
+\item{smooth_pad}{boolean. If TRUE PADval is smoothed by a moving average with a window of 3.}
+
+\item{bdmax}{numeric. Max value of bulk density kg/m3 for canopy (above CanopyHeightThreshold=1 m only)}
+}
+\value{
+ggplot2 object
 }
 \description{
 Plot the bulk density profile and the corresponding fuel metrics
+}
+\seealso{
+\code{\link[=ffuelmetrics2]{ffuelmetrics2()}}
 }

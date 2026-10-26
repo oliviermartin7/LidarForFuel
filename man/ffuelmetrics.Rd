@@ -22,16 +22,3 @@ Computes fuel metrics from a bulk density profile. Produces similar outputs to t
 \details{
 In addition to fuel metrics, this function also estimates structural metrics such as total height, plant area index above 1 meter (PAI_tot), and vertical complexity index (VCI) based on the plant area density profile.
 }
-\examples{
-\donttest{
-path2profile <- system.file("extdata", "BD_profile.txt", package = "lidarforfuel")
-
-# read a table
-Profile <- data.table::fread(path2profile)
-
-# Run the function with a relative threshold
-Fuel_metrics <- ffuelmetrics(profile_table = Profile, threshold = "10\%")
-# Run the function with an absolute threshold
-Fuel_metrics <- ffuelmetrics(profile_table = Profile, threshold = 0.02)
-}
-}
