@@ -129,7 +129,7 @@ get_traj <- function(
 #' @param las LAS object
 #' @param traj sf object with column gpstime and Point Z geometries
 #'
-#' @return LAS object with additional attributes Easting, Northing, Elevation, Time
+#' @return LAS object with additional attributes X_sensor, Y_sensor, Z_sensor, Time
 #' @export
 add_traj_to_las <- function(las, traj) {
   X <- Y <- Z <- gpstime <- NULL
@@ -141,9 +141,9 @@ add_traj_to_las <- function(las, traj) {
 
   traj <- dplyr::rename(
     traj,
-    Easting = X,
-    Northing = Y,
-    Elevation = Z,
+    X_sensor = X,
+    Y_sensor = Y,
+    Z_sensor = Z,
     Time = gpstime
   )
 
@@ -153,9 +153,9 @@ add_traj_to_las <- function(las, traj) {
   nn2_gpstimes <- RANN::nn2(traj$Time, las$gpstime, k = 1)
   las@data <- cbind(las@data, traj[nn2_gpstimes$nn.idx, ])
 
-  las <- lidR::add_lasattribute(las, name = "Easting", desc = "trajectory coordinate")
-  las <- lidR::add_lasattribute(las, name = "Northing", desc = "trajectory coordinate")
-  las <- lidR::add_lasattribute(las, name = "Elevation", desc = "trajectory coordinate")
+  las <- lidR::add_lasattribute(las, name = "X_sensor", desc = "trajectory coordinate")
+  las <- lidR::add_lasattribute(las, name = "Y_sensor", desc = "trajectory coordinate")
+  las <- lidR::add_lasattribute(las, name = "Z_sensor", desc = "trajectory coordinate")
   las <- lidR::add_lasattribute(las, name = "Time", desc = "trajectory timestamp")
 
   las

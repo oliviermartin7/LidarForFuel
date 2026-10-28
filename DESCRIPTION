@@ -1,7 +1,7 @@
 Package: lidarforfuel
 Type: Package
 Title: Compute fuel metrics from ALS
-Version: 1.0.0.9011
+Version: 1.0.0.9012
 Authors@R: c(
     person("Olivier", "Martin", email = "oli.martin@ntymail.com", role = c("aut", "cre", "cph")),
     person("François", "Pimont", email = "", role = c("aut", "cph")),
@@ -10,37 +10,39 @@ Description: This package provides a set of tools to compute fuel metrics. The m
 License: CeCILL
 Encoding: UTF-8
 URL: https://www.sciencedirect.com/science/article/pii/S0168192324004544
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+Depends: R (>= 4.2.0)
 Imports: 
-    circular,
-    data.table,
-    DiceKriging, 
-    dplyr,
-    fastcluster,
-    FNN,
-    gtools,
-    lidR,
-    lubridate,
-    methods,
-    pkgcond,
-    plyr,
-    pracma,
-    progress,
-    R.matlab,
-    RANN,
-    Rfast,
-    rgl,
-    sf,
-    slider,
-    stars,
-    stats,
-    stringr,
-    svMisc,
-    terra,
-    tibble,
-    utils,
-    VoxR,
+  data.table,
+  dplyr,
+  ggplot2,
+  ggthemes,
+  lidR,
+  lubridate,
+  plyr,
+  RANN,
+  sf,
+  slider,
+  stars,
+  stats,
+  stringr,
+  terra,
+  tibble,
+Suggests:
+  circular,
+  DiceKriging, 
+  fastcluster,
+  FNN,
+  gtools,
+  methods,
+  pkgcond,
+  pracma,
+  progress,
+  R.matlab,
+  Rfast,
+  rgl,
+  svMisc,
+  testthat (>= 3.0.0),
+  utils,
 Collate: 
   class_metrics.R
   ffuelmetrics.R
@@ -52,5 +54,6 @@ Collate:
   trajectory.R
   plot_profile.R
   utils.R
-  
-  
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0
+Roxygen: list(markdown = TRUE)

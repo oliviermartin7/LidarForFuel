@@ -19,6 +19,7 @@ pad_metrics(
   limit_N_points = 0,
   limit_flight_agl = 800,
   keep_N = FALSE,
+  veg_classes = c(2, 3, 4, 5, 9),
   season_filter = 1:12,
   deviation_days = Inf,
   gpstime_ref = "2011-09-14 01:46:40"
@@ -32,9 +33,9 @@ pad_metrics(
   Zref,
   ReturnNumber,
   Classification,
-  Easting,
-  Northing,
-  Elevation,
+  X_sensor,
+  Y_sensor,
+  Z_sensor,
   z0 = 0,
   dz = 1,
   nlayers = 60,
@@ -48,6 +49,7 @@ pad_metrics(
   limit_N_points = 0,
   limit_flight_agl = 800,
   keep_N = FALSE,
+  veg_classes = c(2, 3, 4, 5, 9),
   season_filter = 1:12,
   deviation_days = Inf,
   gpstime_ref = "2011-09-14 01:46:40"
@@ -83,16 +85,24 @@ Accepted values are be "all" or "first".}
 \item{limit_N_points}{numeric. Default = 400. minimum number of point in the pixel/plot for computing profiles & metrics.}
 
 \item{limit_flight_agl}{numeric. Default = 800. Limit flight height above ground in m. If the distance between the flight height and the ground
-and (Elevation - Zref) is lower than \code{limit_flight_agl}, NULL is returned.
+and (Z_sensor - Zref) is lower than \code{limit_flight_agl}, NULL is returned.
 This limit serves as a safeguard to eliminate cases where the trajectory reconstruction would be outlier.}
 
 \item{keep_N}{logical. Default = FALSE. Keep the number of entering rays (N) and the number of hits (Ni) in each layer.}
 
-\item{gpstime, X, Y, Z, Zref, ReturnNumber, Classification, Easting, Northing, Elevation}{numeric vectors. Attributes of the lidar point cloud.}
+\item{veg_classes}{numeric vector. Point classes taken into account when summing the hits for the PAD computation.}
+
+\item{season_filter}{Vector of months to filter}
+
+\item{deviation_days}{Numeric. Number of days to filter}
+
+\item{gpstime_ref}{Character. Reference datetime for gpstime zero}
+
+\item{gpstime, X, Y, Z, Zref, ReturnNumber, Classification, X_sensor, Y_sensor, Z_sensor}{numeric vectors. Attributes of the lidar point cloud.}
 }
 \value{
 \itemize{
-\item \code{pad_metrics}: a formula for lidR::xxx_metrics functions
+\item \code{pad_metrics}: a formula for \code{lidR::xxx_metrics} functions
 \item \code{.pad_metrics}: a list of PAD metrics, see below.
 }
 
@@ -100,9 +110,9 @@ The list of PAD metrics includes:
 \itemize{
 \item date as the mean gpstime
 \item Cover layers at 2m, 4m and 6m
-\item Cover_h_pad as the cover metric used for the PAD computation above \code{height_cover}. If \code{use_cover = FALSE}, \code{Cover_h_pad} is set to NA.
-\item cos_theta which is the average scan zenith angle used in the computation of PAD.
-If \code{scanning_angle = FALSE}, \code{cos_theta} is set to 1, i.e. pulses are considered vertical.
+\item \code{Cover_h_pad} as the cover metric used for the PAD computation above \code{height_cover}. If \code{use_cover = FALSE}, \code{Cover_h_pad} is set to NA.
+\item \code{pl_factor} which is the average ray path length factor used in the computation of PAD.
+If \code{scanning_angle = FALSE}, \code{pl_factor} is set to 1, i.e. pulses are considered vertical.
 \item PAD layers from \code{z0} to \code{z0 + nlayers * dz}, named as \verb{PAD_\{dz\}_\{zi\}} with zi the bottom edge of layer i.
 }
 
@@ -110,12 +120,12 @@ If keep_N = TRUE, the list also contains Ni and N layers at same heights than PA
 }
 \description{
 This function computes PAD metrics from a lidar point cloud preprocessed output.
-The expected LAS attributes are: \code{gpstime}, \code{X}, \code{Y}, \code{Z}, \code{Zref}, \code{ReturnNumber}, \code{Easting},
-\code{Northing}, \code{Elevation}.
+The expected LAS attributes are: \code{gpstime}, \code{X}, \code{Y}, \code{Z}, \code{Zref}, \code{ReturnNumber}, \code{X_sensor},
+\code{Y_sensor}, \code{Z_sensor}.
 }
 \examples{
 \dontrun{
-las_file <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
 las <- lidR::readLAS(las_file)
 # In real life, traj should be computed separately with buffer to avoid border effects
 traj <- get_traj(las)

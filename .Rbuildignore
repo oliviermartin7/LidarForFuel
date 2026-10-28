@@ -8,3 +8,8 @@
 ^tests$
 ^WIP$
 ^environment.yml$
+^data$
+^draft$
+^AGENTS.md$
+^NEWS.md$
+^TODO.md$

@@ -25,22 +25,33 @@ class_metrics(
 \item{classes}{Vector of classes to count
 Default class specs are from https://data.geopf.fr/annexes/ressources/documentation/DC_LiDAR_HD_1-0.pdf.}
 
+\item{season_filter}{Vector of months to filter}
+
+\item{deviation_days}{Numeric. Number of days to filter}
+
+\item{gpstime_ref}{Character. Reference datetime for gpstime zero}
+
 \item{gpstime, Classification}{numeric vectors. Attributes of the lidar point cloud.}
 }
 \value{
-Formula for lidR::xxx_metrics
+\itemize{
+\item \code{class_metrics}: a formula for \code{lidR::xxx_metrics} functions
+\item \code{.class_metrics}: the class counts as a list.
+}
 }
 \description{
 Class counts
 }
 \examples{
 \dontrun{
-las_file <- system.file("extdata", "M30_FontBlanche.laz", package = "lidarforfuel")
+las_file <- system.file("extdata", "0_42.laz", package = "lidarforfuel")
 las <- lidR::readLAS(las_file)
 # as cloud metrics
 class_count <- lidR::cloud_metrics(las, class_metrics())
 # as pixel metrics, i.e. rasterized
 class_count <- lidR::pixel_metrics(las, class_metrics(), res = 10)
 }
-
+}
+\seealso{
+\code{\link[=filter_gpstime]{filter_gpstime()}}
 }
