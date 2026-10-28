@@ -66,7 +66,7 @@ pad_metrics <- function(
   season_filter = 1:12, deviation_days = Inf, gpstime_ref = "2011-09-14 01:46:40"
 ) {
   fun <- substitute(
-    ~ .pad_metrics(
+    ~ lidarforfuel::.pad_metrics(
       gpstime, X, Y, Z, Zref, ReturnNumber, Classification,
       Easting, Northing, Elevation,
       z0 = z0, dz = dz, nlayers = nlayers, ground_margin = ground_margin,

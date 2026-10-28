@@ -83,6 +83,7 @@ get_traj <- function(
     return(NULL)
   }
 
+
   gpstime <- NULL
   if (thin > 0) {
     # thinning pulses before rmdup
