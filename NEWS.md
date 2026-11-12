@@ -46,3 +46,4 @@
 
 * fix `fPCpretreatment` (issue #11)
 * fix missing dependencies (issue #12)
+* fix LadderFuelBDthresholds and CanopyTopBDThresholds issues when manually configured (issue #48)
